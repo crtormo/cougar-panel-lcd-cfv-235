@@ -241,7 +241,18 @@ Espiando al editor por el inspector (`cdp_parche.js`), con el panel delante:
 Evidencia en `docs/evidencia/` (`captura_editor.md` + `reconstruidos/`); captura completa
 local (5,7 MB).
 
-## 2026-09-14 — Windows: ciclo de alimentación (arranque por corte)
+## 2026-09-14 — Windows: ciclo de alimentación (MEDICIÓN ANULADA)
+
+⚠️ Esta medición es inválida: se desconectó el **USB**, no la **fuente**. El panel
+(alimentado por la fuente) siguió encendido y reproduciendo el vídeo todo el rato, así
+que no hubo arranque. El «sin respuesta» de la sonda era el USB desenchufado, no el panel
+arrancando. La observación del dueño es concluyente: al reconectar el USB el panel
+respondió al momento y siguió con el vídeo.
+
+Lección (que ya estaba en la documentación y se volvió a aprender): **desenchufar el USB
+NO apaga el panel**. El pendiente #1 sigue abierto: para medir el arranque real hay que
+cortar la FUENTE de alimentación ~30 s.
+
 
 Corte de corriente real (~30 s) con la sonda vigilando `conn` cada 2 s:
 
