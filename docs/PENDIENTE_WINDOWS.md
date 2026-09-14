@@ -1,5 +1,13 @@
 # Pendiente para Windows (y qué capturar)
 
+> **ACTUALIZACION 2026-09-14 (banco de pruebas).** Espiando al editor por el inspector
+> (`cdp_parche.js`) se resolvieron tres de los pendientes: **#2** el editor no manda ningun
+> comando de borrado (borrar es local, store.json + fichero); **#3** el `.osd` es un PNG de
+> 1920x462 con otra extension; **#6** el video se re-codifica y se sube entero por
+> `transport`, no hay comando «play» — el editor decodifica y sube cada fotograma a la capa
+> OSD (~2/s). Detalle y ficheros reconstruidos en `docs/evidencia/captura_editor.md`.
+
+
 Esto es lo que queda por resolver del panel y que **solo se puede atacar desde Windows**, porque
 ahí corre el editor oficial de COUGAR y se pueden espiar sus bytes por el inspector de Electron.
 
