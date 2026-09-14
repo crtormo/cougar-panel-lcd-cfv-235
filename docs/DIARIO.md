@@ -179,6 +179,22 @@ del último tráfico, que coincide con el `timeout: 60` del perfil. Es decir:
   lado no vale**. Es la misma trampa que el `flock` resuelve al escribir, pero se cuela
   por la puerta de atrás, porque el editor puede estar abierto sin escribir nada.
 
+### El apagado, resuelto mirando la pantalla (18:2x)
+
+Con el editor de COUGAR cerrado, la pantalla del panel se apagó **~1 minuto** después
+del último tráfico. Es la observación directa del dueño del panel, y encaja con el
+`timeout: 60` del perfil. Y trae una segunda lección de método:
+
+**`brightness` no sirve para saber si el panel está apagado.** Justo después, una
+consulta a `conn` tardó **324 ms** (las siguientes, 25 ms) y devolvió `brightness: 100`:
+es decir, **la propia consulta lo despertó**. Como cualquier comprobación por protocolo
+es tráfico, el campo siempre llega tarde; la única prueba buena del apagado es **mirar
+la pantalla**.
+
+Estado final de esta duda: el panel se apaga solo en ~1 minuto sin tráfico, y mientras
+una aplicación lo esté usando no se duerme. `displayInSleep` no lo gobierna (su efecto
+real sigue sin determinar, y ya no importa para nada práctico).
+
 ### Todo el material del banco de pruebas, en el repositorio
 
 - `referencia/kit-cfv-235/`: el kit completo (60 ficheros), como segunda implementación del

@@ -258,6 +258,14 @@ OSD. La única forma medida de dejar `osdState` en 0 es `recovery` (Reset).
 
 ### 7.bis El apagado por espera: el kit se equivocaba
 
+> **Cómo se comprueba esto (2026-09-14).** La única prueba válida es **mirar la
+> pantalla**: cualquier consulta por protocolo es tráfico y puede despertar al panel.
+> Medido: justo después de verlo apagado, un `conn` tardó **324 ms** (los siguientes,
+> 25 ms) y devolvió `brightness: 100` — lo había despertado la propia consulta. Además,
+> mientras haya una aplicación usándolo (por ejemplo el editor de COUGAR abierto) el
+> panel **no se duerme**, así que una prueba de inactividad con otro programa al lado no
+> vale para nada.
+
 El kit afirma, y lo destaca como uno de sus hallazgos que "simplifican mucho todo":
 
 > «el apagado por espera **se puede desactivar**. Con `displayInSleep` en 0 el panel aguanta
