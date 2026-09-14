@@ -87,13 +87,15 @@ function analiza(payload) {
 }
 
 // ------------------------------------------------------------------ panel
-const dev = devices().find((d) => d.vendorId === VID && d.productId === PID);
-if (!dev) { console.error('no encuentro el panel'); process.exit(1); }
-const hid = new HID(dev.path);
+// El dispositivo se abre y se puede REABRIR: cuando el panel se reinicia (recovery, o un
+// atasco), el descriptor abierto queda muerto y hay que pedir uno nuevo, o parecera que el
+// panel no responde aunque ya haya vuelto. Es la misma precaucion que toma cfv235.canal.
+let hid = null;
 let buffer = Buffer.alloc(0);
 const recibidas = [];
 const avisos = [];                 // respuestas con AckNumber=0: acuses de bloque y avisos
-hid.on('data', (d) => {
+
+function recibir(d) {
   let b = Buffer.from(d);
   if (b.length > 1 && b[0] === 0x00 && b[1] === START) b = b.slice(1);
   buffer = Buffer.concat([buffer, b]);
@@ -109,13 +111,27 @@ hid.on('data', (d) => {
     if (r.ack === 0) { avisos.push(r); continue; }   // no se empareja con nada
     recibidas.push(r);
   }
-});
+}
+
+function conectar() {
+  const d = devices().find((x) => x.vendorId === VID && x.productId === PID);
+  if (!d) return false;
+  try { if (hid) hid.close(); } catch (e) { /* ya estaba cerrado */ }
+  hid = new HID(d.path);
+  hid.on('data', recibir);
+  hid.on('error', (e) => console.error('  !! error del dispositivo: '
+    + (e && e.message ? e.message : e)));
+  buffer = Buffer.alloc(0);
+  recibidas.length = 0;
+  return true;
+}
+
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
-// Un reinicio del panel corta el USB: el error se avisa y se sigue, no se cae el proceso.
-hid.on('error', (e) => console.error('  !! error del dispositivo: '
-  + (e && e.message ? e.message : e)));
+
+if (!conectar()) { console.error('no encuentro el panel'); process.exit(1); }
 
 function enviar(t) {
+  if (!hid && !conectar()) throw new Error('no hay panel al que escribir');
   // En Windows (hidapi) hay que anteponer el byte de report ID 0x00: el informe son 1025 B.
   const cuerpo = Buffer.concat([Buffer.from([0x00]), t]);
   hid.write([...Buffer.concat([cuerpo, Buffer.alloc(Math.max(0, INFORME - cuerpo.length))])]);
@@ -254,6 +270,7 @@ async function main() {
     console.log(`  enviado a las ${new Date().toLocaleTimeString()}; `
       + 'se sondea conn cada 10 s hasta 15 minutos...');
     let volvio = false;
+    let sinRespuesta = 0;
     while (Date.now() - t0 < 15 * 60 * 1000) {
       await dormir(10000);
       const seg = Math.round((Date.now() - t0) / 1000);
@@ -263,8 +280,15 @@ async function main() {
       } catch (e) { /* el dispositivo puede desaparecer un momento */ }
       if (!ahora || !ahora.props) {
         console.log(`  [${String(seg).padStart(4)} s] sin respuesta a conn`);
+        // Con el reinicio muere el descriptor: se pide uno nuevo cada 30 s por si el panel
+        // ya hubiera vuelto y lo que fallaba era el descriptor viejo.
+        sinRespuesta += 1;
+        if (sinRespuesta % 3 === 0 && conectar()) {
+          console.log('         (descriptor nuevo: se sigue comprobando)');
+        }
         continue;
       }
+      sinRespuesta = 0;
       console.log(`  [${String(seg).padStart(4)} s] bootFinish=${ahora.props.bootFinish}  `
         + `space=${ahora.props.space}  osdState=${ahora.props.osdState}  `
         + `brightness=${ahora.props.brightness}  `
