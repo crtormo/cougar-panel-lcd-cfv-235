@@ -27,7 +27,7 @@ ahí corre el editor oficial de COUGAR y se pueden espiar sus bytes por el inspe
 
 ## Lo que falta (ordenado por valor)
 
-### 1. Qué pone `bootFinish` en 1 (la puerta de todo)
+### 1. Qué pone `bootFinish` en 1 (la puerta de todo) — MEDIDO: arranque ~5 min
 
 Sin `bootFinish=1` el panel no acepta `transport` (da 400) ni registra nada. Queremos el
 **ciclo exacto** que lo deja en 1.

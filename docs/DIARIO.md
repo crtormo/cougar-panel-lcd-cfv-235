@@ -241,6 +241,22 @@ Espiando al editor por el inspector (`cdp_parche.js`), con el panel delante:
 Evidencia en `docs/evidencia/` (`captura_editor.md` + `reconstruidos/`); captura completa
 local (5,7 MB).
 
+## 2026-09-14 — Windows: ciclo de alimentación (arranque por corte)
+
+Corte de corriente real (~30 s) con la sonda vigilando `conn` cada 2 s:
+
+- Durante el arranque el panel **NO responde a `conn`** (ni 200 con `bootFinish: 0`, ni
+  nada): el sondeo estuvo ~4,5 min en «sin respuesta» y el panel apareció **ya con
+  `bootFinish: 1`**. Es decir, el estado «responde con 0» no es del arranque, es del
+  **atasco por memoria** (`g_40mb.jpg`); son dos cosas distintas.
+- Tiempo de arranque: **≥ 4,5 min**, coherente con los 2-8 min ya apuntados. (La medida
+  exacta quedó cortada porque se interrumpió el sondeo antes del 1; repetible.)
+- Al volver, el panel restauró como fondo el último medio que adoptó el editor:
+  `2026-09-14_20-23-43-260.mp4` (el vídeo), con `osdState: 1` y `space` ~81,7 MB.
+
+Conclusión práctica: tras un corte hay que **esperar ~5 min sin tocar nada**; el panel no
+dice «estoy arrancando», simplemente no contesta hasta que está listo.
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**
