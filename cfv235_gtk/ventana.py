@@ -164,10 +164,14 @@ PAGINAS_ATAJOS = ["estado", "imagen", "temas", "patrones", "editor", "paletas",
                   "dashboard", "video", "diagnostico"]
 
 # Imagen elegida: validacion previa para no leer (ni subir) algo desproporcionado.
-# 65 MB es el limite duro del protocolo (MEDIA_MAX_BLOQUES con bloques de 1 KB lo dejan
-# justo por encima); a partir de 8 MB se avisa antes de generar la miniatura.
-TAMANO_MAXIMO_IMAGEN = 65 * 1024 * 1024
-AVISO_IMAGEN_GRANDE = 8 * 1024 * 1024
+#
+# OJO: el limite del PROTOCOLO son 62,5 MB, pero el PANEL no aguanta eso ni de lejos. Medido
+# en el panel real (docs/RENDIMIENTO.md): con un fichero de 10 MB el panel se ATASCA
+# (`bootFinish=0`, 12 s) y con 5 MB va sobrado (2,8 s); con 1 MB, 1,2 s. Si se le desborda la
+# memoria se queda inservible, asi que el limite de la app se pone muy por debajo de lo que
+# admite el protocolo: 8 MB como maximo y aviso a partir de 4 MB.
+TAMANO_MAXIMO_IMAGEN = 8 * 1024 * 1024
+AVISO_IMAGEN_GRANDE = 4 * 1024 * 1024
 # Por encima de estos megapixeles no se genera miniatura: decodificar 6000x6000 (36 MP)
 # costo +106 MB de RSS por una vista previa de 960 px que no hace falta para subir.
 MEGAPIXELES_PREVIA = 12_000_000

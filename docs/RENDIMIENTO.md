@@ -95,7 +95,40 @@ panel (unos 79 MB) se llenaria en unas 1 400 subidas, con el riesgo de atascarlo
 - Los textos que decian "3-5 fps" o "160 ms por fotograma" ahora dicen lo medido.
 - Los prompts de fotos, GIF y videos (`docs/PROMPT_*.md`) se regeneran con estos numeros.
 
-## 7. Como repetir la medicion
+---
+
+## 8. Tamano maximo de fichero (medido con guardas)
+
+Medido sobre el panel real con `herramientas/medir_tamano.py`, que lleva **guardas**: techo
+duro de 20 MB, comprobacion del espacio libre antes de cada subida y parada automatica si el
+panel deja de responder. **No se paso de 20 MB por nada.**
+
+| Fichero | Resultado | Tiempo | Espacio libre despues | `bootFinish` |
+|---|---|---|---|---|
+| 1,0 MB | correcto | 1,2 s | 77,9 MB | 1 |
+| 5,1 MB | correcto | 2,8 s | 73,3 MB | 1 |
+| **10,2 MB** | **el panel se atasca** | 12,2 s | 64,6 MB | **0** |
+| 15 MB, 19 MB | **no se enviaron**: la guarda paro al ver el atasco | - | - | - |
+
+### Lo que enseña
+
+1. **Entre 5 y 10 MB esta el limite.** A 10,2 MB el panel contesta `bootFinish=0` y deja de
+   aceptar escrituras durante un rato. **Se recupera solo** (unos minutos despues volvio a
+   responder con normalidad), pero es exactamente el riesgo de quedar inservible.
+2. **El espacio se gasta de verdad.** Cada subida descuenta aproximadamente su tamano
+   (79,7 -> 73,3 -> 64,6 MB), **aunque se repita el mismo nombre de fichero**. La idea de que
+   "la capa OSD reutiliza su hueco" solo se cumple para fotogramas pequenos y repetidos: con
+   ficheros grandes el panel guarda cada uno.
+3. Por eso la app **baja su limite de 65 MB a 8 MB** (con aviso desde 4 MB): el limite del
+   protocolo no tiene nada que ver con lo que el panel aguanta.
+
+## 9. Los modos `mode` 0-3
+
+Los cuatro responden **200** y el panel los guarda (`conn` devuelve el mismo valor), pero
+**ninguno cambia nada observable por el protocolo**: ni `osdState`, ni la memoria libre, ni el
+brillo. Su efecto, si lo tiene, solo se ve en la pantalla fisica.
+
+## 10. Como repetir la medicion
 
 ```bash
 # deja libre el panel (app y servicio)
