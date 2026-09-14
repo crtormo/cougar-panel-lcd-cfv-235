@@ -224,6 +224,23 @@ repositorio, con su evidencia y su historia.
 
 ---
 
+## 2026-09-14 — Windows: captura del editor (segunda ronda)
+
+Espiando al editor por el inspector (`cdp_parche.js`), con el panel delante:
+
+- Los únicos comandos del editor son `conn`, `power resume`, `STATE all`, `transport` y
+  `transported`: el PC lo dibuja todo y lo sube como PNG.
+- El `.osd` es un **PNG 1920×462** con otra extensión (reconstruido y verificado). Pendiente 3.
+- El vídeo se **re-codifica** y se sube entero por `transport`; no hay comando «play»: el
+  editor decodifica y sube cada fotograma a la capa OSD (~47 KB, ~2/s). El panel NO reproduce
+  nada internamente. Pendiente 6.
+- Borrar un medio es local (`store.json` + fichero): no se manda nada al panel. Pendiente 2.
+- Saludo al reconectar: `conn` → `power resume` → `STATE all` → sube el fondo guardado.
+  Pendiente 1 (parcial).
+
+Evidencia en `docs/evidencia/` (`captura_editor.md` + `reconstruidos/`); captura completa
+local (5,7 MB).
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**
