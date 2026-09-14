@@ -268,6 +268,20 @@ Corte de corriente real (~30 s) con la sonda vigilando `conn` cada 2 s:
 Conclusión práctica: tras un corte hay que **esperar ~5 min sin tocar nada**; el panel no
 dice «estoy arrancando», simplemente no contesta hasta que está listo.
 
+### Observación del dueño: desenchufar el USB SÍ apaga este panel
+
+Corrección importante, con observación directa: al desenchufar el USB, este panel **se
+apagó**, y al reconectarlo **se encendió y siguió con el vídeo**. O sea, en este panel el
+USB aporta la alimentación (o al menos su corte produce un reinicio), contra la nota antigua
+de «se alimenta de la fuente». Hay que revisar esa nota en CANAL.md/HALLAZGOS.md.
+
+Y separa dos fases del arranque que no son lo mismo:
+- la **pantalla/medio** vuelve rápido (segundos), que es lo que se ve a simple vista;
+- el **control (`conn`/`bootFinish`)** puede tardar más, que es lo que la sonda mide.
+
+Para no volver a confundirlas, `herramientas/windows/sondas/vigilar_boot.js` distingue los
+tres estados: USB ausente / presente pero mudo / bootFinish=0 o 1.
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**
