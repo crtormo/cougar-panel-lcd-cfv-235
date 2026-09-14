@@ -114,7 +114,12 @@ class TestCanal(BaseSimulador):
             self.assertTrue(panel.girar(180).ok)
             self.assertEqual(sim.panel.perfil["degree"], 180)
 
+            # `displayInSleep=1` es "sigue mostrando en reposo", o sea NO dormir. Medido en el
+            # panel real (docs/CANAL.md 7.bis): con 1 aguanta encendido sin trafico y con 0 se
+            # apaga en menos de dos minutos. Antes la app mandaba el valor al reves.
             self.assertTrue(panel.no_dormir(True).ok)
+            self.assertEqual(sim.panel.perfil["displayInSleep"], 1)
+            self.assertTrue(panel.no_dormir(False).ok)
             self.assertEqual(sim.panel.perfil["displayInSleep"], 0)
 
             self.assertTrue(panel.power("resume").ok)

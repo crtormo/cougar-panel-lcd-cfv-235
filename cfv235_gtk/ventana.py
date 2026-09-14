@@ -1991,9 +1991,12 @@ class VentanaPrincipal(Adw.ApplicationWindow):
             # El panel manda `displayInSleep` como ENTERO (0/1), no como booleano: exigir
             # `isinstance(dormir, bool)` hacia que el interruptor no reflejara nunca el
             # estado real. Se aceptan numeros, igual que con brightness o degree.
+            # `displayInSleep=1` significa "sigue mostrando en reposo", o sea NO dormir: el
+            # interruptor se enciende con 1 (antes se ponia al reves y parecia que "no dormir"
+            # estaba activado justo cuando el panel se apagaba).
             dormir = props.get("displayInSleep")
             if isinstance(dormir, (bool, int, float)):
-                self.interruptor_no_dormir.set_active(not bool(dormir))
+                self.interruptor_no_dormir.set_active(bool(dormir))
         finally:
             self._silenciar = False
 

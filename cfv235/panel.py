@@ -199,8 +199,14 @@ class Panel:
         return self.canal.peticion("recovery", {"enable": True}, timeout=8.0)
 
     def no_dormir(self, activo: bool = True) -> p.Respuesta:
-        """`displayInSleep`. Con activo=True el panel NO se apaga aunque no haya trafico."""
-        return self.canal.peticion("displayInSleep", {"enable": not activo}, timeout=6.0)
+        """`displayInSleep`: con activo=True el panel sigue mostrando en reposo.
+
+        Medido en el panel real (docs/CANAL.md 7.bis): `enable=true` deja `displayInSleep` en
+        **1** y el panel aguanta encendido sin trafico; con **0** se apaga en menos de dos
+        minutos. Antes se enviaba `not activo`, asi que activar "no dormir" ponia justo el
+        valor que PERMITE el apagado.
+        """
+        return self.canal.peticion("displayInSleep", {"enable": bool(activo)}, timeout=6.0)
 
     def telemetria(self, datos: dict | None = None) -> p.Respuesta:
         """`STATE all`: las metricas que el panel muestra en su capa de sistema."""
