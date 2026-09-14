@@ -156,9 +156,20 @@ min  2 : brightness=0    <- ya se ha apagado
 min  8 : brightness=0
 ```
 
-Lo que **si** lo mantiene: `displayInSleep=1` (`enable: true`), que aguanta al menos 80 s sin
-trafico; y, sobre todo, **trafico periodico del host**. Un tema o una imagen fija **no** se
-quedan puestos solos.
+Lo que **si** lo mantiene: `displayInSleep=1` (`enable: true`); y, sobre todo, **trafico
+periodico del host**. Un tema o una imagen fija **no** se quedan puestos solos.
+
+### ⚠️ Como se comprueba esto (y por que `brightness` no vale)
+
+**La unica prueba valida es mirar la pantalla.** Cualquier consulta por protocolo **es
+trafico** y puede despertar al panel: medido, justo despues de verlo apagado un `conn` tardo
+**324 ms** (los siguientes, 25 ms) y devolvio **`brightness: 100`** — lo habia despertado la
+propia consulta. Y mientras haya un programa usandolo (el editor de COUGAR abierto, por
+ejemplo) el panel **no se duerme**, asi que una prueba de inactividad con otro programa al lado
+no sirve.
+
+Con la pantalla delante, con **el editor cerrado**: se apago **~1 minuto** despues del ultimo
+trafico, que encaja con `timeout: 60`.
 
 ### 3.6 Otras
 
