@@ -1,0 +1,120 @@
+{
+  "nombre": "Transformers - Cybertron All-Spark Console",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0a0a14",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "CYBERTRON // AUTOBOT DEFENSE MAINFRAME // ALL-SPARK CORE",
+      "x": 24,
+      "y": 14,
+      "tamano": 28,
+      "color": "#eb3b5a"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "CYBER-CYCLE %H:%M:%S",
+      "x": 1500,
+      "y": 14,
+      "tamano": 30,
+      "color": "#45aaf2"
+    },
+    {
+      "tipo": "texto",
+      "texto": "FLUJO DE ENERGON Y NUCLEO PRIMARIO",
+      "x": 24,
+      "y": 58,
+      "tamano": 22,
+      "color": "#45aaf2"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 95,
+      "ancho": 520,
+      "alto": 32,
+      "etiqueta": "CONDUCTO PRIMARIO [CPU]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#eb3b5a",
+      "color": "#ffffff",
+      "fondo": "#14142b"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 165,
+      "ancho": 520,
+      "alto": 32,
+      "etiqueta": "CONDUCTO SECUNDARIO [GPU]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#45aaf2",
+      "color": "#ffffff",
+      "fondo": "#14142b"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 235,
+      "ancho": 520,
+      "alto": 32,
+      "etiqueta": "RESERVA MATRIZ [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#f1c40f",
+      "color": "#ffffff",
+      "fondo": "#14142b"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 305,
+      "ancho": 520,
+      "alto": 32,
+      "etiqueta": "BLINDAJE CYBERTRON [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#778ca3",
+      "color": "#ffffff",
+      "fondo": "#14142b"
+    },
+    {
+      "tipo": "grafica",
+      "x": 660,
+      "y": 60,
+      "ancho": 740,
+      "alto": 280,
+      "etiqueta": "MATRIZ DE LIDERAZGO // EMISION DE ENERGON CYBERTRONIANO (%)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#eb3b5a",
+      "grosor": 3,
+      "fondo": "#121226",
+      "borde": "#24244a"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "CHISPA SUPREMA DE OPTIMUS",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 1440,
+      "y": 60,
+      "ancho": 450,
+      "alto": 280,
+      "tamano": 84,
+      "barra": true,
+      "mostrar_porcentaje": true,
+      "color": "#eb3b5a",
+      "color_relleno": "#45aaf2",
+      "fondo": "#121226",
+      "borde": "#24244a"
+    },
+    {
+      "tipo": "texto",
+      "texto": "OPTIMUS PRIME: «AUTOBOTS, ¡TRANSFORMENSE Y AVANCEN!» // VELOCIDAD: {cpu_mhz:.0f} MHz // ENLACE: {red_bajada_mb:.2f} MB/s",
+      "x": 24,
+      "y": 405,
+      "tamano": 22,
+      "color": "#eb3b5a"
+    }
+  ]
+}

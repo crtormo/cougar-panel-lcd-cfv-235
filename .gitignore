@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Herramientas de desarrollo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editores y sistema
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+
+# Salidas locales: capturas, informes y registros de las herramientas
+*.log
+/tmp/
+/capturas/
+
+# Preferencias locales de la app (no son del proyecto)
+config.json

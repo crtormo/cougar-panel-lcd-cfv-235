@@ -1,0 +1,184 @@
+{
+  "nombre": "Transformers - Optimus Prime",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0a0b12",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "AUTOBOTS // OPTIMUS PRIME",
+      "x": 24,
+      "y": 18,
+      "tamano": 34,
+      "color": "#fc5c65"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M",
+      "x": 1608,
+      "y": 18,
+      "tamano": 46,
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "CHISPA SUPREMA",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#fc5c65",
+      "fondo": "#131624",
+      "borde": "#242b45"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "cpu_uso",
+      "color_relleno": "#fc5c65",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "fuerza {cpu_uso:.0f} %     {cpu_mhz:.0f} MHz",
+      "x": 24,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "CANON IONICO",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 497,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#45aaf2",
+      "fondo": "#131624",
+      "borde": "#242b45"
+    },
+    {
+      "tipo": "barra",
+      "x": 497,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "gpu_uso",
+      "color_relleno": "#45aaf2",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "disparo {gpu_uso:.0f} %     {gpu_mhz:.0f} MHz",
+      "x": 497,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "MATRIZ LIDER",
+      "fuente": "ram_uso",
+      "sufijo": " %",
+      "x": 970,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#f7b731",
+      "fondo": "#131624",
+      "borde": "#242b45"
+    },
+    {
+      "tipo": "barra",
+      "x": 970,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "ram_uso",
+      "color_relleno": "#f7b731",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{ram_usado_gb:.1f} / {ram_total_gb:.1f} GB",
+      "x": 970,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "BLINDAJE ENERGON",
+      "fuente": "disco_uso",
+      "sufijo": " %",
+      "x": 1443,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#778ca3",
+      "fondo": "#131624",
+      "borde": "#242b45"
+    },
+    {
+      "tipo": "barra",
+      "x": 1443,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "disco_uso",
+      "color_relleno": "#778ca3",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{disco_usado_gb:.0f} / {disco_total_gb:.0f} GB",
+      "x": 1443,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "grafica",
+      "x": 24,
+      "y": 316,
+      "ancho": 1080,
+      "alto": 96,
+      "etiqueta": "NIVEL DE ENERGIA CYBERTRONIANA (%)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#fc5c65",
+      "grosor": 3,
+      "fondo": "#131624",
+      "borde": "#242b45"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RED    bajada {red_bajada_mb:.2f} MB/s    subida {red_subida_mb:.2f} MB/s\nVENT   cpu {cpu_vent:.0f} rpm",
+      "x": 1152,
+      "y": 334,
+      "tamano": 22,
+      "color": "#e8edf5",
+      "ancho": 744
+    }
+  ]
+}

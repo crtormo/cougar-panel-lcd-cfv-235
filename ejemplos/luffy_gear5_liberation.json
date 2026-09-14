@@ -1,0 +1,137 @@
+{
+  "nombre": "Anime - One Piece Luffy Gear 5 Nika",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#090914",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "¡DOOM DUT DA DA! // GUERRERO DE LA LIBERACION // MONKEY D. LUFFY GEAR 5",
+      "x": 24,
+      "y": 14,
+      "tamano": 30,
+      "color": "#ffffff"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "NIKA %H:%M",
+      "x": 1640,
+      "y": 14,
+      "tamano": 34,
+      "color": "#fed330"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "RITMO DE LOS TAMBORES DE LA LIBERACION",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 66,
+      "ancho": 520,
+      "alto": 320,
+      "tamano": 84,
+      "barra": true,
+      "mostrar_porcentaje": true,
+      "color": "#ffffff",
+      "color_relleno": "#fed330",
+      "fondo": "#14142b",
+      "borde": "#2c2c54"
+    },
+    {
+      "tipo": "texto",
+      "texto": "LATIDOS POR MINUTO [CPU MHZ]: {cpu_mhz:.0f} MHz",
+      "x": 48,
+      "y": 405,
+      "tamano": 22,
+      "color": "#fed330"
+    },
+    {
+      "tipo": "grafica",
+      "x": 570,
+      "y": 66,
+      "ancho": 800,
+      "alto": 240,
+      "etiqueta": "ONDA DE PULSO DEL DIOS DEL SOL NIKA (%)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#ffffff",
+      "grosor": 4,
+      "fondo": "#14142b",
+      "borde": "#2c2c54"
+    },
+    {
+      "tipo": "texto",
+      "texto": "¡ESTE ES MI PUNTO MAXIMO! // GEAR 5 ACTIVADO // LIBERTAD TOTAL",
+      "x": 570,
+      "y": 325,
+      "tamano": 22,
+      "color": "#ffffff"
+    },
+    {
+      "tipo": "texto",
+      "texto": "PODER DEL REY DE LOS PIRATAS",
+      "x": 1400,
+      "y": 66,
+      "tamano": 24,
+      "color": "#fed330"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 110,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "HAKI DEL REY AVANZADO [GPU]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#eb3b5a",
+      "color": "#ffffff",
+      "fondo": "#202040"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 175,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "MEMORIA LOG POSE [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#706fd3",
+      "color": "#ffffff",
+      "fondo": "#202040"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 240,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "BODEGA THOUSAND SUNNY [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#2ed573",
+      "color": "#ffffff",
+      "fondo": "#202040"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 305,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "CORRIENTE GRAND LINE [RED]",
+      "fuente": "red_bajada_mb",
+      "color_relleno": "#00d2d3",
+      "color": "#ffffff",
+      "fondo": "#202040",
+      "max": 100
+    },
+    {
+      "tipo": "texto",
+      "texto": "RECOMPENSA: 3.000.000.000 BERRIES // VRAM: {gpu_vram_usado_gb:.1f} GB",
+      "x": 570,
+      "y": 380,
+      "tamano": 22,
+      "color": "#a4b0be"
+    }
+  ]
+}

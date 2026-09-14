@@ -1,0 +1,184 @@
+{
+  "nombre": "Dragon Ball Z - Gohan SSJ2",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0c0a17",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "GOHAN // MODO SUPER SAIYAN 2",
+      "x": 24,
+      "y": 18,
+      "tamano": 34,
+      "color": "#a55eea"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M",
+      "x": 1608,
+      "y": 18,
+      "tamano": 46,
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "IRA DESATADA",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#a55eea",
+      "fondo": "#151329",
+      "borde": "#282154"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "cpu_uso",
+      "color_relleno": "#a55eea",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "furia {cpu_uso:.0f} %     {cpu_mhz:.0f} MHz",
+      "x": 24,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "PADRE E HIJO",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 497,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#fed330",
+      "fondo": "#151329",
+      "borde": "#282154"
+    },
+    {
+      "tipo": "barra",
+      "x": 497,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "gpu_uso",
+      "color_relleno": "#fed330",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "impacto {gpu_uso:.0f} %     {gpu_mhz:.0f} MHz",
+      "x": 497,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "MASENKO",
+      "fuente": "ram_uso",
+      "sufijo": " %",
+      "x": 970,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#45aaf2",
+      "fondo": "#151329",
+      "borde": "#282154"
+    },
+    {
+      "tipo": "barra",
+      "x": 970,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "ram_uso",
+      "color_relleno": "#45aaf2",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{ram_usado_gb:.1f} / {ram_total_gb:.1f} GB",
+      "x": 970,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "ZENKAI POWER",
+      "fuente": "disco_uso",
+      "sufijo": " %",
+      "x": 1443,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#eb3b5a",
+      "fondo": "#151329",
+      "borde": "#282154"
+    },
+    {
+      "tipo": "barra",
+      "x": 1443,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "disco_uso",
+      "color_relleno": "#eb3b5a",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{disco_usado_gb:.0f} / {disco_total_gb:.0f} GB",
+      "x": 1443,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "grafica",
+      "x": 24,
+      "y": 316,
+      "ancho": 1080,
+      "alto": 96,
+      "etiqueta": "LIBERACION DE ENERGIA OCULTA (%)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#a55eea",
+      "grosor": 3,
+      "fondo": "#151329",
+      "borde": "#282154"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RED    bajada {red_bajada_mb:.2f} MB/s    subida {red_subida_mb:.2f} MB/s\nVENT   cpu {cpu_vent:.0f} rpm",
+      "x": 1152,
+      "y": 334,
+      "tamano": 22,
+      "color": "#e8edf5",
+      "ancho": 744
+    }
+  ]
+}

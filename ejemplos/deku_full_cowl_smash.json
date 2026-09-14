@@ -1,0 +1,139 @@
+{
+  "nombre": "Anime - My Hero Academia Deku Full Cowl",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#05120a",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "U.A. HIGH SCHOOL // HERO ACADEMIA // IZUKU MIDORIYA «DEKU»",
+      "x": 24,
+      "y": 16,
+      "tamano": 28,
+      "color": "#20bf6b"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "PLUS ULTRA %H:%M",
+      "x": 1540,
+      "y": 16,
+      "tamano": 32,
+      "color": "#eb3b5a"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "NIVEL DE POTENCIA ONE FOR ALL",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 66,
+      "ancho": 480,
+      "alto": 260,
+      "tamano": 80,
+      "barra": false,
+      "color": "#20bf6b",
+      "fondo": "#0d2616",
+      "borde": "#1b4d2d"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 270,
+      "ancho": 400,
+      "alto": 26,
+      "etiqueta": "CARGA ONE FOR ALL [CPU %]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#20bf6b",
+      "color": "#ffffff",
+      "fondo": "#143a21"
+    },
+    {
+      "tipo": "texto",
+      "texto": "¡PLUS ULTRA! // NUCLEO: {cpu_mhz:.0f} MHz",
+      "x": 24,
+      "y": 325,
+      "tamano": 22,
+      "color": "#2bcbba"
+    },
+    {
+      "tipo": "grafica",
+      "x": 530,
+      "y": 66,
+      "ancho": 840,
+      "alto": 280,
+      "etiqueta": "IMPACTO DE AIRE // DETROIT SMASH Y DELAWARE SMASH (%)",
+      "fuente": "cpu_uso",
+      "puntos": 130,
+      "auto": true,
+      "color": "#20bf6b",
+      "grosor": 3,
+      "fondo": "#0d2616",
+      "borde": "#1b4d2d"
+    },
+    {
+      "tipo": "texto",
+      "texto": "DONES DE LOS ANTIGUOS PORTADORES",
+      "x": 1400,
+      "y": 66,
+      "tamano": 22,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 115,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "DON: LATIGO NEGRO [GPU]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#eb3b5a",
+      "color": "#ffffff",
+      "fondo": "#143a21"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 180,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "DON: FLOTAR [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#f7b731",
+      "color": "#ffffff",
+      "fondo": "#143a21"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 245,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "DON: SENSOR DE PELIGRO [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#2bcbba",
+      "color": "#ffffff",
+      "fondo": "#143a21"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 310,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "DON: FA JIN [RED]",
+      "fuente": "red_bajada_mb",
+      "color_relleno": "#45aaf2",
+      "color": "#ffffff",
+      "fondo": "#143a21",
+      "max": 100
+    },
+    {
+      "tipo": "texto",
+      "texto": "«UN VERDADERO HEROE SIEMPRE ENCUENTRA LA FORMA DE SUPERARSE» // GPU: {gpu_temp:.0f} C",
+      "x": 24,
+      "y": 405,
+      "tamano": 22,
+      "color": "#20bf6b"
+    }
+  ]
+}

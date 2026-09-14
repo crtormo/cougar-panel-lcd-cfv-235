@@ -1,0 +1,156 @@
+{
+  "dispositivo": "/dev/hidraw4",
+  "descriptor": "0600ff0901a1010901150026ff00750896000481020901150026ff0075089600049102c0",
+  "analisis_descriptor": {
+    "usage_page": 65280,
+    "usage": 1,
+    "report_ids": [],
+    "informes": [
+      {
+        "clase": "entrada",
+        "bits": 8192,
+        "bytes": 1024
+      },
+      {
+        "clase": "salida",
+        "bits": 8192,
+        "bytes": 1024
+      }
+    ],
+    "bytes": 36
+  },
+  "variantes": [
+    {
+      "variante": "A  1025 B = 0x00 + trama + relleno  (lo que hace el kit)",
+      "escritura_ok": true,
+      "detalle_escritura": "escritos 1025 B",
+      "bytes_escritos": 1025,
+      "respuesta": {
+        "code": 200,
+        "ack": 2,
+        "len": 375,
+        "cable": 375,
+        "escapes": 2,
+        "checksum_ok": true,
+        "campos_json": 19
+      },
+      "bytes_leidos": 1024,
+      "primer_byte": 90,
+      "latencia_ms": 8.9,
+      "error": null,
+      "cabecera": "1 200 | AckNumber=2 | ContentType=json | ContentLength=311",
+      "cuerpo": "{\"OS\":\"Linux\",\"version\":{\"app\":\"V1.0.5\",\"firmware\":\"V1.0.5\",\"sdk\":\"V1.2.7\",\"hardware\":\"V2.0\"},\"space\":81128,\"brightness\":0,\"degree\":270,\"sn\":\"BYZL2611WC01CM001018\",\"osdState\":1,\"mode\":0,\"logo\":2,\"time",
+      "trama_cable": 53
+    },
+    {
+      "variante": "B  1024 B = trama + relleno         (lo que dice el descriptor)",
+      "escritura_ok": true,
+      "detalle_escritura": "escritos 1024 B",
+      "bytes_escritos": 1024,
+      "respuesta": {
+        "code": 200,
+        "ack": 3,
+        "len": 375,
+        "cable": 375,
+        "escapes": 2,
+        "checksum_ok": true,
+        "campos_json": 19
+      },
+      "bytes_leidos": 1024,
+      "primer_byte": 90,
+      "latencia_ms": 6.4,
+      "error": null,
+      "cabecera": "1 200 | AckNumber=3 | ContentType=json | ContentLength=311",
+      "cuerpo": "{\"OS\":\"Linux\",\"version\":{\"app\":\"V1.0.5\",\"firmware\":\"V1.0.5\",\"sdk\":\"V1.2.7\",\"hardware\":\"V2.0\"},\"space\":81128,\"brightness\":0,\"degree\":270,\"sn\":\"BYZL2611WC01CM001018\",\"osdState\":1,\"mode\":0,\"logo\":2,\"time",
+      "trama_cable": 53
+    },
+    {
+      "variante": "C  exacto = 0x00 + trama (sin relleno)",
+      "escritura_ok": true,
+      "detalle_escritura": "escritos 54 B",
+      "bytes_escritos": 54,
+      "respuesta": {
+        "code": 200,
+        "ack": 4,
+        "len": 375,
+        "cable": 375,
+        "escapes": 2,
+        "checksum_ok": true,
+        "campos_json": 19
+      },
+      "bytes_leidos": 1024,
+      "primer_byte": 90,
+      "latencia_ms": 6.4,
+      "error": null,
+      "cabecera": "1 200 | AckNumber=4 | ContentType=json | ContentLength=311",
+      "cuerpo": "{\"OS\":\"Linux\",\"version\":{\"app\":\"V1.0.5\",\"firmware\":\"V1.0.5\",\"sdk\":\"V1.2.7\",\"hardware\":\"V2.0\"},\"space\":81128,\"brightness\":0,\"degree\":270,\"sn\":\"BYZL2611WC01CM001018\",\"osdState\":1,\"mode\":0,\"logo\":2,\"time",
+      "trama_cable": 53
+    },
+    {
+      "variante": "D  exacto = trama (sin prefijo ni relleno)",
+      "escritura_ok": true,
+      "detalle_escritura": "escritos 53 B",
+      "bytes_escritos": 53,
+      "respuesta": {
+        "code": 200,
+        "ack": 5,
+        "len": 375,
+        "cable": 375,
+        "escapes": 2,
+        "checksum_ok": true,
+        "campos_json": 19
+      },
+      "bytes_leidos": 1024,
+      "primer_byte": 90,
+      "latencia_ms": 6.4,
+      "error": null,
+      "cabecera": "1 200 | AckNumber=5 | ContentType=json | ContentLength=311",
+      "cuerpo": "{\"OS\":\"Linux\",\"version\":{\"app\":\"V1.0.5\",\"firmware\":\"V1.0.5\",\"sdk\":\"V1.2.7\",\"hardware\":\"V2.0\"},\"space\":81128,\"brightness\":0,\"degree\":270,\"sn\":\"BYZL2611WC01CM001018\",\"osdState\":1,\"mode\":0,\"logo\":2,\"time",
+      "trama_cable": 53
+    },
+    {
+      "variante": "E  64 B = trama + relleno a multiplo de 64, sin prefijo",
+      "escritura_ok": true,
+      "detalle_escritura": "escritos 53 B",
+      "bytes_escritos": 53,
+      "respuesta": {
+        "code": 200,
+        "ack": 6,
+        "len": 375,
+        "cable": 375,
+        "escapes": 2,
+        "checksum_ok": true,
+        "campos_json": 19
+      },
+      "bytes_leidos": 1024,
+      "primer_byte": 90,
+      "latencia_ms": 6.4,
+      "error": null,
+      "cabecera": "1 200 | AckNumber=6 | ContentType=json | ContentLength=311",
+      "cuerpo": "{\"OS\":\"Linux\",\"version\":{\"app\":\"V1.0.5\",\"firmware\":\"V1.0.5\",\"sdk\":\"V1.2.7\",\"hardware\":\"V2.0\"},\"space\":81128,\"brightness\":0,\"degree\":270,\"sn\":\"BYZL2611WC01CM001018\",\"osdState\":1,\"mode\":0,\"logo\":2,\"time",
+      "trama_cable": 53
+    },
+    {
+      "variante": "F  1025 B = 0x00 + trama + relleno a 1024 (igual que A, control)",
+      "escritura_ok": true,
+      "detalle_escritura": "escritos 1025 B",
+      "bytes_escritos": 1025,
+      "respuesta": {
+        "code": 200,
+        "ack": 7,
+        "len": 375,
+        "cable": 375,
+        "escapes": 2,
+        "checksum_ok": true,
+        "campos_json": 19
+      },
+      "bytes_leidos": 1024,
+      "primer_byte": 90,
+      "latencia_ms": 6.4,
+      "error": null,
+      "cabecera": "1 200 | AckNumber=7 | ContentType=json | ContentLength=311",
+      "cuerpo": "{\"OS\":\"Linux\",\"version\":{\"app\":\"V1.0.5\",\"firmware\":\"V1.0.5\",\"sdk\":\"V1.2.7\",\"hardware\":\"V2.0\"},\"space\":81128,\"brightness\":0,\"degree\":270,\"sn\":\"BYZL2611WC01CM001018\",\"osdState\":1,\"mode\":0,\"logo\":2,\"time",
+      "trama_cable": 53
+    }
+  ]
+}

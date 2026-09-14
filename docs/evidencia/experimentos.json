@@ -1,0 +1,35 @@
+{
+  "realtime_False": {
+    "code": 200,
+    "osdState": 1
+  },
+  "realtime_True": {
+    "code": 200,
+    "osdState": 1
+  },
+  "jpeg": {
+    "ok": true,
+    "acuse": 200,
+    "motivo": ""
+  },
+  "contador": {
+    "0x13": {
+      "ok": true,
+      "acuse": 200
+    },
+    "0x16": {
+      "ok": true,
+      "acuse": 200
+    }
+  },
+  "estado_final": {
+    "bootFinish": 1,
+    "space": 81140,
+    "brightness": 100,
+    "osdState": 1,
+    "background": [
+      "prueba_canal.png"
+    ],
+    "displayInSleep": 0
+  }
+}

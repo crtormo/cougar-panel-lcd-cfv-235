@@ -1,0 +1,103 @@
+{
+  "nombre": "Mecha - Iron Man Mark 44 Hulkbuster",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#120606",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "STARK INDUSTRIES // MARK XLIV HULKBUSTER // PROTOCOLO VERONICA",
+      "x": 24,
+      "y": 16,
+      "tamano": 28,
+      "color": "#e74c3c"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "STARK-OS %H:%M:%S",
+      "x": 1500,
+      "y": 16,
+      "tamano": 32,
+      "color": "#f1c40f"
+    },
+    {
+      "tipo": "grafica",
+      "x": 24,
+      "y": 66,
+      "ancho": 600,
+      "alto": 260,
+      "etiqueta": "REACTOR ARC PRIMARIO: SALIDA DE ENERGIA [CPU %]",
+      "fuente": "cpu_uso",
+      "puntos": 100,
+      "auto": true,
+      "color": "#00d2d3",
+      "grosor": 3,
+      "fondo": "#240c0c",
+      "borde": "#4a1919"
+    },
+    {
+      "tipo": "texto",
+      "texto": "CALOR REACTOR: {cpu_temp:.0f} C    VENTILADORES: {cpu_vent:.0f} RPM",
+      "x": 24,
+      "y": 340,
+      "tamano": 22,
+      "color": "#e74c3c"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "BLINDAJE DE TITANIO DORADO Y ORO",
+      "fuente": "ram_uso",
+      "sufijo": " %",
+      "x": 650,
+      "y": 66,
+      "ancho": 620,
+      "alto": 260,
+      "tamano": 80,
+      "barra": true,
+      "mostrar_porcentaje": true,
+      "color": "#f1c40f",
+      "color_relleno": "#f1c40f",
+      "fondo": "#240c0c",
+      "borde": "#4a1919"
+    },
+    {
+      "tipo": "texto",
+      "texto": "SATELITE VERONICA: CONECTADO    PIEZAS DE REPUESTO: LISTAS\nRAM USADA: {ram_usado_gb:.1f} GB    DISCO: {disco_usado_gb:.0f} GB",
+      "x": 670,
+      "y": 340,
+      "tamano": 22,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "grafica",
+      "x": 1296,
+      "y": 66,
+      "ancho": 600,
+      "alto": 260,
+      "etiqueta": "REPULSORES DE ASALTO: CONSUMO TERMICO [GPU %]",
+      "fuente": "gpu_uso",
+      "puntos": 100,
+      "auto": true,
+      "color": "#e74c3c",
+      "grosor": 3,
+      "fondo": "#240c0c",
+      "borde": "#4a1919"
+    },
+    {
+      "tipo": "texto",
+      "texto": "CALOR REPULSORES: {gpu_temp:.0f} C    FRECUENCIA GPU: {gpu_mhz:.0f} MHz",
+      "x": 1296,
+      "y": 340,
+      "tamano": 22,
+      "color": "#00d2d3"
+    },
+    {
+      "tipo": "texto",
+      "texto": "JARVIS: «TODOS LOS SISTEMAS ESTAN AL 100%, SENOR. LISTO PARA EL IMPACTO.»",
+      "x": 24,
+      "y": 405,
+      "tamano": 22,
+      "color": "#f1c40f"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "nombre": "Robot - Mazinger Z Laboratorio Fotonico",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#090c17",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "INSTITUTO DE INVESTIGACIONES FOTONICAS // ROBOT GIGANTE // MAZINGER Z",
+      "x": 24,
+      "y": 16,
+      "tamano": 28,
+      "color": "#e74c3c"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "KOUSHIRYOKU %H:%M",
+      "x": 1500,
+      "y": 16,
+      "tamano": 32,
+      "color": "#f1c40f"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "CALOR DE RADIACION: FUEGO DE PECHO",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 66,
+      "ancho": 500,
+      "alto": 260,
+      "tamano": 84,
+      "barra": false,
+      "color": "#e74c3c",
+      "fondo": "#141a2e",
+      "borde": "#253154"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 270,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "NUCLEO FOTONICO [CPU %]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#e74c3c",
+      "color": "#ffffff",
+      "fondo": "#1d2640"
+    },
+    {
+      "tipo": "texto",
+      "texto": "VENTILADORES DE ENFRIAMIENTO: {cpu_vent:.0f} RPM",
+      "x": 24,
+      "y": 320,
+      "tamano": 22,
+      "color": "#f39c12"
+    },
+    {
+      "tipo": "grafica",
+      "x": 550,
+      "y": 66,
+      "ancho": 820,
+      "alto": 280,
+      "etiqueta": "TRAYECTORIA DE IMPACTO // PUNOS FUERA (ROCKET PUNCH)",
+      "fuente": "gpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#f39c12",
+      "grosor": 3,
+      "fondo": "#141a2e",
+      "borde": "#253154"
+    },
+    {
+      "tipo": "texto",
+      "texto": "SISTEMAS DEL PLANEADOR PILDER",
+      "x": 1400,
+      "y": 66,
+      "tamano": 24,
+      "color": "#f1c40f"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 115,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "RAYOS FOTONICOS [GPU]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#f39c12",
+      "color": "#ffffff",
+      "fondo": "#1d2640"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 180,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "ACELERADOR PILDER [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#3498db",
+      "color": "#ffffff",
+      "fondo": "#1d2640"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 245,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "ALEACION Z BLINDAJE [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#95a5a6",
+      "color": "#ffffff",
+      "fondo": "#1d2640"
+    },
+    {
+      "tipo": "barra",
+      "x": 1400,
+      "y": 310,
+      "ancho": 420,
+      "alto": 26,
+      "etiqueta": "COMUNICACION BASE [RED]",
+      "fuente": "red_bajada_mb",
+      "color_relleno": "#2ecc71",
+      "color": "#ffffff",
+      "fondo": "#1d2640",
+      "max": 100
+    },
+    {
+      "tipo": "texto",
+      "texto": "KOJI KABUTO: «¡MAJIN GO! ¡ENERGIA FOTONICA A MAXIMA POTENCIA!» // RAM: {ram_usado_gb:.1f} GB",
+      "x": 24,
+      "y": 405,
+      "tamano": 22,
+      "color": "#e74c3c"
+    }
+  ]
+}

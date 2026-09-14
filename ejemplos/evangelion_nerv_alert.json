@@ -1,0 +1,107 @@
+{
+  "nombre": "Mecha - Evangelion EVA-01 NERV Terminal",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#090511",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "EMERGENCY // NERV CENTRAL DOGMA // TACTICAL ALERT LEVEL 4",
+      "x": 24,
+      "y": 14,
+      "tamano": 30,
+      "color": "#eb3b5a"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "TASA DE SINCRONIZACION PILOTO",
+      "fuente": "cpu_uso",
+      "sufijo": " %",
+      "x": 24,
+      "y": 64,
+      "ancho": 480,
+      "alto": 320,
+      "tamano": 88,
+      "barra": true,
+      "mostrar_porcentaje": true,
+      "color": "#26de81",
+      "color_relleno": "#26de81",
+      "fondo": "#150d26",
+      "borde": "#341d59"
+    },
+    {
+      "tipo": "texto",
+      "texto": "NUCLEO S2: {cpu_temp:.0f} C    PULSO: {cpu_mhz:.0f} MHz",
+      "x": 48,
+      "y": 400,
+      "tamano": 20,
+      "color": "#a55eea"
+    },
+    {
+      "tipo": "texto",
+      "texto": "TIEMPO RESTANTE BATERIA INTERNA",
+      "x": 534,
+      "y": 64,
+      "tamano": 22,
+      "color": "#fa8231"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M:%S",
+      "x": 530,
+      "y": 96,
+      "tamano": 94,
+      "color": "#fa8231"
+    },
+    {
+      "tipo": "barra",
+      "x": 534,
+      "y": 220,
+      "ancho": 500,
+      "alto": 34,
+      "etiqueta": "CARGA DE ENERGIA EXTERNA",
+      "fuente": "ram_uso",
+      "color_relleno": "#fa8231",
+      "color": "#f1f2f6",
+      "fondo": "#24133b"
+    },
+    {
+      "tipo": "texto",
+      "texto": "MEMORIA MAGI: {ram_usado_gb:.1f} / {ram_total_gb:.1f} GB\nESTADO: MODO BERSERK ACTIVADO",
+      "x": 534,
+      "y": 285,
+      "tamano": 22,
+      "color": "#8854d0"
+    },
+    {
+      "tipo": "grafica",
+      "x": 1070,
+      "y": 64,
+      "ancho": 820,
+      "alto": 150,
+      "etiqueta": "ARMONICOS DE CAMPO A.T. (CPU %)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#26de81",
+      "grosor": 3,
+      "fondo": "#150d26",
+      "borde": "#341d59"
+    },
+    {
+      "tipo": "grafica",
+      "x": 1070,
+      "y": 234,
+      "ancho": 820,
+      "alto": 150,
+      "etiqueta": "RESPUESTA MOTORA EVA-01 (GPU %)",
+      "fuente": "gpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#8854d0",
+      "grosor": 3,
+      "fondo": "#150d26",
+      "borde": "#341d59"
+    }
+  ]
+}

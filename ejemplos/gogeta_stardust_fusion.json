@@ -1,0 +1,122 @@
+{
+  "nombre": "Dragon Ball Super - Gogeta Stardust Breaker",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#070814",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "FUSION METAMOR SUPREMA // GOGETA SUPER SAIYAN BLUE",
+      "x": 24,
+      "y": 14,
+      "tamano": 28,
+      "color": "#00cec9"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "FUSION %H:%M:%S",
+      "x": 1540,
+      "y": 14,
+      "tamano": 34,
+      "color": "#e17055"
+    },
+    {
+      "tipo": "grafica",
+      "x": 24,
+      "y": 60,
+      "ancho": 920,
+      "alto": 180,
+      "etiqueta": "KI DIVINO DE GOKU: ENERGIA BLUE (CPU %)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#00cec9",
+      "grosor": 3,
+      "fondo": "#0e1329",
+      "borde": "#1b254d"
+    },
+    {
+      "tipo": "grafica",
+      "x": 976,
+      "y": 60,
+      "ancho": 920,
+      "alto": 180,
+      "etiqueta": "KI DEL ORGULLO DE VEGETA: ENERGIA GOD (GPU %)",
+      "fuente": "gpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#e17055",
+      "grosor": 3,
+      "fondo": "#0e1329",
+      "borde": "#1b254d"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "CASTIGADOR DE DIOSES [CPU]",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 255,
+      "ancho": 445,
+      "alto": 140,
+      "tamano": 52,
+      "barra": false,
+      "color": "#00cec9",
+      "fondo": "#0e1329",
+      "borde": "#1b254d"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "ROMPEDOR DE POLVO [GPU]",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 499,
+      "y": 255,
+      "ancho": 445,
+      "alto": 140,
+      "tamano": 52,
+      "barra": false,
+      "color": "#e17055",
+      "fondo": "#0e1329",
+      "borde": "#1b254d"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "DURACION DE LA FUSION [RAM]",
+      "fuente": "ram_uso",
+      "sufijo": " %",
+      "x": 974,
+      "y": 255,
+      "ancho": 445,
+      "alto": 140,
+      "tamano": 52,
+      "barra": false,
+      "color": "#0984e3",
+      "fondo": "#0e1329",
+      "borde": "#1b254d"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "BIG BANG KAMEHAMEHA [DISCO]",
+      "fuente": "disco_uso",
+      "sufijo": " %",
+      "x": 1449,
+      "y": 255,
+      "ancho": 445,
+      "alto": 140,
+      "tamano": 52,
+      "barra": false,
+      "color": "#ffeaa7",
+      "fondo": "#0e1329",
+      "borde": "#1b254d"
+    },
+    {
+      "tipo": "texto",
+      "texto": "«NO SOY NI GOKU NI VEGETA, ¡SOY EL ENCARGADO DE DERROTARTE!» // FRECUENCIA: {cpu_mhz:.0f} MHz",
+      "x": 24,
+      "y": 415,
+      "tamano": 20,
+      "color": "#00cec9"
+    }
+  ]
+}

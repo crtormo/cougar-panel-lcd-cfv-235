@@ -1,0 +1,118 @@
+{
+  "nombre": "Anime - Pokedex Pikachu 100.000V Scanner",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#120e06",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "POKEDEX NACIONAL #025 // PIKACHU [TIPO ELECTRICO]",
+      "x": 24,
+      "y": 16,
+      "tamano": 30,
+      "color": "#fed330"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M",
+      "x": 1650,
+      "y": 16,
+      "tamano": 40,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "VOLTAJE DE IMPACTRUENO",
+      "fuente": "cpu_temp",
+      "unidad": " C",
+      "x": 24,
+      "y": 70,
+      "ancho": 440,
+      "alto": 330,
+      "tamano": 76,
+      "barra": false,
+      "color": "#fed330",
+      "fondo": "#241c0a",
+      "borde": "#4a3915"
+    },
+    {
+      "tipo": "texto",
+      "texto": "CATEGORIA: POKEMON RATON\nALTURA: 0.4 m  PESO: 6.0 kg\nFRECUENCIA: {cpu_mhz:.0f} MHz\nVENTILADOR: {cpu_vent:.0f} RPM",
+      "x": 48,
+      "y": 220,
+      "tamano": 22,
+      "color": "#f7b731"
+    },
+    {
+      "tipo": "texto",
+      "texto": "MOVIMIENTOS Y POTENCIA DE COMBATE",
+      "x": 490,
+      "y": 70,
+      "tamano": 24,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "barra",
+      "x": 490,
+      "y": 120,
+      "ancho": 600,
+      "alto": 28,
+      "etiqueta": "ATAQUE 1: RAYO 100.000 VOLTIOS [CPU]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#fed330",
+      "color": "#ffffff",
+      "fondo": "#30260e"
+    },
+    {
+      "tipo": "barra",
+      "x": 490,
+      "y": 190,
+      "ancho": 600,
+      "alto": 28,
+      "etiqueta": "ATAQUE 2: COLA FERREA [GPU]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#eb3b5a",
+      "color": "#ffffff",
+      "fondo": "#30260e"
+    },
+    {
+      "tipo": "barra",
+      "x": 490,
+      "y": 260,
+      "ancho": 600,
+      "alto": 28,
+      "etiqueta": "ATAQUE 3: VOLTIO CRUEL [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#45aaf2",
+      "color": "#ffffff",
+      "fondo": "#30260e"
+    },
+    {
+      "tipo": "barra",
+      "x": 490,
+      "y": 330,
+      "ancho": 600,
+      "alto": 28,
+      "etiqueta": "ATAQUE 4: CHISPAZO [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#2bcbba",
+      "color": "#ffffff",
+      "fondo": "#30260e"
+    },
+    {
+      "tipo": "grafica",
+      "x": 1220,
+      "y": 70,
+      "ancho": 670,
+      "alto": 330,
+      "etiqueta": "DESCARGA DE VOLTIOS ELECTRICA CONTINUA (%)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#fed330",
+      "grosor": 3,
+      "fondo": "#241c0a",
+      "borde": "#4a3915"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "nombre": "Robot - Mega Man X Maverick Hunter Base",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#060a12",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "CAPCOM REPLOID OS // MAVERICK HUNTER UNIT 17 // CODE: X",
+      "x": 24,
+      "y": 14,
+      "tamano": 28,
+      "color": "#00d2d3"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "21XX.%m.%d - %H:%M",
+      "x": 1500,
+      "y": 14,
+      "tamano": 30,
+      "color": "#54a0ff"
+    },
+    {
+      "tipo": "texto",
+      "texto": "TANQUES DE ENERGIA SUB-TANK [ALTO RENDIMIENTO]",
+      "x": 24,
+      "y": 56,
+      "tamano": 22,
+      "color": "#1dd1a1"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 95,
+      "ancho": 680,
+      "alto": 24,
+      "etiqueta": "SUB-TANK 1: X-BUSTER [CPU %]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#00d2d3",
+      "color": "#f1f2f6",
+      "fondo": "#101d30"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 150,
+      "ancho": 680,
+      "alto": 24,
+      "etiqueta": "SUB-TANK 2: ARMOR CHIP [GPU %]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#54a0ff",
+      "color": "#f1f2f6",
+      "fondo": "#101d30"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 205,
+      "ancho": 680,
+      "alto": 24,
+      "etiqueta": "SUB-TANK 3: DASH THRUSTERS [RAM %]",
+      "fuente": "ram_uso",
+      "color_relleno": "#1dd1a1",
+      "color": "#f1f2f6",
+      "fondo": "#101d30"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 260,
+      "ancho": 680,
+      "alto": 24,
+      "etiqueta": "SUB-TANK 4: ZABER CODE [DISCO %]",
+      "fuente": "disco_uso",
+      "color_relleno": "#ff6b6b",
+      "color": "#f1f2f6",
+      "fondo": "#101d30"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 315,
+      "ancho": 680,
+      "alto": 24,
+      "etiqueta": "SUB-TANK 5: COMM LINK [RED]",
+      "fuente": "red_bajada_mb",
+      "color_relleno": "#feca57",
+      "color": "#f1f2f6",
+      "fondo": "#101d30",
+      "max": 100
+    },
+    {
+      "tipo": "grafica",
+      "x": 840,
+      "y": 70,
+      "ancho": 1050,
+      "alto": 280,
+      "etiqueta": "DIAGNOSTICO REPLOID // POTENCIA DE CARGA DEL X-BUSTER",
+      "fuente": "cpu_uso",
+      "puntos": 160,
+      "auto": true,
+      "color": "#00d2d3",
+      "grosor": 3,
+      "fondo": "#0d1526",
+      "borde": "#1e3054"
+    },
+    {
+      "tipo": "texto",
+      "texto": "DR. LIGHT: «X, EL FUTURO ESTA EN TUS MANOS» // NUCLEO: {cpu_temp:.0f} C // GPU: {gpu_temp:.0f} C // RAM: {ram_usado_gb:.1f} GB",
+      "x": 24,
+      "y": 395,
+      "tamano": 22,
+      "color": "#00d2d3"
+    }
+  ]
+}

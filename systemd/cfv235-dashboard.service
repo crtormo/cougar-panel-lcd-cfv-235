@@ -1,0 +1,44 @@
+[Unit]
+# Dashboard en vivo del panel COUGAR CFV235.
+#
+# Servicio de USUARIO (no de sistema): con la regla udev el panel lo puede abrir tu propio
+# usuario, asi que NO hace falta root. El kit original lo ponia como root y escribia el PNG
+# en /tmp/cougar-dashboard.png, una ruta predecible que cualquiera puede manipular.
+#
+# Instalar (sin sudo):
+#     mkdir -p ~/.config/systemd/user
+#     cp systemd/cfv235-dashboard.service ~/.config/systemd/user/
+#     systemctl --user daemon-reload
+#     systemctl --user enable --now cfv235-dashboard.service
+#
+# Ver el registro:
+#     journalctl --user -u cfv235-dashboard -f
+#
+# Para que siga funcionando con la sesion cerrada:
+#     sudo loginctl enable-linger $USER
+Description=Dashboard del panel COUGAR CFV235 (app cfv235)
+
+[Service]
+Type=simple
+WorkingDirectory=%h/cfv235-app
+Environment=PYTHONPATH=%h/cfv235-app
+Environment=PYTHONUNBUFFERED=1
+# Perfil del dashboard: completo | esencial | graficas | minimo | presentacion.
+# Tambien se puede afinar con CFV235_SECCIONES (por ejemplo "red=0,grafica=0").
+Environment=CFV235_PERFIL=completo
+# --periodo: segundos entre fotogramas. El bucle tambien manda telemetria para que el panel
+# no se apague por espera: medido, con displayInSleep=0 el panel se apaga igual en ~2 minutos
+# si no recibe trafico, asi que el flujo periodico NO es opcional.
+#
+# --esperar-panel 3600: si otro programa tiene el panel (la app de escritorio, el editor de
+# COUGAR), el dashboard ESPERA en vez de morir. Sin esto, con Restart=always systemd lo
+# reiniciaria cada pocos segundos en un bucle (le pasaba: status=4/NOPERMISSION).
+ExecStart=/usr/bin/python3 -m cfv235 dashboard --periodo 2 --esperar-panel 3600
+Restart=always
+RestartSec=10
+# El panel solo admite un programa a la vez: si arrancas el editor de COUGAR, para el
+# servicio (systemctl --user stop cfv235-dashboard).
+Nice=5
+
+[Install]
+WantedBy=default.target

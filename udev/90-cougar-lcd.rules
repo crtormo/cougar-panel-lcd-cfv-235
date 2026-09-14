@@ -1,0 +1,17 @@
+# Regla udev para el panel COUGAR CFV235 (VID 1d6b / PID 0126).
+#
+# Sin esto, /dev/hidrawN queda en root:root 0600 y hay que usar sudo para hablar con el
+# panel. Con la regla lo puede abrir el usuario de la sesion.
+#
+# Se aplica a CUALQUIER hidraw que sea ese dispositivo (el numero cambia al reconectar).
+#
+#   SUBSYSTEM=="hidraw"  solo los dispositivos hidraw, no otros nodos
+#   ATTRS{...}           atributos de la cadena de padres (para hidraw es lo correcto;
+#                        ATTR{} solo mira el nodo hoja y no veria el VID/PID del USB)
+#   MODE/GROUP           acceso por grupo: sirve tambien fuera de la sesion local
+#   TAG+="uaccess"       ademas, acceso para el usuario con la sesion abierta (systemd-logind)
+#
+# OJO: no uses MODE="0666" (lo que recomendaba un README antiguo del kit): da permiso de
+# escritura al panel a CUALQUIER usuario del sistema.
+
+SUBSYSTEM=="hidraw", KERNEL=="hidraw*", ATTRS{idVendor}=="1d6b", ATTRS{idProduct}=="0126", MODE="0660", GROUP="users", TAG+="uaccess"

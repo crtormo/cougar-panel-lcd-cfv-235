@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Panel COUGAR CFV235
+GenericName=Panel LCD del chasis
+Comment=Controla el panel LCD COUGAR CFV235: estado, imagenes, temas y dashboard
+Exec=cfv235-gtk
+Icon=cfv235
+Terminal=false
+Categories=Utility;
+Keywords=COUGAR;CFV235;LCD;panel;dashboard;temperatura;
+StartupNotify=true

@@ -1,0 +1,140 @@
+{
+  "nombre": "Dragon Ball Super - Goku Ultra Instinto Minimalista",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#05060b",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "GOKU ULTRA INSTINTO // DOCTRINA EGOISTA",
+      "x": 40,
+      "y": 24,
+      "tamano": 36,
+      "color": "#00d2d3"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M",
+      "x": 1540,
+      "y": 20,
+      "tamano": 54,
+      "color": "#f5f6fa"
+    },
+    {
+      "tipo": "texto",
+      "texto": "TEMPERATURA NUCLEO CPU",
+      "x": 40,
+      "y": 100,
+      "tamano": 24,
+      "color": "#7f8fa6"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{cpu_temp:.0f} °C",
+      "x": 40,
+      "y": 140,
+      "tamano": 110,
+      "color": "#f5f6fa"
+    },
+    {
+      "tipo": "barra",
+      "x": 40,
+      "y": 290,
+      "ancho": 480,
+      "alto": 24,
+      "etiqueta": "CARGA CPU",
+      "fuente": "cpu_uso",
+      "color_relleno": "#00d2d3",
+      "color": "#f5f6fa",
+      "fondo": "#151824"
+    },
+    {
+      "tipo": "texto",
+      "texto": "VELOCIDAD: {cpu_mhz:.0f} MHz",
+      "x": 40,
+      "y": 360,
+      "tamano": 24,
+      "color": "#718093"
+    },
+    {
+      "tipo": "texto",
+      "texto": "TEMPERATURA GRAFICA GPU",
+      "x": 680,
+      "y": 100,
+      "tamano": 24,
+      "color": "#7f8fa6"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{gpu_temp:.0f} °C",
+      "x": 680,
+      "y": 140,
+      "tamano": 110,
+      "color": "#00d2d3"
+    },
+    {
+      "tipo": "barra",
+      "x": 680,
+      "y": 290,
+      "ancho": 480,
+      "alto": 24,
+      "etiqueta": "USO GPU",
+      "fuente": "gpu_uso",
+      "color_relleno": "#54a0ff",
+      "color": "#f5f6fa",
+      "fondo": "#151824"
+    },
+    {
+      "tipo": "texto",
+      "texto": "VRAM: {gpu_vram_usado_gb:.1f} GB",
+      "x": 680,
+      "y": 360,
+      "tamano": 24,
+      "color": "#718093"
+    },
+    {
+      "tipo": "texto",
+      "texto": "MEMORIA RAM EN USO",
+      "x": 1320,
+      "y": 100,
+      "tamano": 24,
+      "color": "#7f8fa6"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{ram_uso:.0f} %",
+      "x": 1320,
+      "y": 140,
+      "tamano": 110,
+      "color": "#f5f6fa"
+    },
+    {
+      "tipo": "barra",
+      "x": 1320,
+      "y": 290,
+      "ancho": 480,
+      "alto": 24,
+      "etiqueta": "MEMORIA RAM",
+      "fuente": "ram_uso",
+      "color_relleno": "#c8d6e5",
+      "color": "#f5f6fa",
+      "fondo": "#151824"
+    },
+    {
+      "tipo": "texto",
+      "texto": "OCUPADA: {ram_usado_gb:.1f} / {ram_total_gb:.1f} GB",
+      "x": 1320,
+      "y": 360,
+      "tamano": 24,
+      "color": "#718093"
+    },
+    {
+      "tipo": "texto",
+      "texto": "ESTADO: CALMA ABSOLUTA // TIEMPO ENCENDIDO: {uptime_h:.1f} HORAS",
+      "x": 40,
+      "y": 415,
+      "tamano": 20,
+      "color": "#57606f"
+    }
+  ]
+}

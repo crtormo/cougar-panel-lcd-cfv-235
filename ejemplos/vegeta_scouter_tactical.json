@@ -1,0 +1,127 @@
+{
+  "nombre": "Dragon Ball Z - Scouter Saiyan Vegeta",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#04140a",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "SCOUTER MODELO VEGETA // ACQUISITION LOCK: SON GOKU",
+      "x": 24,
+      "y": 16,
+      "tamano": 28,
+      "color": "#2ed573"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "KI-TIME %H:%M",
+      "x": 1580,
+      "y": 16,
+      "tamano": 36,
+      "color": "#2ed573"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "NIVEL DE COMBATE SAIYAN (MHZ)",
+      "fuente": "cpu_mhz",
+      "unidad": "KI",
+      "x": 24,
+      "y": 66,
+      "ancho": 580,
+      "alto": 290,
+      "tamano": 96,
+      "barra": false,
+      "color": "#2ed573",
+      "fondo": "#072412",
+      "borde": "#135429"
+    },
+    {
+      "tipo": "texto",
+      "texto": "¡ES MAS DE 9000! NIVEL DE ENERGIA DESBORDADO\nCARGA CPU: {cpu_uso:.0f} %    CALOR: {cpu_temp:.0f} C",
+      "x": 44,
+      "y": 260,
+      "tamano": 22,
+      "color": "#7bed9f"
+    },
+    {
+      "tipo": "grafica",
+      "x": 630,
+      "y": 66,
+      "ancho": 660,
+      "alto": 290,
+      "etiqueta": "ESCANER DE EMISION DE ONDA DE KI (%)",
+      "fuente": "cpu_uso",
+      "puntos": 140,
+      "auto": true,
+      "color": "#2ed573",
+      "grosor": 3,
+      "fondo": "#072412",
+      "borde": "#135429"
+    },
+    {
+      "tipo": "texto",
+      "texto": "PARAMETROS DEL OBJETIVO",
+      "x": 1320,
+      "y": 66,
+      "tamano": 22,
+      "color": "#2ed573"
+    },
+    {
+      "tipo": "barra",
+      "x": 1320,
+      "y": 110,
+      "ancho": 480,
+      "alto": 24,
+      "etiqueta": "FINAL FLASH [GPU]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#f1c40f",
+      "color": "#f1f2f6",
+      "fondo": "#0c331a"
+    },
+    {
+      "tipo": "barra",
+      "x": 1320,
+      "y": 170,
+      "ancho": 480,
+      "alto": 24,
+      "etiqueta": "CAMARA DE GRAVEDAD [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#ff4757",
+      "color": "#f1f2f6",
+      "fondo": "#0c331a"
+    },
+    {
+      "tipo": "barra",
+      "x": 1320,
+      "y": 230,
+      "ancho": 480,
+      "alto": 24,
+      "etiqueta": "BASE ESPACIAL FRIEZA [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#2ed573",
+      "color": "#f1f2f6",
+      "fondo": "#0c331a"
+    },
+    {
+      "tipo": "barra",
+      "x": 1320,
+      "y": 290,
+      "ancho": 480,
+      "alto": 24,
+      "etiqueta": "TRANSFERENCIA SCOUTER [RED]",
+      "fuente": "red_bajada_mb",
+      "color_relleno": "#70a1ff",
+      "color": "#f1f2f6",
+      "fondo": "#0c331a",
+      "max": 80
+    },
+    {
+      "tipo": "texto",
+      "texto": "UBICACION: PLANETA NAMEK // DISCO USADO: {disco_usado_gb:.0f} GB // ENLACE RED: {red_bajada_mb:.2f} MB/s",
+      "x": 24,
+      "y": 395,
+      "tamano": 22,
+      "color": "#2ed573"
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "nombre": "Cyberpunk - Neo-Tokyo Night Drift",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#07060d",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "NEO-TOKYO // CYBERPUNK 2077 HUD // QUADRA TURBO-R",
+      "x": 24,
+      "y": 18,
+      "tamano": 28,
+      "color": "#00f0ff"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "VELOCIDAD DE RELOJ CPU",
+      "fuente": "cpu_mhz",
+      "unidad": "MHz",
+      "x": 24,
+      "y": 68,
+      "ancho": 520,
+      "alto": 320,
+      "tamano": 88,
+      "barra": true,
+      "mostrar_porcentaje": true,
+      "color": "#00f0ff",
+      "color_relleno": "#ff007f",
+      "fondo": "#120f24",
+      "borde": "#2c1c54"
+    },
+    {
+      "tipo": "texto",
+      "texto": "NITROSO DISCO {disco_uso:.0f} %    TEMP MOTOR {cpu_temp:.0f} C",
+      "x": 48,
+      "y": 405,
+      "tamano": 20,
+      "color": "#a55eea"
+    },
+    {
+      "tipo": "texto",
+      "texto": "ESTADO DE CIBERWARE Y OVERCLOCK",
+      "x": 580,
+      "y": 68,
+      "tamano": 24,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "barra",
+      "x": 580,
+      "y": 115,
+      "ancho": 680,
+      "alto": 28,
+      "etiqueta": "SOBRECARGA NEURONAL [CPU %]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#ff007f",
+      "color": "#ffffff",
+      "fondo": "#1d1433"
+    },
+    {
+      "tipo": "barra",
+      "x": 580,
+      "y": 185,
+      "ancho": 680,
+      "alto": 28,
+      "etiqueta": "PROCESADOR GRAFICO KEROSHI [GPU %]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#00f0ff",
+      "color": "#ffffff",
+      "fondo": "#1d1433"
+    },
+    {
+      "tipo": "barra",
+      "x": 580,
+      "y": 255,
+      "ancho": 680,
+      "alto": 28,
+      "etiqueta": "BUFFER DE MEMORIA RAM [RAM %]",
+      "fuente": "ram_uso",
+      "color_relleno": "#ffeaa7",
+      "color": "#ffffff",
+      "fondo": "#1d1433"
+    },
+    {
+      "tipo": "barra",
+      "x": 580,
+      "y": 325,
+      "ancho": 680,
+      "alto": 28,
+      "etiqueta": "ANCHO DE BANDA ICE [RED]",
+      "fuente": "red_bajada_mb",
+      "color_relleno": "#55efc4",
+      "color": "#ffffff",
+      "fondo": "#1d1433",
+      "max": 100
+    },
+    {
+      "tipo": "texto",
+      "texto": "HORA LOCAL DE LA CIUDAD",
+      "x": 1390,
+      "y": 68,
+      "tamano": 22,
+      "color": "#a55eea"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M",
+      "x": 1380,
+      "y": 100,
+      "tamano": 110,
+      "color": "#ff007f"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%A, %d DE %B",
+      "x": 1390,
+      "y": 240,
+      "tamano": 24,
+      "color": "#00f0ff"
+    },
+    {
+      "tipo": "texto",
+      "texto": "SUBIDA {red_subida_mb:.2f} MB/s\nBAJADA {red_bajada_mb:.2f} MB/s",
+      "x": 1390,
+      "y": 290,
+      "tamano": 24,
+      "color": "#f1f2f6"
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "nombre": "Dragon Ball Z - Arcade Fighter Goku vs Freezer",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#080811",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "DRAGON BALL Z // ARCADE BATTLE",
+      "x": 24,
+      "y": 14,
+      "tamano": 26,
+      "color": "#f1c40f"
+    },
+    {
+      "tipo": "texto",
+      "texto": "VS",
+      "x": 940,
+      "y": 44,
+      "tamano": 36,
+      "color": "#ff4757"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%M:%S",
+      "x": 915,
+      "y": 10,
+      "tamano": 32,
+      "color": "#ffffff"
+    },
+    {
+      "tipo": "texto",
+      "texto": "P1: GOKU SSJ [KI]",
+      "x": 24,
+      "y": 48,
+      "tamano": 22,
+      "color": "#2ed573"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 76,
+      "ancho": 780,
+      "alto": 32,
+      "etiqueta": "",
+      "fuente": "cpu_uso",
+      "color_relleno": "#2ed573",
+      "color": "#ffffff",
+      "fondo": "#1e272e"
+    },
+    {
+      "tipo": "texto",
+      "texto": "P2: FREEZER [POWER]",
+      "x": 1050,
+      "y": 48,
+      "tamano": 22,
+      "color": "#a55eea"
+    },
+    {
+      "tipo": "barra",
+      "x": 1050,
+      "y": 76,
+      "ancho": 780,
+      "alto": 32,
+      "etiqueta": "",
+      "fuente": "gpu_uso",
+      "color_relleno": "#a55eea",
+      "color": "#ffffff",
+      "fondo": "#1e272e"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "GOKU FIEBRE DE COMBATE",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 130,
+      "ancho": 440,
+      "alto": 180,
+      "tamano": 64,
+      "barra": false,
+      "color": "#ffa502",
+      "fondo": "#141424",
+      "borde": "#2f3542"
+    },
+    {
+      "tipo": "texto",
+      "texto": "frecuencia {cpu_mhz:.0f} MHz\nventilador {cpu_vent:.0f} rpm",
+      "x": 54,
+      "y": 235,
+      "tamano": 22,
+      "color": "#a4b0be"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "FREEZER TEMPERATURA CORE",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 1456,
+      "y": 130,
+      "ancho": 440,
+      "alto": 180,
+      "tamano": 64,
+      "barra": false,
+      "color": "#ff6b81",
+      "fondo": "#141424",
+      "borde": "#2f3542"
+    },
+    {
+      "tipo": "texto",
+      "texto": "vram {gpu_vram_usado_gb:.1f} GB\ngpu reloj {gpu_mhz:.0f} MHz",
+      "x": 1486,
+      "y": 235,
+      "tamano": 22,
+      "color": "#a4b0be"
+    },
+    {
+      "tipo": "grafica",
+      "x": 488,
+      "y": 130,
+      "ancho": 944,
+      "alto": 180,
+      "etiqueta": "HISTORIAL DE ONDA DE ENERGIA KI (%)",
+      "fuente": "cpu_uso",
+      "puntos": 100,
+      "auto": true,
+      "color": "#ffa502",
+      "grosor": 3,
+      "fondo": "#141424",
+      "borde": "#2f3542"
+    },
+    {
+      "tipo": "texto",
+      "texto": "SUPER KI GAUGE [RAM]: {ram_usado_gb:.1f} / {ram_total_gb:.1f} GB",
+      "x": 24,
+      "y": 335,
+      "tamano": 22,
+      "color": "#00d2d3"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 365,
+      "ancho": 1380,
+      "alto": 32,
+      "etiqueta": "",
+      "fuente": "ram_uso",
+      "color_relleno": "#00d2d3",
+      "color": "#ffffff",
+      "fondo": "#1e272e"
+    },
+    {
+      "tipo": "texto",
+      "texto": "GRAVEDAD DISCO {disco_uso:.0f} %\nENCENDIDO {uptime_h:.1f} h",
+      "x": 1510,
+      "y": 345,
+      "tamano": 20,
+      "color": "#747d8c"
+    }
+  ]
+}

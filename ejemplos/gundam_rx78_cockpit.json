@@ -1,0 +1,112 @@
+{
+  "nombre": "Mecha - Gundam RX-78-2 Cockpit HUD",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#070c14",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "EARTH FEDERATION SPACE FORCES // MOBILE SUIT RX-78-2",
+      "x": 24,
+      "y": 18,
+      "tamano": 28,
+      "color": "#3867d6"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "UC %H:%M:%S",
+      "x": 1560,
+      "y": 18,
+      "tamano": 36,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "grafica",
+      "x": 24,
+      "y": 70,
+      "ancho": 880,
+      "alto": 280,
+      "etiqueta": "TELEMETRIA DEL REACTOR NUCLEAR MINOVSKY [CPU]",
+      "fuente": "cpu_uso",
+      "puntos": 160,
+      "auto": true,
+      "color": "#eb3b5a",
+      "grosor": 3,
+      "fondo": "#101826",
+      "borde": "#1e2b45"
+    },
+    {
+      "tipo": "texto",
+      "texto": "TEMPERATURA NUCLEO: {cpu_temp:.0f} C    FRECUENCIA: {cpu_mhz:.0f} MHz    VENTILADOR: {cpu_vent:.0f} RPM",
+      "x": 24,
+      "y": 370,
+      "tamano": 20,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "texto",
+      "texto": "SUBSISTEMAS DE COMBATE Y ENERGIA",
+      "x": 940,
+      "y": 70,
+      "tamano": 24,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "barra",
+      "x": 940,
+      "y": 115,
+      "ancho": 780,
+      "alto": 26,
+      "etiqueta": "BEAM RIFLE POWER [GPU]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#4b7bec",
+      "color": "#f1f2f6",
+      "fondo": "#162033"
+    },
+    {
+      "tipo": "barra",
+      "x": 940,
+      "y": 180,
+      "ancho": 780,
+      "alto": 26,
+      "etiqueta": "COMPUTADORA EDUCATIVA [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#fed330",
+      "color": "#f1f2f6",
+      "fondo": "#162033"
+    },
+    {
+      "tipo": "barra",
+      "x": 940,
+      "y": 245,
+      "ancho": 780,
+      "alto": 26,
+      "etiqueta": "PROPULSORES APOGEE [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#eb3b5a",
+      "color": "#f1f2f6",
+      "fondo": "#162033"
+    },
+    {
+      "tipo": "barra",
+      "x": 940,
+      "y": 310,
+      "ancho": 780,
+      "alto": 26,
+      "etiqueta": "CANAL DE TELEMETRIA [RED]",
+      "fuente": "red_bajada_mb",
+      "color_relleno": "#20bf6b",
+      "color": "#f1f2f6",
+      "fondo": "#162033",
+      "max": 100
+    },
+    {
+      "tipo": "texto",
+      "texto": "GPU TEMP: {gpu_temp:.0f} C    VRAM: {gpu_vram_usado_gb:.1f} GB    RED: {red_bajada_mb:.2f} MB/s",
+      "x": 940,
+      "y": 370,
+      "tamano": 20,
+      "color": "#8a94a6"
+    }
+  ]
+}

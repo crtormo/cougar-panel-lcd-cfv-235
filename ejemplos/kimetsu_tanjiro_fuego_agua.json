@@ -1,0 +1,160 @@
+{
+  "nombre": "Anime - Demon Slayer Tanjiro Fuego y Agua",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0c070c",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "DEMON SLAYER // TANJIRO KAMADO // CUERPO DE CAZADORES DE DEMONIOS",
+      "x": 24,
+      "y": 14,
+      "tamano": 28,
+      "color": "#ffffff"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "KIMETSU %H:%M",
+      "x": 1580,
+      "y": 14,
+      "tamano": 34,
+      "color": "#ffffff"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RESPIRACION SOLAR // DANZA DEL DIOS DEL FUEGO",
+      "x": 24,
+      "y": 58,
+      "tamano": 24,
+      "color": "#ff3838"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "TEMPERATURA SOLAR [CPU]",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 95,
+      "ancho": 430,
+      "alto": 160,
+      "tamano": 64,
+      "barra": false,
+      "color": "#ff3838",
+      "fondo": "#220e12",
+      "borde": "#451922"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 270,
+      "ancho": 350,
+      "alto": 24,
+      "etiqueta": "PODER DEL FUEGO [CPU %]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#ff3838",
+      "color": "#ffffff",
+      "fondo": "#33151b"
+    },
+    {
+      "tipo": "grafica",
+      "x": 475,
+      "y": 95,
+      "ancho": 450,
+      "alto": 200,
+      "etiqueta": "ONDA DE CALOR HINOKAMI",
+      "fuente": "cpu_uso",
+      "puntos": 80,
+      "auto": true,
+      "color": "#ff3838",
+      "grosor": 3,
+      "fondo": "#220e12",
+      "borde": "#451922"
+    },
+    {
+      "tipo": "texto",
+      "texto": "CORTE DEL VALS SOLAR // VELOCIDAD: {cpu_mhz:.0f} MHz",
+      "x": 24,
+      "y": 315,
+      "tamano": 20,
+      "color": "#ff9f43"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RESPIRACION DEL AGUA // DECIMA POSTURA: DRAGON DEL CAMBIO",
+      "x": 980,
+      "y": 58,
+      "tamano": 24,
+      "color": "#17c0eb"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "FLUJO DE LA CORRIENTE [GPU]",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 980,
+      "y": 95,
+      "ancho": 430,
+      "alto": 160,
+      "tamano": 64,
+      "barra": false,
+      "color": "#17c0eb",
+      "fondo": "#0d1b26",
+      "borde": "#183852"
+    },
+    {
+      "tipo": "barra",
+      "x": 980,
+      "y": 270,
+      "ancho": 350,
+      "alto": 24,
+      "etiqueta": "PODER DEL AGUA [GPU %]",
+      "fuente": "gpu_uso",
+      "color_relleno": "#17c0eb",
+      "color": "#ffffff",
+      "fondo": "#152e42"
+    },
+    {
+      "tipo": "grafica",
+      "x": 1430,
+      "y": 95,
+      "ancho": 460,
+      "alto": 200,
+      "etiqueta": "MAREA CONSTANTE DEL AGUA",
+      "fuente": "gpu_uso",
+      "puntos": 80,
+      "auto": true,
+      "color": "#17c0eb",
+      "grosor": 3,
+      "fondo": "#0d1b26",
+      "borde": "#183852"
+    },
+    {
+      "tipo": "texto",
+      "texto": "TAJADA DE LA SUPERFICIE // VRAM: {gpu_vram_usado_gb:.1f} GB",
+      "x": 980,
+      "y": 315,
+      "tamano": 20,
+      "color": "#70a1ff"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 370,
+      "ancho": 1380,
+      "alto": 28,
+      "etiqueta": "CONCENTRACION TOTAL CONTINUA [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#2ed573",
+      "color": "#ffffff",
+      "fondo": "#18261e"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RAM: {ram_usado_gb:.1f} GB\nDISCO: {disco_usado_gb:.0f} GB",
+      "x": 1500,
+      "y": 355,
+      "tamano": 20,
+      "color": "#dcdde1"
+    }
+  ]
+}

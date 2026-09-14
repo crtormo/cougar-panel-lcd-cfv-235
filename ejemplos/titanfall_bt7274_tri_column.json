@@ -1,0 +1,137 @@
+{
+  "nombre": "Mecha - Titanfall BT-7274 Protocol 3",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0a100d",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "VANGUARD CLASS TITAN // BT-7274 // PROTOCOL 3: PROTECT THE PILOT",
+      "x": 24,
+      "y": 18,
+      "tamano": 30,
+      "color": "#20bf6b"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M:%S",
+      "x": 1640,
+      "y": 18,
+      "tamano": 36,
+      "color": "#f1f2f6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "PROTOCOLO 1: ENLACE PILOTO [CPU]",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 74,
+      "ancho": 590,
+      "alto": 180,
+      "tamano": 68,
+      "barra": false,
+      "color": "#20bf6b",
+      "fondo": "#122019",
+      "borde": "#234234"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 270,
+      "ancho": 500,
+      "alto": 24,
+      "etiqueta": "SINCRONIA NEURONAL (%)",
+      "fuente": "cpu_uso",
+      "color_relleno": "#20bf6b",
+      "color": "#f1f2f6",
+      "fondo": "#1b3026"
+    },
+    {
+      "tipo": "texto",
+      "texto": "frecuencia {cpu_mhz:.0f} MHz    ventilador {cpu_vent:.0f} rpm",
+      "x": 24,
+      "y": 320,
+      "tamano": 22,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "PROTOCOLO 2: NUCLEO DE RAFAGA [GPU]",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 644,
+      "y": 74,
+      "ancho": 590,
+      "alto": 180,
+      "tamano": 68,
+      "barra": false,
+      "color": "#fa8231",
+      "fondo": "#122019",
+      "borde": "#234234"
+    },
+    {
+      "tipo": "barra",
+      "x": 644,
+      "y": 270,
+      "ancho": 500,
+      "alto": 24,
+      "etiqueta": "CARGA DEL CANON DE RAFAGA (%)",
+      "fuente": "gpu_uso",
+      "color_relleno": "#fa8231",
+      "color": "#f1f2f6",
+      "fondo": "#1b3026"
+    },
+    {
+      "tipo": "texto",
+      "texto": "vram {gpu_vram_usado_gb:.1f} GB    reloj gpu {gpu_mhz:.0f} MHz",
+      "x": 644,
+      "y": 320,
+      "tamano": 22,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "PROTOCOLO 3: ESCUDO VORTEX [RAM]",
+      "fuente": "ram_uso",
+      "sufijo": " %",
+      "x": 1264,
+      "y": 74,
+      "ancho": 590,
+      "alto": 180,
+      "tamano": 68,
+      "barra": false,
+      "color": "#4b7bec",
+      "fondo": "#122019",
+      "borde": "#234234"
+    },
+    {
+      "tipo": "barra",
+      "x": 1264,
+      "y": 270,
+      "ancho": 500,
+      "alto": 24,
+      "etiqueta": "BLINDAJE DE CHASIS [DISCO]",
+      "fuente": "disco_uso",
+      "color_relleno": "#4b7bec",
+      "color": "#f1f2f6",
+      "fondo": "#1b3026"
+    },
+    {
+      "tipo": "texto",
+      "texto": "ram {ram_usado_gb:.1f}/{ram_total_gb:.1f} GB    disco {disco_usado_gb:.0f} GB",
+      "x": 1264,
+      "y": 320,
+      "tamano": 22,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "texto",
+      "texto": "SISTEMA VANGUARD OPERATIVO // CONFIANZA EN EL PILOTO: 100% // ENLACE NEURONAL ESTABLE",
+      "x": 24,
+      "y": 395,
+      "tamano": 22,
+      "color": "#20bf6b"
+    }
+  ]
+}

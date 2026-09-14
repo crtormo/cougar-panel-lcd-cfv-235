@@ -1,0 +1,17 @@
+# Dependencias de la app cfv235 (panel LCD COUGAR CFV235).
+#
+# Ojo: en Debian/Ubuntu lo normal NO es instalarlas con pip, sino con apt, porque PyGObject
+# necesita las bibliotecas del sistema:
+#
+#     sudo apt install python3-pil python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 \
+#                      gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav
+#
+# Este fichero es para entornos virtuales o para dejar constancia de las versiones.
+
+# Dibujo de temas, dashboard, patrones y fotogramas de video (imprescindible).
+# Hace falta >= 8.2 por ImageDraw.rounded_rectangle.
+Pillow>=8.2
+
+# App de escritorio (GTK4 + libadwaita) y lectura de video con GStreamer.
+# Opcional: el cliente, el CLI y el simulador funcionan sin ella.
+PyGObject>=3.42

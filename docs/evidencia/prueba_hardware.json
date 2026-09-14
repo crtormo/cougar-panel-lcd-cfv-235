@@ -1,0 +1,67 @@
+{
+  "antes": {
+    "OS": "Linux",
+    "version": {
+      "app": "V1.0.5",
+      "firmware": "V1.0.5",
+      "sdk": "V1.2.7",
+      "hardware": "V2.0"
+    },
+    "space": 81128,
+    "brightness": 0,
+    "degree": 270,
+    "sn": "BYZL2611WC01CM001018",
+    "osdState": 1,
+    "mode": 0,
+    "logo": 2,
+    "timeout": 60,
+    "bootFinish": 1,
+    "background": [
+      "panel_cfv235.png"
+    ],
+    "displayInSleep": 0,
+    "presetThemeId": 0,
+    "sleepClockId": 0
+  },
+  "despues": {
+    "OS": "Linux",
+    "version": {
+      "app": "V1.0.5",
+      "firmware": "V1.0.5",
+      "sdk": "V1.2.7",
+      "hardware": "V2.0"
+    },
+    "space": 81148,
+    "brightness": 0,
+    "degree": 270,
+    "sn": "BYZL2611WC01CM001018",
+    "osdState": 1,
+    "mode": 0,
+    "logo": 2,
+    "timeout": 60,
+    "bootFinish": 1,
+    "background": [
+      "prueba_canal.png"
+    ],
+    "displayInSleep": 0,
+    "presetThemeId": 0,
+    "sleepClockId": 0
+  },
+  "subida": {
+    "ok": true,
+    "motivo": "",
+    "nombre": "prueba_canal.png",
+    "capa": "osd",
+    "bytes": 10585,
+    "bloques": 11,
+    "espacio_antes_kb": 81128,
+    "transport": "<Respuesta 200 ack=14 39 B>",
+    "acuse_code": 200,
+    "acuse_llego": true,
+    "transported": "<Respuesta 200 ack=15 19 B>",
+    "ms_total": 108.87956619262695,
+    "avisos": []
+  },
+  "transport": "{\"state\":\"success\",\"blockMaxSize\":1024}",
+  "transported": "{\"state\":\"success\"}"
+}

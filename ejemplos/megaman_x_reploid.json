@@ -1,0 +1,184 @@
+{
+  "nombre": "Robot - Mega Man X Maverick Hunter",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#070c17",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "REPLOID // MEGA MAN X MAVERICK HUNTER",
+      "x": 24,
+      "y": 18,
+      "tamano": 34,
+      "color": "#00d2d3"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M",
+      "x": 1608,
+      "y": 18,
+      "tamano": 46,
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "X-BUSTER CHARGE",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#00d2d3",
+      "fondo": "#0f182e",
+      "borde": "#1c2f57"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "cpu_uso",
+      "color_relleno": "#00d2d3",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "carga {cpu_uso:.0f} %     {cpu_mhz:.0f} MHz",
+      "x": 24,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "CHIP ARMADURA",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 497,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#54a0ff",
+      "fondo": "#0f182e",
+      "borde": "#1c2f57"
+    },
+    {
+      "tipo": "barra",
+      "x": 497,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "gpu_uso",
+      "color_relleno": "#54a0ff",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "potencia {gpu_uso:.0f} %     {gpu_mhz:.0f} MHz",
+      "x": 497,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "SUB-TANQUE E",
+      "fuente": "ram_uso",
+      "sufijo": " %",
+      "x": 970,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#1dd1a1",
+      "fondo": "#0f182e",
+      "borde": "#1c2f57"
+    },
+    {
+      "tipo": "barra",
+      "x": 970,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "ram_uso",
+      "color_relleno": "#1dd1a1",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{ram_usado_gb:.1f} / {ram_total_gb:.1f} GB",
+      "x": 970,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "SISTEMA REPLOID",
+      "fuente": "disco_uso",
+      "sufijo": " %",
+      "x": 1443,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#ff6b6b",
+      "fondo": "#0f182e",
+      "borde": "#1c2f57"
+    },
+    {
+      "tipo": "barra",
+      "x": 1443,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "disco_uso",
+      "color_relleno": "#ff6b6b",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{disco_usado_gb:.0f} / {disco_total_gb:.0f} GB",
+      "x": 1443,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "grafica",
+      "x": 24,
+      "y": 316,
+      "ancho": 1080,
+      "alto": 96,
+      "etiqueta": "POTENCIA DE DISPARO DEL X-BUSTER (%)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#00d2d3",
+      "grosor": 3,
+      "fondo": "#0f182e",
+      "borde": "#1c2f57"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RED    bajada {red_bajada_mb:.2f} MB/s    subida {red_subida_mb:.2f} MB/s\nVENT   cpu {cpu_vent:.0f} rpm",
+      "x": 1152,
+      "y": 334,
+      "tamano": 22,
+      "color": "#e8edf5",
+      "ancho": 744
+    }
+  ]
+}

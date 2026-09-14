@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cfv235"
+version = "1.0.0"
+description = "Panel LCD COUGAR CFV235 desde Linux: estado, control, temas, dashboard en vivo y video"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+keywords = ["cougar", "cfv235", "lcd", "hidraw", "dashboard", "linux"]
+classifiers = [
+    "Environment :: X11 Applications :: GTK",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: POSIX :: Linux",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: System :: Hardware",
+]
+
+# Pillow es imprescindible: dibuja los temas, el dashboard y los fotogramas de video.
+# PyGObject solo hace falta para la app de escritorio y para leer video con GStreamer; el
+# cliente, el CLI y el simulador funcionan sin ella. GStreamer viene aparte (plugins del
+# sistema), no por pip.
+dependencies = ["Pillow>=8.2"]
+
+[project.optional-dependencies]
+gui = ["PyGObject>=3.42"]
+dev = ["pyflakes"]
+
+[project.scripts]
+cfv235 = "cfv235.cli:main"
+cfv235-gtk = "cfv235_gtk.app:main"
+
+[project.urls]
+Documentation = "https://github.com/"
+
+[tool.setuptools]
+packages = ["cfv235", "cfv235_gtk"]
+
+[tool.setuptools.package-data]
+cfv235_gtk = ["*.ui", "*.css"]

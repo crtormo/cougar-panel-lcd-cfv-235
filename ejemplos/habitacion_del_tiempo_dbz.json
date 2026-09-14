@@ -1,0 +1,110 @@
+{
+  "nombre": "Dragon Ball Z - Habitacion del Tiempo DBZ",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0c0d17",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "TEMPLO DE KAMI // HABITACION DEL TIEMPO // GRAVEDAD x10 // DIMENSION PARALELA",
+      "x": 24,
+      "y": 14,
+      "tamano": 28,
+      "color": "#f1c40f"
+    },
+    {
+      "tipo": "texto",
+      "texto": "TIEMPO TERRENAL vs TIEMPO DIMENSIONAL",
+      "x": 24,
+      "y": 60,
+      "tamano": 22,
+      "color": "#7f8fa6"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M:%S",
+      "x": 20,
+      "y": 90,
+      "tamano": 100,
+      "color": "#f1c40f"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "FECHA: %d / %m / %Y",
+      "x": 24,
+      "y": 210,
+      "tamano": 24,
+      "color": "#dcdde1"
+    },
+    {
+      "tipo": "texto",
+      "texto": "1 DIA EN LA TIERRA = 1 ANO DE ENTRENAMIENTO",
+      "x": 24,
+      "y": 250,
+      "tamano": 22,
+      "color": "#e67e22"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "RESISTENCIA TERMICA A LA GRAVEDAD",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 620,
+      "y": 60,
+      "ancho": 420,
+      "alto": 220,
+      "tamano": 74,
+      "barra": false,
+      "color": "#e67e22",
+      "fondo": "#15182a",
+      "borde": "#242a4a"
+    },
+    {
+      "tipo": "barra",
+      "x": 620,
+      "y": 295,
+      "ancho": 340,
+      "alto": 26,
+      "etiqueta": "GRAVEDAD x10 [CPU %]",
+      "fuente": "cpu_uso",
+      "color_relleno": "#e67e22",
+      "color": "#ffffff",
+      "fondo": "#1f243b"
+    },
+    {
+      "tipo": "grafica",
+      "x": 1080,
+      "y": 60,
+      "ancho": 810,
+      "alto": 260,
+      "etiqueta": "DISTORSION DEL ESPACIO-TIEMPO EN LA HABITACION (%)",
+      "fuente": "cpu_uso",
+      "puntos": 140,
+      "auto": true,
+      "color": "#f1c40f",
+      "grosor": 3,
+      "fondo": "#15182a",
+      "borde": "#242a4a"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 365,
+      "ancho": 1380,
+      "alto": 26,
+      "etiqueta": "NIVEL DE ZENKAI ACUMULADO [RAM]",
+      "fuente": "ram_uso",
+      "color_relleno": "#3498db",
+      "color": "#ffffff",
+      "fondo": "#1f243b"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RAM: {ram_usado_gb:.1f} GB    DISCO: {disco_usado_gb:.0f} GB",
+      "x": 1490,
+      "y": 355,
+      "tamano": 20,
+      "color": "#7f8fa6"
+    }
+  ]
+}

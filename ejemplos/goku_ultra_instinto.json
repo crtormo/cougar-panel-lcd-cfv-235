@@ -1,0 +1,184 @@
+{
+  "nombre": "Dragon Ball Super - Goku Ultra Instinto",
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#080912",
+  "widgets": [
+    {
+      "tipo": "texto",
+      "texto": "GOKU // ULTRA INSTINTO",
+      "x": 24,
+      "y": 18,
+      "tamano": 34,
+      "color": "#00d2d3"
+    },
+    {
+      "tipo": "reloj",
+      "formato": "%H:%M",
+      "x": 1608,
+      "y": 18,
+      "tamano": 46,
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "ESTADO MENTAL",
+      "fuente": "cpu_temp",
+      "sufijo": " C",
+      "x": 24,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#54a0ff",
+      "fondo": "#111322",
+      "borde": "#1f2440"
+    },
+    {
+      "tipo": "barra",
+      "x": 24,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "cpu_uso",
+      "color_relleno": "#54a0ff",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "enfoque {cpu_uso:.0f} %     {cpu_mhz:.0f} MHz",
+      "x": 24,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "REFLEJOS DIOS",
+      "fuente": "gpu_temp",
+      "sufijo": " C",
+      "x": 497,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#00d2d3",
+      "fondo": "#111322",
+      "borde": "#1f2440"
+    },
+    {
+      "tipo": "barra",
+      "x": 497,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "gpu_uso",
+      "color_relleno": "#00d2d3",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "esquiva {gpu_uso:.0f} %     {gpu_mhz:.0f} MHz",
+      "x": 497,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "AURA PLATEADA",
+      "fuente": "ram_uso",
+      "sufijo": " %",
+      "x": 970,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#c8d6e5",
+      "fondo": "#111322",
+      "borde": "#1f2440"
+    },
+    {
+      "tipo": "barra",
+      "x": 970,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "ram_uso",
+      "color_relleno": "#c8d6e5",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{ram_usado_gb:.1f} / {ram_total_gb:.1f} GB",
+      "x": 970,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "dato",
+      "etiqueta": "MEMORIA CELESTE",
+      "fuente": "disco_uso",
+      "sufijo": " %",
+      "x": 1443,
+      "y": 92,
+      "ancho": 453,
+      "alto": 144,
+      "tamano": 52,
+      "barra": false,
+      "color": "#48dbfb",
+      "fondo": "#111322",
+      "borde": "#1f2440"
+    },
+    {
+      "tipo": "barra",
+      "x": 1443,
+      "y": 252,
+      "ancho": 367,
+      "alto": 18,
+      "etiqueta": "",
+      "fuente": "disco_uso",
+      "color_relleno": "#48dbfb",
+      "color": "#e8edf5"
+    },
+    {
+      "tipo": "texto",
+      "texto": "{disco_usado_gb:.0f} / {disco_total_gb:.0f} GB",
+      "x": 1443,
+      "y": 282,
+      "tamano": 21,
+      "color": "#8a94a6"
+    },
+    {
+      "tipo": "grafica",
+      "x": 24,
+      "y": 316,
+      "ancho": 1080,
+      "alto": 96,
+      "etiqueta": "SINCRONIZACION DIVINA (%)",
+      "fuente": "cpu_uso",
+      "puntos": 120,
+      "auto": true,
+      "color": "#00d2d3",
+      "grosor": 3,
+      "fondo": "#111322",
+      "borde": "#1f2440"
+    },
+    {
+      "tipo": "texto",
+      "texto": "RED    bajada {red_bajada_mb:.2f} MB/s    subida {red_subida_mb:.2f} MB/s\nVENT   cpu {cpu_vent:.0f} rpm",
+      "x": 1152,
+      "y": 334,
+      "tamano": 22,
+      "color": "#e8edf5",
+      "ancho": 744
+    }
+  ]
+}
