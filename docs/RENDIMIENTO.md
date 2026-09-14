@@ -110,6 +110,23 @@ panel deja de responder. **No se paso de 20 MB por nada.**
 | **10,2 MB** | **el panel se atasca** | 12,2 s | 64,6 MB | **0** |
 | 15 MB, 19 MB | **no se enviaron**: la guarda paro al ver el atasco | - | - | - |
 
+### La evidencia del atasco (la causa raiz, en el propio panel)
+
+El caso real esta capturado en `referencia/kit-cfv-235/tramas_reales/respuesta_conn_1.bin` y
+`respuesta_conn_2.bin`: dos respuestas `conn` tomadas **mientras el panel estaba atascado**.
+
+```
+bootFinish = 0          <- dejo de atender ordenes
+space      = 40008 KB   <- ~39 MB, la MITAD de los ~80 MB de siempre
+background = ['g_40mb.jpg']   <- un JPEG de ~40 MB
+sn         = BYZL2611WC01CM001018
+osdState   = 1
+```
+
+Es la prueba de fuego: el panel **acepto** un fichero de ~40 MB, se quedo con ~40 MB y no volvio
+a servir. Explica tambien por que `recovery` tardaba entre 2 y 8 minutos (no reiniciaba: digeria
+ese fichero) y por que el limite real esta muy por debajo de los 20 MB que anuncia el fabricante.
+
 ### Lo que enseña
 
 1. **Entre 5 y 10 MB esta el limite.** A 10,2 MB el panel contesta `bootFinish=0` y deja de
