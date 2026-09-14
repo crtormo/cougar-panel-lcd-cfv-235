@@ -307,9 +307,16 @@ Consecuencias prácticas, que son las que importan:
 | **JPEG** | ✅ **medido**: 15 325 B, 16 bloques, acuse `200`, `background` → `["prueba.jpg"]` | ✅ **confirmado**: se subio un .jpg de 1024x240 y **se vio en pantalla** |
 | GIF | ✅ (según el kit) | ❌ pantalla blanca |
 
-El JPEG es una novedad frente al kit: **se acepta**. Queda por confirmar en pantalla si se
-dibuja; si el panel se queda en blanco, hay que volver a subir un PNG (esta app lo hace con un
-clic).
+El JPEG es una novedad frente al kit: **se acepta y se ve** (confirmado en pantalla).
+
+### El panel NO escala la imagen: la repite
+
+Confirmado en pantalla (2026-09-14, con el editor cerrado y `osdState: 0`): se subio un JPEG de
+**1024x240** con **cuatro cuadrantes numerados** y se vio **repetido 2x2**, con la ultima copia
+cortada. El panel **no escala**: dibuja la imagen a su tamano y repite lo que falta en mosaico.
+
+Es decir: **la imagen tiene que ser exactamente 1920x462**. Si no, hay que ajustarla antes de
+subirla (`video.ajustar_imagen`: ajustar con bandas, recortar o estirar; es lo que hace la app).
 
 ## 9. Cómo reproducir todo esto
 
