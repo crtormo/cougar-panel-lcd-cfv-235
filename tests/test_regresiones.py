@@ -338,7 +338,10 @@ class TestAjusteDeImagenAlPanel(unittest.TestCase):
 
     def test_el_ajuste_se_guarda_en_las_preferencias(self):
         from cfv235 import config
-        defectos = config.leer()
+        # OJO: se miran los DEFECTOS, no `leer()`, porque leer() mezcla el config que el
+        # usuario tenga guardado en el equipo (y puede haberlo cambiado). El defecto es lo
+        # que hay que proteger.
+        defectos = config.DEFECTOS
         self.assertIn("ajustar_imagen", defectos)
         self.assertIn("ajuste_imagen", defectos)
         self.assertTrue(defectos["ajustar_imagen"],

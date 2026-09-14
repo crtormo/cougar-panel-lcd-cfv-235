@@ -81,16 +81,16 @@ ETIQUETAS_PROPIEDADES = {
     "brightness": "brightness (brillo)",
     "degree": "degree (rotacion)",
     "osdState": "osdState (capa OSD encima)",
-    "background": "background (fondos subidos)",
+    "background": "background (ultimo medio adoptado)",
     "displayInSleep": "displayInSleep (mostrar en reposo)",
     "version": "version (app / firmware / sdk / hardware)",
     "sn": "sn (numero de serie)",
     "OS": "OS (sistema que reporta el panel)",
-    "mode": "mode",
-    "logo": "logo",
+    "mode": "mode (0-3, efecto sin determinar)",
+    "logo": "logo (pantalla de arranque)",
     "timeout": "timeout (apagado por inactividad)",
-    "presetThemeId": "presetThemeId",
-    "sleepClockId": "sleepClockId",
+    "presetThemeId": "presetThemeId (tema predefinido, no se controla por protocolo)",
+    "sleepClockId": "sleepClockId (reloj de reposo, no se controla por protocolo)",
 }
 
 UNIDADES_PROPIEDADES = {
@@ -142,8 +142,10 @@ FPS_MAXIMO_VIDEO = 5
 FPS_INICIAL_VIDEO = 4
 
 # Aviso del ritmo real: cada subida de un PNG de 1920x462 tarda unos 160 ms.
-AVISO_FPS_VIDEO = ("El panel sostiene ~3 fps: cada fotograma tarda entre 100 y 440 ms en "
-                   "subirse. Con mas fps solo se consigue saltarse fotogramas de la fuente.")
+AVISO_FPS_VIDEO = ("El panel refresca a 60 Hz, pero el envio por USB sostiene ~3 fps: cada "
+                   "fotograma tarda entre 100 y 440 ms en subirse. Con mas fps solo se salta "
+                   "fotogramas de la fuente. La reproduccion a 60 Hz solo la daria un modo "
+                   "interno del panel (ver docs/PENDIENTE_WINDOWS.md).")
 
 # Previsualizaciones: ANTES se escribian PNG con nombre fijo en /tmp (y dos renders
 # concurrentes se pisaban el fichero). Ahora viajan como bytes en memoria
