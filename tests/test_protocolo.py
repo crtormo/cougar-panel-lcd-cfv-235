@@ -18,7 +18,14 @@ sys.path.insert(0, RAIZ)
 
 from cfv235 import protocolo as p  # noqa: E402
 
-KIT = "/home/maximo/cfv235/cfv-235-linux"
+# Las tramas medidas viajan con el proyecto, en docs/evidencia/tramas_reales, asi que estas
+# pruebas dejan de depender de que exista el kit cfv-235 en la maquina. Si la evidencia no
+# estuviera, se sigue buscando el kit en su ruta de siempre y, si tampoco, se saltan.
+_CANDIDATOS = [os.path.join(RAIZ, "docs", "evidencia"),
+               "/home/maximo/cfv235/cfv-235-linux"]
+KIT = next((c for c in _CANDIDATOS
+            if os.path.isfile(os.path.join(c, "tramas_reales", "tramas_de_prueba.txt"))),
+           _CANDIDATOS[0])
 
 
 class TestFraming(unittest.TestCase):
