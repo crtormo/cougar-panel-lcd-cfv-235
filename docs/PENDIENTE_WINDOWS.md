@@ -72,6 +72,53 @@ El editor cambia de tema con un id que está en su `store.json`.
 - El `store.json` del editor (lista de temas y sus ids).
 - Los bytes del `transport` cuando cambias de tema con el editor.
 
+## La función de stream y los límites de medios (preguntas del dueño)
+
+Esto es lo que más importa a nivel de uso, y la clave es una: **el panel refresca a 60 Hz, pero
+nuestro "stream" va a ~3 fps**. Eso sugiere que el panel **reproduce medios internamente** (los
+guarda y los reproduce él a 60 Hz) y que lo nuestro es solo el *livestream* por USB, que va
+limitado por el transporte. Hay que confirmarlo desde el editor.
+
+### 6. ¿Por qué el stream va a 3-5 fps si el panel es 60 Hz?
+
+Sabido: nuestro método sube **un PNG entero por fotograma** y por eso no pasa de ~3 fps
+(`docs/RENDIMIENTO.md`). 60 Hz es el refresco de la pantalla, no del envío.
+
+**Qué capturar (esto lo resuelve todo):**
+- Cuando cargas un **vídeo (mp4) o un GIF** en el editor: ¿qué manda por HID? ¿un `transport`
+  con el fichero entero y luego un comando de "reproducir"? ¿o sigue mandando fotogramas?
+- El nombre del comando y su cuerpo (espiar con `cdp_*.js`). El editor tiene
+  `waterBlockScreen.mediaVideoCropAdd(...)` y `mediaImageAdd(...)`: capturar sus bytes de cable.
+- Si hay un comando tipo "play" / "mediaPlay" / "show", capturarlo.
+
+### 7. Tamaño máximo de vídeo que soporta
+
+Sabido: un **fichero** de ~40 MB atascó el panel (evidencia `g_40mb.jpg`); entre 5 y 10 MB es
+el límite seguro. El fabricante dice 20 MB.
+
+**Qué capturar:**
+- Qué límite muestra/impone el editor para vídeo (¿20 MB? ¿otro?). Probar un vídeo justo por
+  debajo y por encima, anotando el resultado.
+
+### 8. Qué tamaño de GIF o JPG acepta
+
+Sabido: PNG y JPEG se ven; el **GIF sale en blanco**. Un JPEG de 1024x240 se vio (repetido, por
+no ser 1920x462). El límite de tamaño de fichero es el mismo: 5-10 MB.
+
+**Qué capturar:**
+- Dimensiones máximas por formato (¿rechaza algo mayor que cierta resolución?).
+- Si el GIF tiene algún tamaño/duración en que **sí** se anime (hoy nos sale blanco).
+
+### 9. ¿Solo fondo, solo OSD, o ambos?
+
+Sabido: el panel compone **dos capas** — fondo (acumula) y OSD (superposición, reutiliza hueco).
+Nosotros subimos a una u otra con `capa`.
+
+**Qué capturar:**
+- En el editor, ¿el vídeo va a fondo, a OSD, o hay que elegir? ¿`mediaImageAdd` (imagen) es
+  fondo y `mediaVideoCropAdd` (vídeo) es OSD, o al revés?
+- Qué campos del cuerpo (`type`, `capa`, `screenRatio`...) deciden la capa.
+
 ## Cómo me lo pasas
 
 - Commits en el repo (como hiciste: un zip con `.git`), o los ficheros de captura.
