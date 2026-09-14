@@ -126,6 +126,13 @@ descriptor queda muerto, así que seguía diciendo "sin respuesta" aunque el pan
 vuelto. Es exactamente el caso que `cfv235.canal` resuelve con `reabrir()` y que la sonda todavía
 no hace. Las cifras de arriba sí valen, porque se leyeron con un proceso nuevo después.
 
+### El mosaico, confirmado en pantalla
+
+Con la capa OSD apagada (`osdState: 0`, después del Reset) se subió un JPEG de **1024×240** con
+cuatro cuadrantes numerados y **se ve repetido en cuadrícula 2×2, con la última copia cortada**.
+Confirma `HALLAZGOS.md` §3.2: el panel **no escala**, repite. La app hace lo correcto ajustando
+la imagen a 1920×462 antes de subir (`ajustar_imagen` en `cfv235/config.py`).
+
 ### Documentos que se han traído del banco de pruebas
 
 - `docs/INGENIERIA_INVERSA.md`, `docs/FUNCIONES_DEL_EDITOR.md`, `docs/API_DEL_EDITOR.md` y las
