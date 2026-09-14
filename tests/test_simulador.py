@@ -303,3 +303,48 @@ class TestSubida(BaseSimulador):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestReintento(BaseSimulador):
+    """El reintento unico de `Panel.subir_datos`.
+
+    Medido en el panel real (docs/VERIFICACION_INDEPENDIENTE.md): un JPEG fallo en el primer
+    intento —`transported` agoto los 8 s y el fondo no cambio— y entro a la segunda en 165 ms.
+    Un reintento con el mismo nombre y los mismos bytes convierte ese fallo esporadico en
+    invisible; lo que no puede mejorar (no cabe, no es una imagen, esta vacio) no se reintenta.
+    """
+
+    def test_reintenta_cuando_la_sesion_caduca(self):
+        """Con la sesion imposible, se intenta dos veces y el fallo se cuenta una sola vez."""
+        sim = self.levantar(caduca_ms=0)          # cualquier bloque llega tarde
+        with modulo_panel.Panel(dispositivo=sim.nombre, timeout=3.0) as panel:
+            panel.canal.autonegociar(timeout=2.0)
+            datos = png_de_prueba(os.path.join(PRUEBAS, "reintento.png"))
+            res = panel.subir_datos(datos, "reintento.png", capa="osd")
+            self.assertFalse(res.ok, "con la sesion caducada no puede aceptarse")
+            self.assertEqual(res.reintentos, 1, "tiene que haberlo intentado dos veces")
+            self.assertEqual(sim.panel.subidas_fallidas, 2,
+                             "el panel simulado tiene que contar las dos intentonas")
+            self.assertEqual(sim.panel.subidas_ok, 0)
+
+    def test_no_reintenta_lo_que_no_puede_mejorar(self):
+        """Un fichero que no es imagen se rechaza al momento, sin segunda intentona."""
+        sim = self.levantar()
+        with modulo_panel.Panel(dispositivo=sim.nombre, timeout=3.0) as panel:
+            panel.canal.autonegociar(timeout=2.0)
+            res = panel.subir_datos(b"esto no es un PNG", "basura.png", capa="osd")
+            self.assertFalse(res.ok)
+            self.assertEqual(res.reintentos, 0, "no se reintenta lo que nunca va a funcionar")
+            self.assertEqual(sim.panel.subidas_fallidas, 0,
+                             "ni siquiera deberia haber empezado la subida")
+
+    def test_un_solo_intento_si_se_pide_cero(self):
+        """`reintentos=0` deja el comportamiento de antes (una sola intentona)."""
+        sim = self.levantar(caduca_ms=0)
+        with modulo_panel.Panel(dispositivo=sim.nombre, timeout=3.0) as panel:
+            panel.canal.autonegociar(timeout=2.0)
+            datos = png_de_prueba(os.path.join(PRUEBAS, "sin-reintento.png"))
+            res = panel.subir_datos(datos, "sin-reintento.png", capa="osd", reintentos=0)
+            self.assertFalse(res.ok)
+            self.assertEqual(res.reintentos, 0)
+            self.assertEqual(sim.panel.subidas_fallidas, 1)

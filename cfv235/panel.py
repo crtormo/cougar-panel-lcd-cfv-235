@@ -33,6 +33,12 @@ from .canal import Canal, ErrorCanal, SinPanel, SinPermisos, Variante, info_disp
 # Margen de seguridad al comprobar el espacio: no llenar el panel hasta el ultimo KB.
 MARGEN_ESPACIO = 0.05
 
+# Fallos que no mejoran repitiendo: no se reintentan (ver `subir_datos`).
+MOTIVOS_SIN_REINTENTO = (
+    "no cabe", "el fichero", "demasiado grande", "nombre", "no puedo leer",
+    "no se pudo comprobar",
+)
+
 # Cuanto se espera el acuse de los bloques. cougarLCD.cpp espera hasta 10 s, pero el
 # acuse, cuando llega, llega en milisegundos; si no llega, se continua (hay firmwares
 # que no lo mandan) en vez de abortar una subida que puede ser correcta.
@@ -54,6 +60,7 @@ class ResultadoSubida:
     acuse_llego: bool = False
     transported: p.Respuesta | None = None
     ms_total: float = 0.0
+    reintentos: int = 0
     avisos: list[str] = field(default_factory=list)
 
     def resumen(self) -> str:
@@ -278,22 +285,38 @@ class Panel:
 
     def subir_datos(self, datos: bytes, nombre: str, capa: str = "fondo",
                     forzar: bool = False, esperar_acuse: bool = True,
-                    mensaje: int | None = None) -> ResultadoSubida:
+                    mensaje: int | None = None,
+                    reintentos: int = 1) -> ResultadoSubida:
         """Sube un PNG/JPEG/GIF. Devuelve un `ResultadoSubida`: **nunca lanza**.
 
         Toda la operacion (transporte, bloques, acuse y cierre) va bajo el candado del canal:
         el panel mantiene una sola sesion y no puede colarse otra peticion en medio.
+
+        `reintentos` (1 por defecto): la subida falla de vez en cuando sin motivo aparente.
+        Medido en el panel real: un JPEG que agoto los 8 s de `transported` sin cambiar el
+        fondo entro a la segunda intentona en 165 ms. Un unico reintento, con el mismo
+        nombre y los mismos bytes, convierte ese fallo esporadico en invisible. No se
+        reintenta lo que no puede mejorar (no cabe, fichero vacio, no es una imagen,
+        nombre invalido o no se puede leer): eso seria perder el tiempo dos veces.
         """
         t0 = time.time()
-        res = ResultadoSubida(nombre=nombre, capa=capa, bytes=len(datos))
-        try:
-            return self._subir_datos(res, datos, nombre, capa, forzar, esperar_acuse, mensaje)
-        except (ErrorCanal, OSError, ValueError, TypeError) as exc:
-            # El docstring promete no lanzar: cualquier fallo del panel o de los datos se
-            # cuenta como subida fallida, no como traza de Python.
-            res.motivo = res.motivo or f"{type(exc).__name__}: {exc}"
-            res.ms_total = (time.time() - t0) * 1000
-            return res
+        intentos = 0
+        while True:
+            res = ResultadoSubida(nombre=nombre, capa=capa, bytes=len(datos))
+            try:
+                self._subir_datos(res, datos, nombre, capa, forzar, esperar_acuse, mensaje)
+            except (ErrorCanal, OSError, ValueError, TypeError) as exc:
+                # El docstring promete no lanzar: cualquier fallo del panel o de los datos
+                # se cuenta como subida fallida, no como traza de Python.
+                res.motivo = res.motivo or f"{type(exc).__name__}: {exc}"
+            definitivo = (res.motivo or "").startswith(MOTIVOS_SIN_REINTENTO)
+            if res.ok or intentos >= max(0, reintentos) or definitivo:
+                res.reintentos = intentos
+                res.ms_total = (time.time() - t0) * 1000
+                if intentos:
+                    res.avisos.append(f"aceptada al reintento {intentos}")
+                return res
+            intentos += 1
 
     def _subir_datos(self, res: ResultadoSubida, datos: bytes, nombre: str, capa: str,
                      forzar: bool, esperar_acuse: bool,

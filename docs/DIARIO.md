@@ -139,9 +139,23 @@ la imagen a 1920×462 antes de subir (`ajustar_imagen` en `cfv235/config.py`).
   dos revisiones de otras implementaciones (`cougarLCD.cpp` y `poseidon-linux-display`).
 - `docs/LEEME.md`: índice de la documentación, diciendo qué contesta cada documento y de qué
   lado viene.
-- `herramientas/sonda-chequeos.js`: se le añade la orden `recovery`.
 
+### Reintento único en la subida
 
+La subida falla de vez en cuando sin motivo aparente: medido, un JPEG que agotó los 8 s de
+`transported` sin cambiar el fondo entró a la **segunda** intentona en 165 ms. `Panel.subir_datos`
+reintenta ahora **una vez**, con el mismo nombre y los mismos bytes, y lo cuenta en
+`ResultadoSubida.reintentos` (con un aviso si hizo falta). No se reintenta lo que no puede
+mejorar —no cabe, fichero vacío, no es una imagen, nombre inválido, no se puede leer—, porque
+eso sería perder el tiempo dos veces. `reintentos=0` deja el comportamiento de antes.
+
+Tres pruebas nuevas en `tests/test_simulador.py` (clase `TestReintento`): con la sesión siempre
+caducada se intenta dos veces, con un fichero que no es imagen se intenta una, y con
+`reintentos=0` también una. **Estas tres necesitan Linux** (el simulador va por PTY), así que en
+el banco de pruebas sólo se ha podido comprobar que el módulo compila y que la lista de motivos
+filtra como debe.
+
+### Correcciones aplicadas en esta sesión
 
 - `cfv235/simulador.py`: `realtimeDisplay` ya **no** cambia `osdState`, como el panel real. Lo
   que lo enciende es subir un medio a la capa OSD.
@@ -151,19 +165,17 @@ la imagen a 1920×462 antes de subir (`ajustar_imagen` en `cfv235/config.py`).
 - `docs/HALLAZGOS.md` §2 y `docs/CANAL.md` §6: `GET waterBlockScreen` queda marcado como **sin
   confirmar** (desde otro equipo dio 400 las dos veces, con GET y con POST).
 - `herramientas/sonda-chequeos.js`: se le añade la orden `recovery`, que manda el Reset y sondea
-  `conn` cada 10 s, diciendo cuánto tarda y si cambia el espacio, el fondo o `osdState`.
+  `conn` cada 10 s diciendo cuánto tarda y si cambia el espacio, el fondo o `osdState`, y ahora
+  **reabre el dispositivo** cuando el panel se reinicia (con el reinicio muere el descriptor, y
+  sin reabrir parecía que el panel no volvía).
 
 ---
 
 ## Pendiente
 
-- **`recovery`**: medido con `herramientas/sonda-chequeos.js recovery` (el resultado queda en la
-  entrada siguiente). Lo que hay que resolver es si borra los medios y cuánto tarda de verdad.
-- **La semántica de `displayInSleep` está en disputa**: el test del simulador dice que `1` es
-  "seguir mostrando en reposo" (o sea no dormir) y el kit mantiene lo contrario (que `1` es
-  permitir el apagado). Medido desde el otro equipo: ni con `0` ni con `1` se apagó en 4 minutos
-  sin tráfico, así que la prueba de las dos versiones no discrimina. Queda por hacer una prueba
-  larga (media hora) y, mejor, **mirando la pantalla**: apagado se ve, `brightness` no siempre
-  lo dice.
-- **Comprobar en pantalla** si el panel repite en mosaico las imágenes que no son 1920×462, como
-  dice `docs/HALLAZGOS.md`, o si las escala.
+- **La semántica de `displayInSleep` está en disputa**, y afecta a `no_dormir`: el test del
+  simulador dice que `1` es "seguir mostrando en reposo" (o sea, no dormir) y el kit mantiene lo
+  contrario (que `1` es permitir el apagado). Medido desde el banco de pruebas: ni con `0` ni
+  con `1` se apagó en 4 minutos sin tráfico, así que esa prueba no discrimina. Queda una prueba
+  larga (12-30 minutos) y, mejor, **mirando la pantalla**: apagado se ve, y `brightness` no
+  siempre lo dice.
