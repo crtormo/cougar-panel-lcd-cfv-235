@@ -103,26 +103,20 @@ function abrir() {
   return true;
 }
 
-function pedirConn(timeoutMs) {
+async function pedirConn(timeoutMs) {
   const { t, seq: s } = tramaConn();
   respuestas = [];
-  const desde = Date.now();
   const cuerpo = Buffer.concat([Buffer.from([0x00]), t,
     Buffer.alloc(1025 - 1 - t.length)]);
   try { hid.write([...cuerpo]); } catch (e) { return null; }
-  // esperar respuesta con AckNumber = s+1 o s
   const fin = Date.now() + timeoutMs;
+  // await, no spin: hay que ceder al event loop para que lleguen los eventos 'data'
   while (Date.now() < fin) {
-    for (const r of respuestas) {
-      if (r.ack === s + 1 || r.ack === s) return r;
-    }
-    const dormir = require('timers');
-    // espera corta sin bloquear el evento: se usa un bucle con at.obligatorio
-    const inicio = Date.now();
-    while (Date.now() - inicio < 5) { /* spin breve */ }
-    if (Date.now() >= fin) break;
+    const r = respuestas.find((x) => x.ack === s + 1 || x.ack === s);
+    if (r) return r;
+    await new Promise((res) => setTimeout(res, 10));
   }
-  return respuestas.find((r) => r.ack === s + 1 || r.ack === s) || null;
+  return respuestas.find((x) => x.ack === s + 1 || x.ack === s) || null;
 }
 
 // ------------------------------------------------------------------ bucle
@@ -139,7 +133,7 @@ const fin = t0 + MINUTOS * 60000;
       reaparecio = null;
       listo = null;
     } else {
-      const r = pedirConn(3000);
+      const r = await pedirConn(3000);
       if (r === null || r.code === null) {
         console.log(`t=${seg}s  presente, conn sin respuesta`);
       } else {
