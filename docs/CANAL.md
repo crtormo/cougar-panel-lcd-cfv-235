@@ -170,6 +170,7 @@ Medido hoy con el panel sano (`bootFinish: 1`):
 | `STATE waterBlockScreen` | 400 |
 | `POST config` | 400 |
 | `POST media` / `GET media` | 400 |
+| `POST mediaDelete` / `DELETE mediaDelete` (con `path`, `fileName`, `name` o `value`) | **silencio** (no responde) — el editor tiene `waterBlockScreen.mediaDelete(path)` pero el firmware no lo atiende |
 | `POST fanLCDSet {"value":50}` | 400 |
 | `GET sysinfoDisplay` | 400 |
 | `GET conn` / `DELETE conn` | 400 |
