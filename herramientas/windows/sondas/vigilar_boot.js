@@ -123,38 +123,40 @@ async function pedirConn(timeoutMs) {
 const t0 = Date.now();
 let reaparecio = null;
 let listo = null;
+let huboCorte = false;
 const fin = t0 + MINUTOS * 60000;
 
 (async () => {
   while (Date.now() < fin) {
     const seg = Math.round((Date.now() - t0) / 1000);
     if (!abrir()) {
-      console.log(`t=${seg}s  USB ausente`);
+      console.log(`t=${seg}s  USB ausente${huboCorte ? '' : '  (corte detectado)'}`);
+      huboCorte = true;
       reaparecio = null;
       listo = null;
     } else {
       const r = await pedirConn(3000);
       if (r === null || r.code === null) {
         console.log(`t=${seg}s  presente, conn sin respuesta`);
+      } else if (reaparecio === null) {
+        reaparecio = seg;
+        console.log(`t=${seg}s  USB reaparecido (conn responde code=${r.code}, bootFinish=${r.bootFinish})`);
       } else {
-        if (reaparecio === null) {
-          reaparecio = seg;
-          console.log(`t=${seg}s  USB reaparecido (conn responde code=${r.code}, bootFinish=${r.bootFinish})`);
-        } else {
-          console.log(`t=${seg}s  bootFinish=${r.bootFinish}`);
+        console.log(`t=${seg}s  bootFinish=${r.bootFinish}`);
+      }
+      // Solo se cierra la medida si hubo corte y el panel ya quedo listo.
+      if (r && r.bootFinish === 1 && huboCorte) {
+        listo = seg;
+        console.log(`\nLISTO: bootFinish=1 a los ${seg}s de empezar a vigilar`);
+        if (reaparecio !== null) {
+          console.log(`  (${seg - reaparecio}s desde que reaparecio el USB y respondio conn)`);
         }
-        if (r.bootFinish === 1 && listo === null) {
-          listo = seg;
-          console.log(`\nLISTO: bootFinish=1 a los ${seg}s de empezar a vigilar`);
-          if (reaparecio !== null) {
-            console.log(`  (${seg - reaparecio}s desde que reaparecio el USB y respondio conn)`);
-          }
-          break;
-        }
+        break;
       }
     }
     await new Promise((r) => setTimeout(r, INTERVALO));
   }
+  if (!huboCorte) console.log('no se detecto ningun corte durante la vigilancia');
   if (hid) hid.close();
   console.log('fin de la vigilancia');
 })();
