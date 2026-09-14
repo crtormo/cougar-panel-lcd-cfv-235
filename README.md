@@ -413,4 +413,4 @@ docs/CANAL.md    el canal medido: descriptor, variantes, acuses, comandos, estad
 - **No subas ficheros que no quepan**: la app lo comprueba, pero si fuerzas con `--forzar` y
   el panel se atasca (`bootFinish: 0`, `transport` → 400), el único desatascador conocido es
   **cortarle la alimentación de verdad** (~30 s); desenchufar el USB no basta.
-- `cfv235 recovery` **borra todos los medios** del panel.
+- `cfv235 recovery` **reinicia el panel y NO borra los medios** (medido dos veces: ver `docs/HALLAZGOS.md`). El unico desatascador de verdad sigue siendo cortar la alimentacion.
