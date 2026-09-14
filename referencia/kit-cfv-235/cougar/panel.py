@@ -278,8 +278,15 @@ class Panel:
         return self.peticion("recovery", {"enable": True}, timeout=8.0)
 
     def no_dormir(self, activo=True):
-        """`displayInSleep`. Medido: con False el panel sigue encendido sin ningun trafico
-        (mas de 6 minutos), asi que no hace falta bucle para mantener una imagen fija."""
+        """`displayInSleep`. OJO: no hace lo que parecia.
+
+        Se creyo medido que con este campo a 0 el panel aguantaba encendido mas de 6
+        minutos sin trafico. **Es falso**: aquella medida se tomo con el editor de COUGAR
+        abierto, y mientras hay una aplicacion usandolo el panel no se duerme. Cerrado el
+        editor, la pantalla se apago **~1 minuto** despues del ultimo trafico (el perfil
+        del panel trae `timeout: 60`). Lo que lo mantiene despierto es el TRAFICO; el
+        efecto real de este campo sigue sin determinar (ver PENDIENTE.md).
+        """
         return self.peticion("displayInSleep", {"enable": not activo}, timeout=6.0)
 
     def avisar_si_hay_osd(self):

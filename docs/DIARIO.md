@@ -164,6 +164,21 @@ minutos") y pone en duda el arreglo de `no_dormir` del commit `8b058ed3`, que ma
 1, otros doce minutos: si tampoco se apaga, `displayInSleep` no es lo que controla el apagado en
 este panel y habrá que buscar el mecanismo de verdad (¿el medio que está en pantalla? ¿`timeout`?).
 
+### El editor abierto invalidaba las pruebas de inactividad
+
+Detalle que llegó después y que hay que dejar por escrito: durante las pruebas de
+inactividad (la de 4 minutos y la de 12) **el editor de COUGAR estaba abierto** en el
+equipo del banco. Cerrado el editor, la pantalla del panel se apagó **~1 minuto** después
+del último tráfico, que coincide con el `timeout: 60` del perfil. Es decir:
+
+- lo que mantiene despierto al panel es **el tráfico** (o tener una aplicación usándolo);
+- `displayInSleep` no lo mantiene encendido, y su efecto real sigue sin determinar;
+- la frase de `docs/CANAL.md` §7.bis ("se apaga en menos de dos minutos") es la correcta, y
+  **el kit cfv-235 es el que se equivocaba** al prometer una imagen fija sin bucle;
+- y de paso, la lección de método: **una medición de inactividad con otro programa al
+  lado no vale**. Es la misma trampa que el `flock` resuelve al escribir, pero se cuela
+  por la puerta de atrás, porque el editor puede estar abierto sin escribir nada.
+
 ### Todo el material del banco de pruebas, en el repositorio
 
 - `referencia/kit-cfv-235/`: el kit completo (60 ficheros), como segunda implementación del

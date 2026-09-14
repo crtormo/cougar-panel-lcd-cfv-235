@@ -95,6 +95,12 @@ mire el registro creerá que el panel no volvió.
 
 ## Correcciones ya sabidas de la documentación de este kit
 
+- **El apagado por espera.** `cougar/panel.py` y `DESARROLLO.md` decían que con
+  `displayInSleep` a 0 el panel aguanta más de 6 minutos sin tráfico. **La medida era
+  falsa**: se tomó con el editor de COUGAR abierto, que mantiene el panel despierto. Con
+  el editor cerrado, la pantalla se apaga **~1 minuto** después del último tráfico (el
+  perfil trae `timeout: 60`). Una imagen fija necesita tráfico periódico, punto.
+
 - `realtimeDisplay` **no** cambia `osdState` (medido: `1 → 1` con `enable: true` y `false`).
   El kit decía lo contrario en `cougar/panel.py`, en `PROTOCOLO.md` y en el LEEME.
 - El valor de `len` en la respuesta de `conn` **no** es fijo: 371, 375, 377, 381 y 386 en el

@@ -46,10 +46,16 @@ otros clientes no tienen.
 5. **El espacio no baja de forma monótona.** Con la capa OSD pasó de 79 344 a **81 500 KB** al
    reescribir el hueco. La tendencia es la que dice el documento, pero conviene no usarlo como
    contador exacto.
-6. **El apagado por espera no se reprodujo.** Cuatro minutos sin tráfico con
-   `displayInSleep: 0` terminaron con `brightness: 100`, y también siguió encendido con
-   `displayInSleep: 1`. No contradice la conclusión práctica (hace falta flujo), pero sí la
-   frase "se apaga en menos de dos minutos".
+6. **El apagado por espera: la medición era INVÁLIDA, y después se vio la verdad.**
+   Cuatro minutos (y luego doce) sin tráfico con `displayInSleep: 0` terminaron con
+   `brightness: 100`, lo que parecía refutar la frase "se apaga en menos de dos minutos".
+   **Estaba mal medido**: durante esas pruebas el **editor de COUGAR estaba abierto** en el
+   equipo del banco, y mientras una aplicación usa el panel, el panel no se duerme.
+   Cerrado el editor, la pantalla se apagó **~1 minuto** después del último tráfico, que es
+   justo lo que dice el `timeout: 60` del perfil. O sea: `docs/CANAL.md` §7.bis tiene
+   razón y **el kit cfv-235 es el que se equivocaba** al prometer una imagen fija sin
+   bucle. Lección de método: una medición de inactividad con otro programa al lado no
+   vale, y el editor puede estar abierto sin escribir nada.
 7. **`recovery` sigue sin comprobarse**: su propio `README.md` se contradecía (lo negaba arriba
    y lo afirmaba en la última línea) y la prueba deja el panel sin responder entre 2 y 8
    minutos. Queda pendiente con el panel delante.

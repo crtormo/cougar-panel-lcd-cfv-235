@@ -112,10 +112,13 @@ protocolo medido, y el firmware tiene sus manías.
    que hay que usar para lo continuo (`bucle`, editor en vivo). Si hay capa OSD activa
    (`osdState: 1`, la deja el editor oficial al aplicar un tema) se dibuja **encima** de lo que
    subas: para dejarlo limpio, `panel.recovery()`.
-3. **El panel se apaga si no recibe nada** — salvo que se lo prohíbas con
-   `panel.no_dormir()` (`displayInSleep: 0`). Medido: sigue encendido con `brightness: 100`
-   más de 6 minutos sin tráfico. Es lo que permite dejar una imagen fija sin ningún bucle.
-   Con el valor por defecto la pantalla se apaga y el panel reporta `brightness: 0`.
+3. **El panel se apaga si no recibe nada, y eso no se puede desactivar con un campo.**
+   Durante un tiempo creímos lo contrario (que `displayInSleep: 0` lo mantenía encendido
+   más de 6 minutos), pero aquella medida se tomó **con el editor de COUGAR abierto**, y
+   mientras hay una aplicación usándolo el panel no se duerme. Cerrado el editor, la
+   pantalla se apaga **~1 minuto** después del último tráfico (el perfil del panel trae
+   `timeout: 60`). Consecuencia práctica: **una imagen fija necesita tráfico periódico**
+   o se apaga; lo que mantiene despierto al panel es el flujo, no `displayInSleep`.
 4. **Sólo un programa puede hablar con el panel a la vez.** Si tienes el editor de COUGAR
    abierto, ciérralo (y ojo: ese programa se ejecuta elevado, así que puede que haya que
    cerrarlo desde el administrador de tareas).
