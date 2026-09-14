@@ -19,8 +19,9 @@ case "${1:-}" in
     video)     conjunto="tests/test_video.py" ;;
     regresion) conjunto="tests/test_regresiones.py" ;;
     rendimiento) conjunto="tests/test_rendimiento.py" ;;
-    "")        conjunto="tests/test_protocolo.py tests/test_simulador.py tests/test_temas.py tests/test_video.py tests/test_regresiones.py tests/test_rendimiento.py" ;;
-    *) echo "no conozco '$1' (protocolo | simulador | temas | video | regresion | rendimiento)" >&2; exit 2 ;;
+    ejemplos) conjunto="tests/test_ejemplos.py" ;;
+    "")        conjunto="tests/test_protocolo.py tests/test_simulador.py tests/test_temas.py tests/test_video.py tests/test_regresiones.py tests/test_rendimiento.py tests/test_ejemplos.py" ;;
+    *) echo "no conozco '$1' (protocolo | simulador | temas | video | regresion | rendimiento | ejemplos)" >&2; exit 2 ;;
 esac
 
 FALLOS=0
