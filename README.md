@@ -235,10 +235,22 @@ para que no vuelvan. En total **92 pruebas**.
 | `cfv235 simular` | panel falso en `/dev/pts/N`, para trabajar sin hardware |
 | `cfv235 recovery --si` | Reset: reinicia el panel y borra los medios |
 
-La app de escritorio (`cfv235-gtk`) tiene cinco páginas: **Estado** (con avisos de brillo 0,
-`bootFinish` y capa OSD), **Imagen**, **Temas**, **Dashboard** y **Diagnóstico**. El
-instalador además la deja **en el menú de aplicaciones** como «Panel COUGAR CFV235», con su
-icono.
+La app de escritorio (`cfv235-gtk`) tiene **nueve páginas**:
+
+| Página | Para qué |
+|---|---|
+| **Estado** | el panel de un vistazo: avisos de brillo 0, `bootFinish` y capa OSD; **lo que está mostrando el panel** (vista previa); la ficha del dispositivo; las propiedades con el valor destacado; el control de brillo, rotación y «no dormir»; y **Mantenimiento** (recovery) |
+| **Imagen** | sube un PNG/JPEG/GIF. **Ajusta la imagen a 1920×462** antes de subirla (si no, el panel la repite en mosaico) y avisa de cuántas veces se repetiría |
+| **Temas** | los temas JSON que tengas en el disco |
+| **Patrones** | los seis patrones de calibración con su miniatura, para ver o subir |
+| **Editor** | escribe un tema JSON, **valida**, **previsualiza** y lo aplica; el dibujo se hace en memoria |
+| **Paletas** | seis paletas de color que se aplican **al dashboard** con un clic |
+| **Dashboard** | el dashboard en vivo: perfil, secciones, periodo y previsualización |
+| **Vídeo** | reproduce un GIF, una carpeta de imágenes o un vídeo |
+| **Diagnóstico** | descriptor HID, negociación de escritura y comando raw |
+
+El instalador además la deja **en el menú de aplicaciones** como «Panel COUGAR CFV235», con su
+icono, y como lanzador en el escritorio.
 
 ## Lo que este proyecto corrige del kit original
 
