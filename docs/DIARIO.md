@@ -95,14 +95,68 @@ Los ocho commits de esta jornada, tal como quedaron:
   y el procedimiento completo (`capturar_en_windows.md`). Es de donde salió el formato real del
   informe de bloque y los tiempos de 87 ms / 6 ms.
 
+### El Reset (`recovery`), medido
+
+Un `recovery {"enable":true}` contestó **200** y el panel dejó de responder a `conn`. Antes y
+después:
+
+| | Antes | Después |
+|---|---|---|
+| `space` | 81 080 KB | **80 036 KB** |
+| `background` | `panel_cfv235.png` | **`2026-09-13_02-53-10-086.png`** |
+| `osdState` | 1 | **0** |
+| `displayInSleep` | 1 | 0 |
+| `bootFinish` | 1 | 1 |
+
+Conclusiones, que zanjan la contradicción entre `HALLAZGOS.md` y el docstring de `panel.py`:
+
+1. **El Reset no borra ni deja el fondo igual: vuelve a poner el medio que el panel tenía
+   configurado antes.** Ese `2026-09-13_02-53-10-086.png` con marca de tiempo es del editor
+   oficial: es el fondo que había de antes, no el que habíamos subido. Por eso los dos
+   documentos tenían razón a medias: quien miraba el fondo justo después veía "lo mismo" (el
+   configurado) y quien esperaba verlo vacío, no.
+2. **Sí apaga la capa OSD**: `osdState` pasó de 1 a 0. Es la forma de dejar la pantalla limpia
+   cuando hay restos de una capa encima, y es la secuencia que el propio README describe
+   ("Reset y después subir").
+3. **El espacio baja** (~1 MB en este caso): no libera memoria.
+
+**Aviso de método.** La *duración* del reinicio **no quedó bien medida**: la sonda mantiene
+abierto el descriptor del dispositivo desde que arranca, y al reiniciarse el panel ese
+descriptor queda muerto, así que seguía diciendo "sin respuesta" aunque el panel ya hubiera
+vuelto. Es exactamente el caso que `cfv235.canal` resuelve con `reabrir()` y que la sonda todavía
+no hace. Las cifras de arriba sí valen, porque se leyeron con un proceso nuevo después.
+
+### Documentos que se han traído del banco de pruebas
+
+- `docs/INGENIERIA_INVERSA.md`, `docs/FUNCIONES_DEL_EDITOR.md`, `docs/API_DEL_EDITOR.md` y las
+  dos revisiones de otras implementaciones (`cougarLCD.cpp` y `poseidon-linux-display`).
+- `docs/LEEME.md`: índice de la documentación, diciendo qué contesta cada documento y de qué
+  lado viene.
+- `herramientas/sonda-chequeos.js`: se le añade la orden `recovery`.
+
+
+
+- `cfv235/simulador.py`: `realtimeDisplay` ya **no** cambia `osdState`, como el panel real. Lo
+  que lo enciende es subir un medio a la capa OSD.
+- `tests/test_simulador.py`: la prueba comprobaba lo contrario; actualizada con la medición.
+- `cfv235/panel.py`: el docstring de `recovery` decía que borra los medios, en contra de
+  `docs/HALLAZGOS.md`. Ahora dice lo medido y lo que sigue pendiente de comprobar.
+- `docs/HALLAZGOS.md` §2 y `docs/CANAL.md` §6: `GET waterBlockScreen` queda marcado como **sin
+  confirmar** (desde otro equipo dio 400 las dos veces, con GET y con POST).
+- `herramientas/sonda-chequeos.js`: se le añade la orden `recovery`, que manda el Reset y sondea
+  `conn` cada 10 s, diciendo cuánto tarda y si cambia el espacio, el fondo o `osdState`.
+
 ---
 
 ## Pendiente
 
-- **`recovery`**: los documentos del proyecto dicen que no borra los medios (medido dos veces) y
-  el docstring de `cfv235/panel.py` dice lo contrario. Falta comprobarlo con el panel delante y
-  unificar.
-- `cfv235/simulador.py`: que `realtimeDisplay` no toque `osdState`, como el panel real.
-- `docs/HALLAZGOS.md` §2 y `docs/CANAL.md` §6: `GET waterBlockScreen` da 400 en este panel.
-- Comprobar en pantalla el comportamiento con imágenes que no son 1920×462 (si el panel repite
-  en mosaico, como dice `docs/HALLAZGOS.md`, o si escala).
+- **`recovery`**: medido con `herramientas/sonda-chequeos.js recovery` (el resultado queda en la
+  entrada siguiente). Lo que hay que resolver es si borra los medios y cuánto tarda de verdad.
+- **La semántica de `displayInSleep` está en disputa**: el test del simulador dice que `1` es
+  "seguir mostrando en reposo" (o sea no dormir) y el kit mantiene lo contrario (que `1` es
+  permitir el apagado). Medido desde el otro equipo: ni con `0` ni con `1` se apagó en 4 minutos
+  sin tráfico, así que la prueba de las dos versiones no discrimina. Queda por hacer una prueba
+  larga (media hora) y, mejor, **mirando la pantalla**: apagado se ve, `brightness` no siempre
+  lo dice.
+- **Comprobar en pantalla** si el panel repite en mosaico las imágenes que no son 1920×462, como
+  dice `docs/HALLAZGOS.md`, o si las escala.
