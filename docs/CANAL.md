@@ -252,6 +252,27 @@ El kit lo menciona de pasada ("puede quedarse con brillo 0: si lo ves negro, mir
 `bootFinish: 1`. Es decir: el panel no estaba averiado, estaba a brillo cero. Esta app lo
 detecta y lo puede restaurar con `POST brightness {"value":100}`.
 
+### El modelo de las dos capas (fondo + OSD)
+
+El panel compone **dos capas**, y `conn` las refleja con dos campos distintos:
+
+- **fondo** (capa `fondo`): la imagen de abajo, fija. **Acumula** en memoria (~57 KB por
+  fotograma grande).
+- **OSD** (capa `osd`): la superposicion de **arriba** — el dashboard, la animacion, lo que
+  cambia. **Reutiliza su hueco** (~4 KB por fotograma), no acumula.
+
+Dos matices que importan, porque `background` y `osdState` no son la misma cosa:
+
+1. **`background` es "el ultimo medio adoptado", no "la imagen de fondo"**. Subir a OSD
+   tambien lo cambia (medido: de `["panel_cfv235.png"]` a `["prueba_canal.png"]`): es la
+   lista de medios, no la capa.
+2. **`osdState` es el flag de OSD activo**: 1 cuando hay una superposicion encima, 0 cuando no.
+   Solo `recovery` lo devuelve a 0; `realtimeDisplay` (200) no lo cambia.
+
+La intuicion del dueno — "OSD es una superposicion que mantiene el fondo" — es coherente con
+todo lo medido: dos capas separadas, con comportamiento de memoria distinto, y el OSD dibujado
+encima del fondo.
+
 ### `realtimeDisplay` y `osdState`
 
 `POST realtimeDisplay {"enable":false}` y `{"enable":true}` devuelven **200** y **no cambian
