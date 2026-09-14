@@ -124,7 +124,9 @@ class TestCanal(BaseSimulador):
 
             self.assertTrue(panel.power("resume").ok)
             self.assertTrue(panel.realtime(True).ok)
-            self.assertEqual(sim.panel.perfil["osdState"], 1)
+            # Medido en el panel real: `realtimeDisplay` responde 200 pero NO cambia
+            # `osdState`; lo que lo enciende es subir un medio a la capa OSD.
+            self.assertEqual(sim.panel.perfil["osdState"], 0)
 
     def test_ack_es_seq_mas_uno(self):
         sim = self.levantar()

@@ -139,7 +139,9 @@ class PanelFalso:
             self.perfil["displayInSleep"] = 1 if (datos or {}).get("enable") else 0
             self.respuesta(fd, seq, 200, None)
         elif cmd == "realtimeDisplay":
-            self.perfil["osdState"] = 1 if (datos or {}).get("enable") else 0
+            # Medido en el panel real (2026-09-14): responde 200 pero NO cambia
+            # `osdState`. Lo que lo enciende es subir un medio a la capa OSD, no este
+            # comando. El simulador imita al panel, asi que tampoco lo toca.
             self.respuesta(fd, seq, 200, None)
         elif cmd == "recovery":
             self.medios = self._medios_vacios()

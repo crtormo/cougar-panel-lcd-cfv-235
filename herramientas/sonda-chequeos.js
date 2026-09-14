@@ -111,6 +111,9 @@ hid.on('data', (d) => {
   }
 });
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+// Un reinicio del panel corta el USB: el error se avisa y se sigue, no se cae el proceso.
+hid.on('error', (e) => console.error('  !! error del dispositivo: '
+  + (e && e.message ? e.message : e)));
 
 function enviar(t) {
   // En Windows (hidapi) hay que anteponer el byte de report ID 0x00: el informe son 1025 B.
@@ -238,6 +241,52 @@ async function main() {
     console.log(`   displayInSleep = ${r.props ? r.props.displayInSleep : '?'}`);
     return 0;
   }
+  if (orden === 'recovery') {
+    // Mide lo que los documentos discuten: cuanto tarda, y si toca espacio, fondo u osdState.
+    const antes = await conn();
+    if (antes.props) {
+      console.log(`  antes : space=${antes.props.space} KB  osdState=${antes.props.osdState}  `
+        + `bootFinish=${antes.props.bootFinish}  background=${JSON.stringify(antes.props.background)}`);
+    }
+    const t0 = Date.now();
+    let respuesta = await pedir('recovery', { enable: true }, 'POST', 8000);
+    muestra('recovery', respuesta);
+    console.log(`  enviado a las ${new Date().toLocaleTimeString()}; `
+      + 'se sondea conn cada 10 s hasta 15 minutos...');
+    let volvio = false;
+    while (Date.now() - t0 < 15 * 60 * 1000) {
+      await dormir(10000);
+      const seg = Math.round((Date.now() - t0) / 1000);
+      let ahora = null;
+      try {
+        ahora = await conn();
+      } catch (e) { /* el dispositivo puede desaparecer un momento */ }
+      if (!ahora || !ahora.props) {
+        console.log(`  [${String(seg).padStart(4)} s] sin respuesta a conn`);
+        continue;
+      }
+      console.log(`  [${String(seg).padStart(4)} s] bootFinish=${ahora.props.bootFinish}  `
+        + `space=${ahora.props.space}  osdState=${ahora.props.osdState}  `
+        + `brightness=${ahora.props.brightness}  `
+        + `background=${JSON.stringify(ahora.props.background)}`);
+      if (ahora.props.bootFinish === 1) {
+        volvio = true;
+        console.log(`  VOLVIO a responder a los ${seg} s`);
+        const despues = ahora.props;
+        console.log(`  despues: space=${despues.space} KB  osdState=${despues.osdState}  `
+          + `background=${JSON.stringify(despues.background)}`);
+        if (antes.props) {
+          console.log(`  --- el espacio ${despues.space === antes.props.space ? 'NO cambio' : 'cambio'} `
+            + `(${antes.props.space} -> ${despues.space} KB)`);
+          console.log(`  --- el fondo ${JSON.stringify(despues.background) === JSON.stringify(antes.props.background) ? 'NO cambio' : 'cambio'}`);
+          console.log(`  --- osdState ${despues.osdState} (antes ${antes.props.osdState})`);
+        }
+        break;
+      }
+    }
+    if (!volvio) console.log('  se agoto el tiempo de espera sin volver a responder');
+    return 0;
+  }
   if (orden === 'realtime') {
     const enable = (resto[0] || 'off') !== 'off';
     const antes = (await conn()).props;
@@ -284,7 +333,8 @@ async function main() {
     return 0;
   }
   console.error('ordenes: conn | waterblock | power-restart | mode0..3 | mode-malo | nodormir | '
-    + 'dormir | realtime on|off | esperar <min> | upload <fich> [--osd] [--repeticiones N]');
+    + 'dormir | realtime on|off | recovery | esperar <min> | upload <fich> [--osd] '
+    + '[--repeticiones N]');
   return 2;
 }
 

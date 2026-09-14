@@ -191,10 +191,12 @@ class Panel:
         return self.canal.peticion("power", {"event": evento})
 
     def recovery(self) -> p.Respuesta:
-        """Reset: REINICIA el panel, borra los medios y deja osdState en 0.
+        """Reset: reinicia el panel.
 
-        El dispositivo desaparece del USB unos segundos; cualquier escritura inmediata
-        falla con "no puedo escribir", y eso es normal.
+        Medido dos veces (docs/HALLAZGOS.md 3.3): **NO borra los medios** y el panel
+        tarda entre ~2 y ~8 minutos en volver a contestar a `conn`. Mientras tanto
+        sigue en el USB: hay que esperar, no desconectarlo. Aqui falta comprobarlo con
+        el panel delante (ver docs/VERIFICACION_INDEPENDIENTE.md).
         """
         return self.canal.peticion("recovery", {"enable": True}, timeout=8.0)
 

@@ -164,7 +164,7 @@ Medido hoy con el panel sano (`bootFinish: 1`):
 | Petición | Resultado |
 |---|---|
 | `POST conn` (sin cuerpo) | **200** + propiedades (15 campos) |
-| **`GET waterBlockScreen`** | **200** + las mismas propiedades ← **el kit lo daba por inexistente** |
+| **`GET waterBlockScreen`** | **200** + las mismas propiedades ← **el kit lo daba por inexistente**. OJO: desde otro equipo (2026-09-14) dio **400**, sin confirmar (ver `docs/VERIFICACION_INDEPENDIENTE.md`) |
 | `GET waterBlockScreenId` | 400 |
 | `POST waterBlockScreen` | 400 |
 | `STATE waterBlockScreen` | 400 |
