@@ -35,6 +35,7 @@ Reglas de la casa (las mismas de `ventana.py`)
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import io
 import json
@@ -819,42 +820,23 @@ class _EditorTemas:
         return False
 
     def _elegir_fichero(self, *_):
-        dialogo = Gtk.FileDialog()
-        dialogo.set_title("Abrir un tema JSON")
-
+        # `Gtk.FileChooserNative` (no `Gtk.FileDialog`): es el que respeta GTK_USE_PORTAL y
+        # cae al dialogo propio de GTK cuando el portal del escritorio no puede usarse.
+        from .ventana import abrir_dialogo_fichero, filtro_todos
         filtro = Gtk.FileFilter()
         filtro.set_name("Temas JSON (*.json)")
         filtro.add_pattern("*.json")
-        filtro.add_mime_type("application/json")
-
-        todos = Gtk.FileFilter()
-        todos.set_name("Todos los ficheros")
-
-        almacen = Gio.ListStore.new(Gtk.FileFilter)
-        almacen.append(filtro)
-        almacen.append(todos)
-        dialogo.set_filters(almacen)
-        dialogo.set_default_filter(filtro)
-
-        # `Gtk.FileDialog` es asincrono: sin una referencia viva, Python lo destruye al
-        # salir de aqui y el dialogo no llega a verse nunca.
-        self._dialogo = dialogo
-        dialogo.open(self.ventana, None, self._fichero_elegido)
+        with contextlib.suppress(Exception):
+            filtro.add_mime_type("application/json")
+        with contextlib.suppress(Exception):
+            filtro.add_suffix("json")
+        abrir_dialogo_fichero(self.ventana, "Abrir un tema JSON", self._fichero_elegido,
+                              filtros=(filtro, filtro_todos()))
         return False
 
-    def _fichero_elegido(self, dialogo, resultado):
-        self._dialogo = None
-        try:
-            archivo = dialogo.open_finish(resultado)
-        except GLib.Error:
-            return                                # el usuario cancelo
-        except Exception:                         # noqa: BLE001
-            return
-        if archivo is None:
-            return
-        ruta = archivo.get_path()
+    def _fichero_elegido(self, ruta):
+        """Recibe la ruta elegida (o None si se cerro el dialogo)."""
         if not ruta:
-            _avisar_error(self.ventana, "Solo se pueden abrir ficheros locales.")
             return
         try:
             with open(ruta, encoding="utf-8") as fichero:

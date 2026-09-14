@@ -41,16 +41,50 @@ sleep 2
 systemctl --user reset-failed cfv235-gtk 2>/dev/null
 systemd-run --user --unit=cfv235-gtk --description="App CFV235" \
     "$HOME/.local/bin/cfv235-gtk" >/dev/null 2>&1
-sleep 11
-gdbus call --session --dest org.cfv235.Panel --object-path /org/cfv235/Panel \
-    --method org.gtk.Application.Activate '{}' >/dev/null 2>&1
-sleep 2
+# Se espera a que la app este EN EL BUS (senal de que ya arranco), en vez de un sleep fijo:
+# asi la captura sale ~1 s despues de que exista la ventana y no hay que adivinar el tiempo.
+for _intento in $(seq 1 60); do
+    if gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus \
+        --method org.freedesktop.DBus.NameHasOwner org.cfv235.Panel 2>/dev/null | grep -q true; then
+        break
+    fi
+    sleep 0.5
+done
 
-# captura con el portal (la primera vez GNOME pide permiso y lo recuerda)
-if ! "$PY" -B "$AQUI/capturar_pantalla.py" "$SALIDA" >/dev/null 2>&1; then
-    echo "!! no se pudo capturar (¿permiso del portal?)" >&2
-    exit 1
-fi
+# Se trae la app al frente y se captura 1 s despues. Si el usuario esta usando otra ventana,
+# la captura sale del navegador: se reintenta, comprobando antes que lo capturado PARECE la
+# app (fondo oscuro y uniforme en el centro, no una pagina web).
+capturar_ventana() {
+    gdbus call --session --dest org.cfv235.Panel --object-path /org/cfv235/Panel \
+        --method org.gtk.Application.Activate '{}' >/dev/null 2>&1
+    sleep 1                       # 1 s: lo justo para que se pinte, sin dar tiempo a perder el foco
+    "$PY" -B "$AQUI/capturar_pantalla.py" "$SALIDA" >/dev/null 2>&1 || return 1
+    "$PY" - "$SALIDA" <<'FIN'
+import sys
+from PIL import Image, ImageStat
+im = Image.open(sys.argv[1]).convert("RGB")
+w, h = im.size
+# el centro de la ventana de la app es fondo oscuro y con poco detalle
+centro = im.crop((int(w * 0.35), int(h * 0.25), int(w * 0.65), int(h * 0.55)))
+stat = ImageStat.Stat(centro)
+brillo = sum(stat.mean) / 3
+varianza = sum(stat.stddev) / 3
+sys.exit(0 if brillo < 90 and varianza < 45 else 1)
+FIN
+}
+
+for intento in 1 2 3 4; do
+    if capturar_ventana; then
+        echo "captura de '$PAGINA': $SALIDA (intento $intento)"
+        break
+    fi
+    echo "  .. la ventana no estaba al frente, reintento ($intento)" >&2
+    sleep 1
+    if [ "$intento" = 4 ]; then
+        echo "!! no consegui capturar la ventana (¿esta tapada?)" >&2
+        exit 1
+    fi
+done
 # recorta SOLO la ventana de la app (GNOME la centra; el sobrante es la decoracion)
 python3 - "$SALIDA" "$CFG" <<'FIN'
 import json, os, sys
@@ -73,4 +107,3 @@ caja = (x, y, min(pantalla_w, x + ancho + 36), min(pantalla_h, y + alto + 96))
 im.crop(caja).save(captura)
 print(f"recortada a la ventana: {caja[2]-caja[0]}x{caja[3]-caja[1]}")
 FIN
-echo "captura de '$PAGINA': $SALIDA"

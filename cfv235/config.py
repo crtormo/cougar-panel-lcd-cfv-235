@@ -40,10 +40,15 @@ DEFECTOS = {
     "periodo": 2,             # segundos entre fotogramas (1, 2 o 5)
     # --- imagen
     "capa": "fondo",          # "fondo" (acumula) u "osd" (reutiliza el hueco)
+    "ajustar_imagen": True,   # escalar a 1920x462 antes de subir (si no, el panel la repite)
+    "ajuste_imagen": "ajustar",  # "ajustar" (bandas) | "recortar" | "estirar"
     # --- video
-    "fps": 4,
+    "fps": 2,                 # medido: el panel sostiene ~3 fps (ver docs/RENDIMIENTO.md)
     "bucle": True,
     "ajuste": "ajustar",      # "ajustar" | "recortar" | "estirar"
+    # --- galeria de patrones
+    "patron_lado": 8,         # tamano del cuadro de la rejilla
+    "patron_etiquetas": False,  # numerar los cruces
     # --- carpetas recordadas
     "carpeta_imagen": "",
     "carpeta_video": "",

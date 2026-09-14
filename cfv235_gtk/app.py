@@ -17,32 +17,14 @@ import os
 import sys
 
 # ---------------------------------------------------------------------------------------
-# Dialogo de ficheros: el portal del escritorio solo funciona si la app se lanzo DESDE el
-# escritorio.
+# Dialogo de ficheros
 #
-# `Gtk.FileDialog` no dibuja el dialogo por si mismo: se lo pide al portal del escritorio
-# (`org.freedesktop.portal.FileChooser`). Para colocarlo como hijo de la ventana, el portal
-# necesita el *token* de activacion que el escritorio le pasa a la app al arrancarla
-# (`XDG_ACTIVATION_TOKEN`). Si la app se lanza desde una terminal, un servicio de systemd o
-# `systemd-run`, ese token no existe, el portal falla con:
-#
-#     xdg-desktop-portal-gnome: Failed to associate portal window with parent window ''
-#
-# y el dialogo NO APARECE: el boton parece no hacer nada, sin ningun error. Con
-# `GTK_USE_PORTAL=0` GTK usa su propio dialogo, que funciona siempre.
-#
-# Asi que: si hay token (lanzada desde el escritorio) se usa el portal, que es el dialogo
-# nativo e integrado; si no lo hay, el de GTK. Esto tiene que decidirse ANTES de que GTK se
-# inicialice, o sea, antes de `run()`.
+# Los dialogos de la app usan `Gtk.FileChooserDialog` (ver `abrir_dialogo_fichero` en
+# `ventana.py`), que GTK dibuja en el propio proceso. Ni `Gtk.FileDialog` ni
+# `Gtk.FileChooserNative` sirven: los dos acaban en el portal del escritorio, que necesita el
+# token de activacion de la app y, sin el, falla en silencio dejando el boton como si no
+# hiciera nada. `GTK_USE_PORTAL=0` tampoco lo evita en GTK 4.22 (probado).
 # ---------------------------------------------------------------------------------------
-# Se usa el dialogo **propio de GTK** por defecto. Es la opcion que funciona siempre: el
-# portal necesita el token de activacion, y sin el falla en silencio (el boton parece no hacer
-# nada, sin ningun error). Con `CFV235_DIALOGO_PORTAL=1` se usa el portal nativo de GNOME, que
-# es mas integrado (recientes, carpetas de la nube...) pero solo es fiable si la app se lanzo
-# desde el escritorio.
-if os.environ.get("CFV235_DIALOGO_PORTAL", "").strip().lower() not in (
-        "1", "si", "sí", "true", "yes", "on"):
-    os.environ["GTK_USE_PORTAL"] = "0"
 
 import gi  # noqa: E402
 
@@ -125,13 +107,6 @@ def main(argv=None):
             informe = argumentos[posicion + 1]
             del argumentos[posicion + 1]
         del argumentos[posicion]
-    # Deja constancia en el registro de que dialogo de ficheros se va a usar: cuando el
-    # portal falla, el boton no hace nada y sin esta linea no hay forma de saber por que.
-    if os.environ.get("GTK_USE_PORTAL") == "0":
-        print("dialogos de fichero: los propios de GTK (GTK_USE_PORTAL=0)", flush=True)
-    else:
-        print("dialogos de fichero: el portal del escritorio (necesita token de activacion)",
-              flush=True)
     aplicacion = Aplicacion(informe=informe)
     return aplicacion.run(argumentos)
 

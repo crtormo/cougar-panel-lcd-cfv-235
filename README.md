@@ -131,11 +131,11 @@ Escribe cada página con sus grupos, filas, textos y **estados** (`revelado=True
 Síntoma: se pulsa **Elegir imagen…**, **Elegir fichero…** o **Elegir carpeta…** y no se abre
 ningún diálogo, sin ningún error.
 
-La causa está en el diálogo de GTK4: no lo dibuja la app, se lo pide al **portal del
-escritorio** (`org.freedesktop.portal.FileChooser`). Para colocarlo como hijo de la ventana, el
-portal necesita el *token* de activación que el escritorio le pasa a la app al arrancarla
-(`XDG_ACTIVATION_TOKEN`). Si la app se lanzó desde una terminal, un servicio de systemd o
-`systemd-run`, ese token no existe, el portal falla en silencio —
+La causa está en cómo GTK4 dibuja los diálogos de fichero: **no los dibuja la app, se los pide
+al portal del escritorio** (`org.freedesktop.portal.FileChooser`). Para colocarlo como hijo de
+la ventana, el portal necesita el *token* de activación que el escritorio le pasa a la app al
+arrancarla (`XDG_ACTIVATION_TOKEN`). Si la app se lanzó desde una terminal, un servicio de
+systemd o `systemd-run`, ese token no existe, el portal falla en silencio —
 
 ```
 xdg-desktop-portal-gnome: Failed to associate portal window with parent window ''
@@ -143,17 +143,18 @@ xdg-desktop-portal-gnome: Failed to associate portal window with parent window '
 
 — y el botón parece muerto.
 
-La app **usa por defecto el diálogo propio de GTK** (poniendo `GTK_USE_PORTAL=0` antes de
-inicializar GTK), que funciona siempre. Si prefieres el diálogo nativo de GNOME (con
-*Recientes*, carpetas de la nube…), que es más integrado pero solo es fiable cuando la app se
-abre desde el escritorio:
+En GTK 4.22 **no hay forma de desactivar el portal** para las API nuevas: `Gtk.FileDialog` lo
+usa siempre, y `Gtk.FileChooserNative` también (probado: `GTK_USE_PORTAL=0` ya no lo evita).
+Por eso la app usa **`Gtk.FileChooserDialog`**, que GTK dibuja en el propio proceso y no pasa
+por ningún portal. Está marcado como obsoleto desde GTK 4.10, pero es el único que garantiza
+que el diálogo se vea.
 
-```bash
-CFV235_DIALOGO_PORTAL=1 cfv235-gtk
-```
+Los ficheros se filtran también por extensión, sufijo y formatos de GdkPixbuf, y el filtro por
+defecto es **Todos los ficheros**, para que nunca haya uno que no se pueda elegir: la app
+valida lo que se elija.
 
-Hay dos pruebas de regresión que vigilan esto (`tests/test_regresiones.py`), porque el fallo
-es silencioso y fácil de reintroducir.
+Hay dos pruebas de regresión que vigilan esto (`tests/test_regresiones.py`), porque el fallo es
+silencioso y fácil de reintroducir.
 
 ## Lo que corrigió la revisión de la app
 

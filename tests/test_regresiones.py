@@ -6,6 +6,7 @@ vuelva. No necesitan panel: usan el simulador en un PTY y objetos sueltos.
     python3 -B tests/test_regresiones.py
 """
 
+import contextlib
 import os
 import subprocess
 import sys
@@ -228,41 +229,120 @@ class TestPatrones(unittest.TestCase):
 class TestDialogoDeFicheros(unittest.TestCase):
     """El dialogo de ficheros tiene que VERSE.
 
-    `Gtk.FileDialog` le pide el dialogo al portal del escritorio, y el portal necesita el
-    token de activacion que solo existe si la app se lanzo desde el escritorio. Sin el, el
-    portal falla en silencio:
+    Ni `Gtk.FileDialog` ni `Gtk.FileChooserNative` valen en GTK 4.22: los dos acaban en el
+    portal del escritorio, que necesita el token de activacion de la app (solo existe si la
+    lanzo el escritorio). Sin el, el portal falla en silencio —
 
         xdg-desktop-portal-gnome: Failed to associate portal window with parent window ''
 
-    El boton parece no hacer nada, sin ningun error. La app usa el dialogo propio de GTK
-    poniendo `GTK_USE_PORTAL=0` antes de inicializar GTK.
+    — y el boton "Elegir imagen..." parece no hacer nada. `GTK_USE_PORTAL=0` **ya no lo
+    evita**. La app usa `Gtk.FileChooserDialog`, que GTK dibuja en el propio proceso.
     """
 
-    def _entorno_al_importar(self, **extra):
-        """Devuelve el GTK_USE_PORTAL que queda tras importar el punto de entrada."""
-        codigo = (
-            "import os, sys;"
-            f"sys.path.insert(0, {RAIZ!r});"
-            "os.environ.pop('XDG_ACTIVATION_TOKEN', None);"
-            "os.environ.pop('DESKTOP_STARTUP_ID', None);"
-            "os.environ.pop('GTK_USE_PORTAL', None);"
-            "import cfv235_gtk.app;"
-            "print(os.environ.get('GTK_USE_PORTAL'))"
-        )
-        entorno = dict(os.environ)
-        entorno.update(extra)
+    def test_el_dialogo_se_abre_visible(self):
+        """Abre el dialogo con una ventana de prueba y mira que exista y se vea."""
+        codigo = f"""
+import os, sys
+sys.path.insert(0, {RAIZ!r})
+os.environ["CFV235_PANEL"] = "/dev/pts/99"
+os.environ["CFV235_ID_APLICACION"] = "t.dialogo.prueba"
+import gi
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Adw, GLib, Gtk
+from cfv235_gtk import ventana as mv
+
+app = Adw.Application(application_id="t.dialogo.prueba")
+
+def activar(a):
+    v = Adw.ApplicationWindow(application=a)
+    v.present()
+    mv.abrir_dialogo_fichero(v, "Elegir imagen", lambda r: None)
+    d = v._dialogo_abierto
+    print("RESULTADO", type(d).__name__ if d is not None else "None",
+          bool(d is not None and d.get_visible()),
+          bool(d is not None and d.get_modal()))
+    a.quit()
+
+app.connect("activate", activar)
+import threading
+threading.Timer(20, lambda: GLib.idle_add(app.quit)).start()
+app.run([])
+"""
         salida = subprocess.run([sys.executable, "-B", "-c", codigo], capture_output=True,
-                                text=True, timeout=120, env=entorno)
-        return salida.stdout.strip(), salida.stderr
+                                text=True, timeout=120)
+        self.assertIn("RESULTADO", salida.stdout,
+                      f"no se construyo el dialogo: {salida.stderr[-400:]}")
+        linea = [l for l in salida.stdout.splitlines() if l.startswith("RESULTADO")][0]
+        self.assertIn("FileChooserDialog", linea,
+                      "debe ser Gtk.FileChooserDialog (el unico que no pasa por el portal)")
+        self.assertIn("True True", linea,
+                      "el dialogo se creo pero no se ve: es el fallo que reporto el usuario")
 
-    def test_por_defecto_usa_el_dialogo_de_gtk(self):
-        valor, errores = self._entorno_al_importar()
-        self.assertEqual(valor, "0",
-                         "sin GTK_USE_PORTAL=0 el dialogo del portal no se ve: " + errores[-300:])
+    def test_el_ayudante_no_usa_la_api_del_portal(self):
+        """Guardia contra volver a `Gtk.FileDialog`/`FileChooserNative` sin querer.
 
-    def test_con_la_variable_puesta_usa_el_portal(self):
-        valor, _ = self._entorno_al_importar(CFV235_DIALOGO_PORTAL="1")
-        self.assertNotEqual(valor, "0", "CFV235_DIALOGO_PORTAL=1 deberia dejar el portal")
+        Se miran las LLAMADAS del codigo (con `ast`), no el texto: el docstring los menciona a
+        proposito, para explicar por que no se usan.
+        """
+        import ast
+        fuente = open(os.path.join(RAIZ, "cfv235_gtk", "ventana.py"), encoding="utf-8").read()
+        arbol = ast.parse(fuente)
+        objetivo = None
+        for nodo in ast.walk(arbol):
+            if isinstance(nodo, ast.FunctionDef) and nodo.name == "abrir_dialogo_fichero":
+                objetivo = nodo
+                break
+        self.assertIsNotNone(objetivo, "no encuentro abrir_dialogo_fichero")
+        llamadas = set()
+        for sub in ast.walk(objetivo):
+            if isinstance(sub, ast.Call):
+                with contextlib.suppress(Exception):
+                    llamadas.add(ast.unparse(sub.func))
+        self.assertIn("Gtk.FileChooserDialog", llamadas)
+        self.assertNotIn("Gtk.FileDialog", llamadas)
+        self.assertNotIn("Gtk.FileChooserNative.new", llamadas)
+
+
+class TestAjusteDeImagenAlPanel(unittest.TestCase):
+    """Una imagen que no es 1920x462 tiene que escalarse antes de subirla.
+
+    El panel **no escala**: dibuja la imagen a su tamano y repite lo que falta en mosaico. Una
+    foto de 1024x240 en una pantalla de 1920x462 sale 4 veces (2x2) y con la ultima cortada.
+    """
+
+    def _imagen_de_prueba(self, ancho, alto):
+        from PIL import Image
+        os.makedirs(PRUEBAS, exist_ok=True)
+        ruta = os.path.join(PRUEBAS, "pequena-%dx%d.png" % (ancho, alto))
+        Image.new("RGB", (ancho, alto), (30, 90, 160)).save(ruta)
+        return ruta
+
+    def test_los_tres_modos_dan_el_tamano_del_panel(self):
+        from cfv235 import temas, video
+        from PIL import Image
+        ruta = self._imagen_de_prueba(1024, 240)
+        with Image.open(ruta) as original:
+            for modo in video.AJUSTES:
+                with self.subTest(modo=modo):
+                    ajustada = video.ajustar_imagen(original, modo)
+                    self.assertEqual(ajustada.size, (temas.ANCHO, temas.ALTO))
+
+    def test_una_imagen_del_tamano_exacto_no_se_toca(self):
+        from cfv235 import temas, video
+        from PIL import Image
+        ruta = self._imagen_de_prueba(temas.ANCHO, temas.ALTO)
+        with Image.open(ruta) as original:
+            ajustada = video.ajustar_imagen(original, "ajustar")
+            self.assertEqual(ajustada.size, (temas.ANCHO, temas.ALTO))
+
+    def test_el_ajuste_se_guarda_en_las_preferencias(self):
+        from cfv235 import config
+        defectos = config.leer()
+        self.assertIn("ajustar_imagen", defectos)
+        self.assertIn("ajuste_imagen", defectos)
+        self.assertTrue(defectos["ajustar_imagen"],
+                        "por defecto hay que ajustar: el panel no escala")
 
 
 if __name__ == "__main__":

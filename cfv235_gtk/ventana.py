@@ -53,6 +53,7 @@ except ImportError:                               # pragma: no cover
 
 from . import RAIZ_APP, cargar_dashboard, cargar_sensores, cargar_temas, carpetas_de_ejemplos
 from . import estilo
+from . import paginas_extra
 
 # --------------------------------------------------------------------------- constantes
 
@@ -159,7 +160,8 @@ LINEAS_REGISTRO_DIALOGO = 30
 GRADOS_ROTACION = [0, 90, 180, 270]
 
 # Paginas en el orden de Ctrl+1..Ctrl+6 (el mismo en el que se anaden a la pila).
-PAGINAS_ATAJOS = ["estado", "imagen", "temas", "dashboard", "video", "diagnostico"]
+PAGINAS_ATAJOS = ["estado", "imagen", "temas", "patrones", "editor", "paletas",
+                  "dashboard", "video", "diagnostico"]
 
 # Imagen elegida: validacion previa para no leer (ni subir) algo desproporcionado.
 # 65 MB es el limite duro del protocolo (MEDIA_MAX_BLOQUES con bloques de 1 KB lo dejan
@@ -964,6 +966,92 @@ def describir_ui(widget, nivel=0):
     return lineas
 
 
+
+# ------------------------------------------------------------------ dialogos de ficheros
+def filtro_imagenes():
+    """Filtro de imagenes: por MIME, por extension, por sufijo y por formatos de GdkPixbuf.
+
+    Con solo los MIME types el dialogo escondia ficheros validos (un .jpg normal no aparecia),
+    porque el tipo se adivina por el contenido y no siempre acierta.
+    """
+    filtro = Gtk.FileFilter()
+    filtro.set_name("Imagenes (PNG, JPEG, GIF)")
+    for tipo in ("image/png", "image/jpeg", "image/gif"):
+        filtro.add_mime_type(tipo)
+    for patron in ("*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif"):
+        filtro.add_pattern(patron)
+    with contextlib.suppress(Exception):
+        filtro.add_pixbuf_formats()
+    for sufijo in ("png", "jpg", "jpeg", "jpe", "jfif", "gif"):
+        with contextlib.suppress(Exception):
+            filtro.add_suffix(sufijo)
+    return filtro
+
+
+def filtro_todos():
+    """Filtro sin restricciones: se deja por defecto para que NUNCA haya un fichero oculto."""
+    filtro = Gtk.FileFilter()
+    filtro.set_name("Todos los ficheros")
+    return filtro
+
+
+def abrir_dialogo_fichero(ventana, titulo, al_elegir, carpeta="", filtros=(),
+                          accion=None, etiqueta_aceptar="Abrir"):
+    """Abre el selector de ficheros y llama a `al_elegir(ruta)` (None si se cancela).
+
+    Se usa **`Gtk.FileChooserDialog`**, que GTK dibuja en el propio proceso. Ni
+    `Gtk.FileDialog` ni `Gtk.FileChooserNative` sirven aqui:
+
+      * `Gtk.FileDialog` (la API nueva) manda SIEMPRE la peticion al portal del escritorio. Ese
+        portal necesita el token de activacion que solo existe si la app la lanzo el escritorio;
+        sin el falla con "Failed to associate portal window with parent window ''" y el dialogo
+        **no se ve**: el boton parece no hacer nada, sin ningun error.
+      * `Gtk.FileChooserNative` **tampoco** vale: en GTK 4.22 usa el portal de todas formas, y
+        `GTK_USE_PORTAL=0` ya no lo evita (probado: sigue apareciendo la peticion al portal y el
+        dialogo no se dibuja).
+      * `Gtk.FileChooserDialog` **no pasa por ningun portal**: es un dialogo de GTK de toda la
+        vida. Esta marcado como obsoleto desde 4.10, pero es el unico que garantiza que el
+        usuario vea algo, que es lo que importa.
+
+    La referencia se guarda en `ventana._dialogo_abierto` mientras esta abierto, para que
+    Python no lo recoja a mitad.
+    """
+    if accion is None:
+        accion = Gtk.FileChooserAction.OPEN
+    dialogo = Gtk.FileChooserDialog(title=titulo, transient_for=ventana, action=accion,
+                                    modal=True)
+    dialogo.add_button("Cancelar", Gtk.ResponseType.CANCEL)
+    dialogo.add_button(etiqueta_aceptar, Gtk.ResponseType.ACCEPT)
+    if carpeta and os.path.isdir(carpeta):
+        with contextlib.suppress(Exception):
+            dialogo.set_current_folder(Gio.File.new_for_path(carpeta))
+    for filtro in filtros:
+        with contextlib.suppress(Exception):
+            dialogo.add_filter(filtro)
+    if filtros:
+        with contextlib.suppress(Exception):
+            dialogo.set_filter(filtros[0])
+
+    def responder(dlg, respuesta):
+        ventana._dialogo_abierto = None
+        ruta = None
+        if respuesta == Gtk.ResponseType.ACCEPT:
+            with contextlib.suppress(Exception):
+                archivo = dlg.get_file()
+                if archivo is not None:
+                    ruta = archivo.get_path()
+        with contextlib.suppress(Exception):
+            dlg.destroy()
+        with contextlib.suppress(Exception):
+            al_elegir(ruta)
+
+    dialogo.connect("response", responder)
+    ventana._dialogo_abierto = dialogo         # la referencia que lo mantiene vivo
+    dialogo.present()
+    return dialogo
+
+
+
 class VentanaPrincipal(Adw.ApplicationWindow):
     """Ventana con las seis paginas: Estado, Imagen, Temas, Dashboard, Video y Diagnostico."""
 
@@ -1131,6 +1219,15 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         self._pagina_estado()
         self._pagina_imagen()
         self._pagina_temas()
+        # Las tres paginas de paginas_extra: galeria de patrones, editor de temas y paletas.
+        # Van aqui, entre Temas y Dashboard, para que el orden de las pestanas sea el del
+        # trabajo: mirar, crear y aplicar.
+        self._anadir_pagina(paginas_extra.pagina_patrones(self), "patrones", "Patrones",
+                            "view-grid-symbolic")
+        self._anadir_pagina(paginas_extra.pagina_temas(self), "editor", "Editor",
+                            "document-edit-symbolic")
+        self._anadir_pagina(paginas_extra.pagina_paletas(self), "paletas", "Paletas",
+                            "preferences-color-symbolic")
         self._pagina_dashboard()
         self._pagina_video()
         self._pagina_diagnostico()
@@ -1222,7 +1319,7 @@ class VentanaPrincipal(Adw.ApplicationWindow):
             self._parar_reproduccion_video()
 
     def _ir_a_pagina(self, _accion, parametro):
-        """Ctrl+1..Ctrl+6: cambia de pagina."""
+        """Ctrl+1..Ctrl+9: cambia de pagina."""
         indice = parametro.get_int32() if parametro is not None else -1
         if 0 <= indice < len(PAGINAS_ATAJOS):
             self.pila.set_visible_child_name(PAGINAS_ATAJOS[indice])
@@ -1961,13 +2058,20 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         # Nada enviado todavia: se dibuja el dashboard con los sensores de ahora mismo, que
         # es lo mas parecido a "lo que se veria" y no depende de que el panel conteste.
         try:
-            modulo = cargar_dashboard()
-            sensores = cargar_sensores()()
+            # OJO: los cargadores devuelven (modulo, error). Antes se usaba la tupla como si
+            # fuera el modulo, asi que esto fallaba siempre y la vista previa se quedaba en el
+            # mensaje de reserva sin ensenar nunca el dashboard.
+            modulo, _error = cargar_dashboard()
+            clase_sensores, _error2 = cargar_sensores()
+            modulo_temas, _error3 = cargar_temas()
+            if modulo is None or clase_sensores is None or modulo_temas is None:
+                raise RuntimeError("faltan modulos para dibujar el dashboard")
+            sensores = clase_sensores()
             sensores.muestra()
             time.sleep(0.2)
             valores = sensores.muestra()
             tema = modulo.tema_dashboard(valores=valores)
-            datos = modulo.temas.renderizar_datos(tema, valores)
+            datos = modulo_temas.renderizar_datos(tema, valores)
             poner_imagen(self.vista_previa_panel, datos)
             self.pie_vista.set_text(
                 "Aun no se ha enviado nada al panel: asi quedaria el dashboard ahora mismo.")
@@ -2138,6 +2242,29 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         self.fila_fichero.add_suffix(boton_elegir)
         grupo.add(self.fila_fichero)
 
+        # El panel NO escala lo que le mandas: dibuja la imagen a su tamano y REPITE lo que
+        # falta (mosaico). Una foto de 1024x240 en una pantalla de 1920x462 sale dos veces y
+        # con la segunda cortada, que es justo lo que le paso a la primera prueba.
+        self.interruptor_ajustar = Adw.SwitchRow(
+            title="Ajustar al tamano del panel",
+            subtitle="El panel no escala: si la imagen no es 1920x462, la repite.")
+        self.interruptor_ajustar.set_icon_name("transform-scale-symbolic")
+        self.interruptor_ajustar.set_active(bool(self._config.get("ajustar_imagen", True)))
+        self.interruptor_ajustar.connect("notify::active", self._cambiar_ajustar_imagen)
+        grupo.add(self.interruptor_ajustar)
+
+        self.combo_ajuste_imagen = Adw.ComboRow(
+            title="Como ajustarla",
+            subtitle="ajustar: entera con bandas - recortar: llena y recorta - estirar: deforma",
+            model=Gtk.StringList.new(["ajustar", "recortar", "estirar"]))
+        self.combo_ajuste_imagen.set_icon_name("object-flip-horizontal-symbolic")
+        ajuste_guardado = self._config.get("ajuste_imagen") or "ajustar"
+        indices = {"ajustar": 0, "recortar": 1, "estirar": 2}
+        self.combo_ajuste_imagen.set_selected(indices.get(ajuste_guardado, 0))
+        self.combo_ajuste_imagen.connect("notify::selected", self._cambiar_ajuste_imagen)
+        grupo.add(self.combo_ajuste_imagen)
+
+        self.combo_ajuste_imagen.set_visible(self.interruptor_ajustar.get_active())
         self.combo_capa = Adw.ComboRow(
             title="Capa de destino",
             subtitle="El fondo acumula ficheros y gasta espacio; la capa OSD reutiliza "
@@ -2234,59 +2361,100 @@ class VentanaPrincipal(Adw.ApplicationWindow):
             self.boton_subir.set_tooltip_text("Elige antes una imagen.")
 
     def _elegir_imagen(self, *_):
-        dialogo = Gtk.FileDialog()
-        dialogo.set_title("Elegir imagen para el panel")
-        # Se recuerda la ultima carpeta usada.
-        carpeta = self._config.get("carpeta_imagen")
-        if carpeta and os.path.isdir(carpeta):
-            with contextlib.suppress(Exception):
-                dialogo.set_initial_folder(Gio.File.new_for_path(carpeta))
-
-        filtro = Gtk.FileFilter()
-        filtro.set_name("Imagenes (PNG, JPEG, GIF)")
-        # Por MIME type Y por extension, y ademas todos los formatos que GdkPixbuf sabe leer:
-        # con solo los MIME types, el dialogo escondia ficheros validos (un .jpg normal no
-        # aparecia) porque el tipo se adivina por el contenido y no siempre acierta.
-        for tipo in ("image/png", "image/jpeg", "image/gif"):
-            filtro.add_mime_type(tipo)
-        for patron in ("*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif"):
-            filtro.add_pattern(patron)
-        with contextlib.suppress(Exception):
-            filtro.add_pixbuf_formats()
-        for sufijo in ("png", "jpg", "jpeg", "jpe", "jfif", "gif"):
-            with contextlib.suppress(Exception):
-                filtro.add_suffix(sufijo)
-
-        todos = Gtk.FileFilter()
-        todos.set_name("Todos los ficheros")
-
-        almacen = Gio.ListStore.new(Gtk.FileFilter)
-        almacen.append(filtro)
-        almacen.append(todos)
-        dialogo.set_filters(almacen)
-        # "Todos los ficheros" por defecto: asi NUNCA hay un fichero que no se pueda elegir,
-        # ni aunque el filtro de imagenes se equivoque. La app valida lo que se elija.
-        dialogo.set_default_filter(todos)
-
-        self._dialogo_abierto = dialogo
-        dialogo.open(self, None, self._imagen_elegida)
+        abrir_dialogo_fichero(self, "Elegir imagen para el panel", self._imagen_elegida,
+                              carpeta=self._config.get("carpeta_imagen") or "",
+                              filtros=(filtro_imagenes(), filtro_todos()))
         return False
 
-    def _imagen_elegida(self, dialogo, resultado):
-        self._dialogo_abierto = None
-        try:
-            archivo = dialogo.open_finish(resultado)
-        except GLib.Error:
-            return                                    # el usuario cancelo
-        except Exception:                             # noqa: BLE001
-            return
-        if archivo is None:
-            return
-        ruta = archivo.get_path()
+    def _imagen_elegida(self, ruta):
+        """Recibe la ruta elegida (o None si se cerro el dialogo)."""
         if not ruta:
+            return
+        if not os.path.exists(ruta):
             self.avisar("Solo se pueden subir ficheros locales.")
             return
         self._aplicar_imagen(ruta)
+
+    def _imagen_ajustada(self, ruta, modo):
+        """PNG de la imagen escalado a 1920x462, o None si no se puede (se sube el original).
+
+        Las imagenes enormes no se tocan: decodificarlas para escalarlas costaria cientos de
+        MB, y para eso ya esta el aviso de "imagen muy grande".
+        """
+        tamano = self._tamano_imagen or 0
+        if tamano > AVISO_IMAGEN_GRANDE:
+            return None
+        video, error = cargar_video()
+        if video is None:
+            return None
+        try:
+            with Image.open(ruta) as original:
+                ajustada = video.ajustar_imagen(original, modo)
+            buffer = io.BytesIO()
+            ajustada.save(buffer, format="PNG", optimize=True)
+            return buffer.getvalue()
+        except Exception:                             # noqa: BLE001
+            return None
+
+    def _cambiar_ajustar_imagen(self, fila, _parametro=None):
+        """Guarda si hay que escalar antes de subir y refresca los avisos."""
+        if getattr(self, "_silenciar", False):
+            return
+        self._guardar(ajustar_imagen=bool(fila.get_active()))
+        self._actualizar_aviso_ajuste()
+        self.combo_ajuste_imagen.set_visible(bool(fila.get_active()))
+
+    def _cambiar_ajuste_imagen(self, fila, _parametro=None):
+        if getattr(self, "_silenciar", False):
+            return
+        nombres = ("ajustar", "recortar", "estirar")
+        indice = fila.get_selected()
+        if 0 <= indice < len(nombres):
+            self._guardar(ajuste_imagen=nombres[indice])
+            self._actualizar_aviso_ajuste()
+
+    def _ajuste_imagen_elegido(self):
+        """(ajustar, modo) segun los controles de la pagina Imagen."""
+        nombres = ("ajustar", "recortar", "estirar")
+        indice = self.combo_ajuste_imagen.get_selected()
+        modo = nombres[indice] if 0 <= indice < len(nombres) else "ajustar"
+        return bool(self.interruptor_ajustar.get_active()), modo
+
+    def _actualizar_aviso_ajuste(self):
+        """Explica en la propia fila que le pasara a ESTA imagen."""
+        if not self._imagen:
+            self.interruptor_ajustar.set_subtitle(
+                "El panel no escala: si la imagen no es 1920x462, la repite.")
+            return
+        ancho, alto = dimensiones_imagen(self._imagen)
+        if not ancho or not alto:
+            return
+        modulo_temas, _error = cargar_temas()
+        if modulo_temas is None:
+            return
+        ancho_panel, alto_panel = modulo_temas.ANCHO, modulo_temas.ALTO
+        activo, modo = self._ajuste_imagen_elegido()
+        if (ancho, alto) == (ancho_panel, alto_panel):
+            self.interruptor_ajustar.set_subtitle(
+                "La imagen ya es 1920x462: no hace falta tocar nada.")
+            return
+        veces_x = -(-ancho_panel // ancho)          # division hacia arriba
+        veces_y = -(-alto_panel // alto)
+        repeticiones = veces_x * veces_y
+        if repeticiones <= 1:
+            cuanto = "cabe entera"
+        elif repeticiones == 2:
+            cuanto = "saldria repetida 2 veces"
+        else:
+            cuanto = "saldria repetida %d veces (%d x %d)" % (repeticiones, veces_x, veces_y)
+        if activo:
+            self.interruptor_ajustar.set_subtitle(
+                "Tu imagen es %dx%d: %s. Se ajustara (%s) a %dx%d antes de subirla."
+                % (ancho, alto, cuanto, modo, ancho_panel, alto_panel))
+        else:
+            self.interruptor_ajustar.set_subtitle(
+                "Tu imagen es %dx%d y el panel la dibuja a su tamano: %s, cortando la ultima. "
+                "Activa esto para ajustarla." % (ancho, alto, cuanto))
 
     def _aplicar_imagen(self, ruta):
         """Valida la imagen elegida y prepara la miniatura (sin abrir el dialogo).
@@ -2338,6 +2506,8 @@ class VentanaPrincipal(Adw.ApplicationWindow):
             "%s  (%s, %s)" % (os.path.basename(ruta), tipo,
                               describir_imagen(ancho, alto, tamano)))
         self.pagina_imagen.set_visible_child_name("contenido")
+        # El aviso dice si ESTA imagen se va a repetir y cuanto, no una frase generica.
+        self._actualizar_aviso_ajuste()
         self._actualizar_acciones_imagen()
         self._consultar_espacio()
 
@@ -2435,6 +2605,14 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         poner_texto(self.texto_subida, "Subiendo...")
 
         def tarea(panel):
+            # Si la imagen no es del tamano del panel, el panel la REPITE en mosaico (y corta
+            # la ultima). Con el ajuste activo se escala aqui, antes de mandarla.
+            ajustar, modo = self._ajuste_imagen_elegido()
+            if ajustar:
+                datos = self._imagen_ajustada(ruta, modo)
+                if datos:
+                    nombre = os.path.splitext(os.path.basename(ruta))[0] + ".png"
+                    return panel.subir_datos(datos, nombre, capa=capa)
             with escritura_fiable(panel):
                 return panel.subir_archivo(ruta, capa=capa)
 
@@ -3667,10 +3845,6 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         if video is None:
             self.avisar_error("Falta el modulo cfv235.video: %s" % error)
             return False
-        dialogo = Gtk.FileDialog()
-        dialogo.set_title("Elegir video o animacion para el panel")
-        self._carpeta_inicial(dialogo, "carpeta_video")
-
         filtro = Gtk.FileFilter()
         filtro.set_name("Video y animaciones (GIF, MP4, MKV, WEBM, AVI, MOV)")
         for tipo in ("video/mp4", "video/x-matroska", "video/webm", "video/quicktime",
@@ -3678,68 +3852,31 @@ class VentanaPrincipal(Adw.ApplicationWindow):
             filtro.add_mime_type(tipo)
         for patron in ("*.gif", "*.mp4", "*.mkv", "*.webm", "*.avi", "*.mov"):
             filtro.add_pattern(patron)
-
-        todos = Gtk.FileFilter()
-        todos.set_name("Todos los ficheros")
-
-        almacen = Gio.ListStore.new(Gtk.FileFilter)
-        almacen.append(filtro)
-        almacen.append(todos)
-        dialogo.set_filters(almacen)
-        dialogo.set_default_filter(filtro)
-
-        self._dialogo_abierto = dialogo
-        dialogo.open(self, None, self._video_fichero_elegido)
+        abrir_dialogo_fichero(self, "Elegir video o animacion para el panel",
+                              self._video_fichero_elegido,
+                              carpeta=self._config.get("carpeta_video") or "",
+                              filtros=(filtro, filtro_todos()))
         return False
+
+    def _video_fichero_elegido(self, ruta):
+        if not ruta:
+            return
+        self._fijar_fuente_video(ruta)
 
     def _elegir_video_carpeta(self, *_):
         video, error = cargar_video()
         if video is None:
             self.avisar_error("Falta el modulo cfv235.video: %s" % error)
             return False
-        dialogo = Gtk.FileDialog()
-        dialogo.set_title("Elegir una carpeta con imagenes para el panel")
-        self._carpeta_inicial(dialogo, "carpeta_video")
-        self._dialogo_abierto = dialogo
-        dialogo.select_folder(self, None, self._video_carpeta_elegida)
+        abrir_dialogo_fichero(self, "Elegir una carpeta con imagenes para el panel",
+                              self._video_carpeta_elegida,
+                              carpeta=self._config.get("carpeta_video") or "",
+                              accion=Gtk.FileChooserAction.SELECT_FOLDER,
+                              etiqueta_aceptar="Elegir carpeta")
         return False
 
-    def _carpeta_inicial(self, dialogo, clave):
-        """Abre el selector en la ultima carpeta usada (si sigue existiendo)."""
-        carpeta = self._config.get(clave)
-        if carpeta and os.path.isdir(carpeta):
-            with contextlib.suppress(Exception):
-                dialogo.set_initial_folder(Gio.File.new_for_path(carpeta))
-
-    def _video_fichero_elegido(self, dialogo, resultado):
-        self._dialogo_abierto = None
-        try:
-            archivo = dialogo.open_finish(resultado)
-        except GLib.Error:
-            return                                    # el usuario cancelo
-        except Exception:                             # noqa: BLE001
-            return
-        if archivo is None:
-            return
-        ruta = archivo.get_path()
+    def _video_carpeta_elegida(self, ruta):
         if not ruta:
-            self.avisar_error("Solo se pueden usar ficheros locales.")
-            return
-        self._fijar_fuente_video(ruta)
-
-    def _video_carpeta_elegida(self, dialogo, resultado):
-        self._dialogo_abierto = None
-        try:
-            archivo = dialogo.select_folder_finish(resultado)
-        except GLib.Error:
-            return                                    # el usuario cancelo
-        except Exception:                             # noqa: BLE001
-            return
-        if archivo is None:
-            return
-        ruta = archivo.get_path()
-        if not ruta:
-            self.avisar_error("Solo se pueden usar carpetas locales.")
             return
         self._fijar_fuente_video(ruta)
 
