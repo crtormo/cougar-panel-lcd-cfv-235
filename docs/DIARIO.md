@@ -226,9 +226,12 @@ repositorio, con su evidencia y su historia.
 
 ## Pendiente
 
-- **La semántica de `displayInSleep`**: medido que con `0` el panel **no** se apaga en doce
-  minutos, en contra de lo que dice `docs/CANAL.md` §7.bis. Falta la prueba con `1` (en marcha) y,
-  si tampoco se apaga, averiguar qué gobierna de verdad el apagado por espera. Afecta a
-  `no_dormir` y a todo lo que dependa de mantener la imagen puesta.
+- ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**
+  se apaga en doce minutos de silencio (medido por la latencia del primer `conn`: 15 ms, igual que
+  en ráfaga). Ninguno de los dos valores provoca el apagado en estas pruebas. Queda por resolver
+  **qué** gobierna el apagado: la observación directa del dueño fue ~1 minuto con el editor
+  cerrado, que encaja con `timeout: 60` — así que el apagado es por **espera de tráfico**, no por
+  `displayInSleep`. Mientras no se cierre, la regla práctica sigue siendo: **hay que mandar tráfico
+  periódico** para tener la imagen puesta.
 - **Mirar la pantalla** cuando toque decidir algo visual: el mosaico se confirmó así, y el brillo
   aparente es la única prueba de si está apagado de verdad.
