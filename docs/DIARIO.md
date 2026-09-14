@@ -155,6 +155,28 @@ caducada se intenta dos veces, con un fichero que no es imagen se intenta una, y
 el banco de pruebas sólo se ha podido comprobar que el módulo compila y que la lista de motivos
 filtra como debe.
 
+### La prueba de inactividad (12 minutos sin tráfico)
+
+Con `displayInSleep: 0` y doce minutos sin escribirle nada al panel: **`brightness: 100`, el panel
+siguió encendido**. Refuta lo que dice `docs/CANAL.md` §7.bis ("con 0 se apaga en menos de dos
+minutos") y pone en duda el arreglo de `no_dormir` del commit `8b058ed3`, que manda
+`{"enable": true}` para "no dormir" (campo a 1). En marcha la prueba complementaria con el campo a
+1, otros doce minutos: si tampoco se apaga, `displayInSleep` no es lo que controla el apagado en
+este panel y habrá que buscar el mecanismo de verdad (¿el medio que está en pantalla? ¿`timeout`?).
+
+### Todo el material del banco de pruebas, en el repositorio
+
+- `referencia/kit-cfv-235/`: el kit completo (60 ficheros), como segunda implementación del
+  protocolo, con su motor de temas, su simulador y sus patrones de calibración.
+- `herramientas/windows/sondas/`: la sonda en Node (36 KB) y los scripts del inspector.
+- `herramientas/windows/dashboard/`: el primer dashboard, en PowerShell.
+- `herramientas/windows/analizar_log.py` y el `LEEME.md` de la carpeta, reescrito.
+- `docs/evidencia/capturas_LEEME.md`: la historia de las capturas que se perdieron.
+- `referencia/LEEME.md`: qué es cada cosa y por qué no se debe mezclar con `cfv235/`.
+
+El proyecto pasa de 115 a **190 ficheros**: todo lo que se sabe del panel está ya en el
+repositorio, con su evidencia y su historia.
+
 ### Correcciones aplicadas en esta sesión
 
 - `cfv235/simulador.py`: `realtimeDisplay` ya **no** cambia `osdState`, como el panel real. Lo
@@ -173,9 +195,9 @@ filtra como debe.
 
 ## Pendiente
 
-- **La semántica de `displayInSleep` está en disputa**, y afecta a `no_dormir`: el test del
-  simulador dice que `1` es "seguir mostrando en reposo" (o sea, no dormir) y el kit mantiene lo
-  contrario (que `1` es permitir el apagado). Medido desde el banco de pruebas: ni con `0` ni
-  con `1` se apagó en 4 minutos sin tráfico, así que esa prueba no discrimina. Queda una prueba
-  larga (12-30 minutos) y, mejor, **mirando la pantalla**: apagado se ve, y `brightness` no
-  siempre lo dice.
+- **La semántica de `displayInSleep`**: medido que con `0` el panel **no** se apaga en doce
+  minutos, en contra de lo que dice `docs/CANAL.md` §7.bis. Falta la prueba con `1` (en marcha) y,
+  si tampoco se apaga, averiguar qué gobierna de verdad el apagado por espera. Afecta a
+  `no_dormir` y a todo lo que dependa de mantener la imagen puesta.
+- **Mirar la pantalla** cuando toque decidir algo visual: el mosaico se confirmó así, y el brillo
+  aparente es la única prueba de si está apagado de verdad.

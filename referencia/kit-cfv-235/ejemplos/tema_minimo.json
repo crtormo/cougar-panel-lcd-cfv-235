@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0e1117",
+  "widgets": [
+    {
+      "tipo": "reloj",
+      "x": 60,
+      "y": 60,
+      "tamano": 150,
+      "formato": "%H:%M",
+      "color": "#ffffff"
+    },
+    {
+      "tipo": "texto",
+      "x": 64,
+      "y": 250,
+      "texto": "{fecha}   encendido hace {uptime}",
+      "tamano": 34,
+      "color": "#788291"
+    },
+    {
+      "tipo": "dato",
+      "x": 1180,
+      "y": 60,
+      "ancho": 680,
+      "alto": 342,
+      "etiqueta": "CPU",
+      "fuente": "CPU Usage",
+      "unidad": "%",
+      "detalle": "{cpu_temp} C    {cpu_mhz} MHz    {cpu_w} W",
+      "color_relleno": "#00d0ff"
+    }
+  ]
+}

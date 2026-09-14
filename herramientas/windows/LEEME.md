@@ -11,6 +11,14 @@ registra.
 | `cdp_enganchar.js` | Se conecta al **inspector de Electron** del editor (`--inspect=9229`) y le reescribe `node-hid` en caliente para grabar cada informe HID con sus bytes |
 | `captura-nodehid.js` | La otra vía: se inyecta con `NODE_OPTIONS=--require` y vuelca todo lo que se lee y se escribe por HID |
 | `capturar_en_windows.md` | El procedimiento completo, paso a paso, con lo que costó cada intento |
+| `sonda-chequeos.js` | La sonda con la que se midió todo desde Windows: `conn`, `waterblock`, `power-restart`, `mode0..3`, `nodormir`, `realtime`, `recovery`, `esperar` y `upload` con tiempos y acuses. Reabre el dispositivo si el panel se reinicia |
+| `sondas/cougar_hid_node.js` | La **segunda implementación** del protocolo, en Node (36 KB): `estado`, `subir`, `bucle`, `stream`, `vigilar`, `barrido`, `efectos`… Sirve para contrastar tramas desde otro lenguaje |
+| `sondas/buscar_bloque.js` | Probaba variantes del informe de bloque contra el panel |
+| `sondas/cdp_parche.js`, `cdp_eval.js`, `cdp_scripts.js` | Piezas del enganche por inspector: el parche, la evaluación de código y los scripts |
+| `sondas/vigilar_panel.js` | Vigila `bootFinish` mientras se desenchufa y se vuelve a enchufar el panel |
+| `sondas/generar_png.js` | Genera el PNG de prueba que usaba el banco |
+| `dashboard/` | El primer dashboard, en PowerShell (`panel-dashboard.ps1`, `panel-bucle.ps1`, `instalar-tarea.ps1`). Sustituido por el dashboard de la app |
+| `analizar_log.py` | Saca estadísticas del log del editor de COUGAR. Es material de referencia: espera tener al lado el cliente del kit `cfv-235` (en `referencia/kit-cfv-235/`). Para analizar capturas, usa `herramientas/analizar_tramas.py` |
 
 ## El que se usó de verdad
 

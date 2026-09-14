@@ -1,0 +1,21 @@
+[Unit]
+Description=Dashboard del panel COUGAR CFV235 (kit cfv-235)
+Documentation=file:/usr/local/lib/cfv-235/DESARROLLO.md
+After=local-fs.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+# El tema, el periodo y el PNG se configuran en /etc/default/cougar-dashboard
+# (lo escribe herramientas/instalar.sh). COUGAR_TEMA puede ser cualquier JSON del
+# esquema de ESQUEMA_TEMA.md: el servicio dibuja y sube un fotograma cada periodo.
+EnvironmentFile=-/etc/default/cougar-dashboard
+ExecStart=/usr/local/bin/cougar bucle --tema ${COUGAR_TEMA} --periodo ${COUGAR_PERIODO} --png ${COUGAR_PNG}
+Restart=always
+RestartSec=5
+User=root
+# El cliente ocupa una sola tuberia HID; con la regla udev no hace falta ningun privilegio
+# extra, pero el dashboard se dibuja con los sensores de la maquina, asi que va como root.
+
+[Install]
+WantedBy=multi-user.target

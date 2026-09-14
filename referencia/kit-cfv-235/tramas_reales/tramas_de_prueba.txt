@@ -1,0 +1,55 @@
+﻿==========================================================================
+ TRAMAS DE PRUEBA - panel LCD COUGAR CFV235 (9.16", 1920x462)
+==========================================================================
+Todas las tramas de este fichero pasan la validacion de longitud y de checksum
+(la columna VERIFICADA se calcula al generar el fichero; todas dan True).
+
+Formato de trama :  5A | len (BE16, longitud TOTAL) | payload | checksum | 5A
+checksum         :  (sum(payload) + len) & 0xFF   <- verificado en 336/336 muestras
+len              :  longitud TOTAL, incluidos los 5 bytes de estructura
+payload peticion :  <METODO> <cmd> 1\r\nSeqNumber=N\r\nDate=<ms>\r\n[Cabeceras]\r\n\r\n<body>
+payload respuesta:  <subtipo> <code>\r\nAckNumber=N\r\n[ContentType/ContentLength]\r\n\r\n<body>
+AckNumber        :  = SeqNumber de la peticion + 1
+metodos conocidos:  GET | POST | STATE | DELETE
+
+[1] PETICION conn (sin body)
+    longitud=54  payload=49 B  checksum=0x9B  calculado=0x9B  VERIFICADA=True
+    payload : POST conn 1\r\nSeqNumber=28\r\nDate=1789254723754\r\n\r\n
+    hex     : 5a0036504f535420636f6e6e20310d0a5365714e756d6265723d32380d0a446174653d313738393235343732333735340d0a0d0a9b5a
+
+[2] PETICION power
+    longitud=111  payload=106 B  checksum=0xA2  calculado=0xA2  VERIFICADA=True
+    payload : POST power 1\r\nSeqNumber=2953\r\nDate=1789254023074\r\nContentType=json\r\nContentLength=18\r\n\r\n{"event":"resume"}
+    hex     : 5a006f504f535420706f77657220310d0a5365714e756d6265723d323935330d0a446174653d313738393235343032333037340d0a436f6e74656e74547970653d6a736f6e0d0a436f6e74656e744c656e6774683d31380d0a0d0a7b226576656e74223a22726573756d65227da25a
+
+[3] PETICION brightness
+    longitud=109  payload=104 B  checksum=0xFC  calculado=0xFC  VERIFICADA=True
+    payload : POST brightness 1\r\nSeqNumber=34\r\nDate=1789254727721\r\nContentType=json\r\nContentLength=13\r\n\r\n{"value":100}
+    hex     : 5a006d504f5354206272696768746e65737320310d0a5365714e756d6265723d33340d0a446174653d313738393235343732373732310d0a436f6e74656e74547970653d6a736f6e0d0a436f6e74656e744c656e6774683d31330d0a0d0a7b2276616c7565223a3130307dfc5a
+
+[4] PETICION rotate
+    longitud=106  payload=101 B  checksum=0xAB  calculado=0xAB  VERIFICADA=True
+    payload : POST rotate 1\r\nSeqNumber=35\r\nDate=1789254727733\r\nContentType=json\r\nContentLength=14\r\n\r\n{"degree":270}
+    hex     : 5a006a504f535420726f7461746520310d0a5365714e756d6265723d33350d0a446174653d313738393235343732373733330d0a436f6e74656e74547970653d6a736f6e0d0a436f6e74656e744c656e6774683d31340d0a0d0a7b22646567726565223a3237307dab5a
+
+[5] PETICION transport (anuncio de fichero)
+    longitud=157  payload=152 B  checksum=0x6D  calculado=0x6D  VERIFICADA=True
+    payload : POST transport 1\r\nSeqNumber=67\r\nDate=1789256813592\r\nContentType=json\r\nContentLength=62\r\n\r\n{"type":"media","fileSize":3744,"fileName":"CFV235_fondo.png"}
+    hex     : 5a009d504f5354207472616e73706f727420310d0a5365714e756d6265723d36370d0a446174653d313738393235363831333539320d0a436f6e74656e74547970653d6a736f6e0d0a436f6e74656e744c656e6774683d36320d0a0d0a7b2274797065223a226d65646961222c2266696c6553697a65223a333734342c2266696c654e616d65223a224346563233355f666f6e646f2e706e67227d6d5a
+
+[6] RESPUESTA 200 corta (capturada del log)
+    longitud=30  payload=25 B  checksum=0xCB  calculado=0xCB  VERIFICADA=True
+    payload : 1 200\r\nAckNumber=1906\r\n\r\n
+    hex     : 5a001e31203230300d0a41636b4e756d6265723d313930360d0a0d0acb5a
+
+[7] RESPUESTA 400 corta (capturada del log)
+    longitud=28  payload=23 B  checksum=0x69  calculado=0x69  VERIFICADA=True
+    payload : 1 400\r\nAckNumber=68\r\n\r\n
+    hex     : 5a001c31203430300d0a41636b4e756d6265723d36380d0a0d0a695a
+
+[8] RESPUESTA 400 con AckNumber=245 (capturada del log)
+    longitud=29  payload=24 B  checksum=0x97  calculado=0x97  VERIFICADA=True
+    payload : 1 400\r\nAckNumber=245\r\n\r\n
+    hex     : 5a001d31203430300d0a41636b4e756d6265723d3234350d0a0d0a975a
+
+TOTAL: 8 tramas, verificadas 8/8

@@ -1,0 +1,3 @@
+# Regla udev para el panel COUGAR CFV235 (1d6b:0126).
+# Sin esto hay que ejecutar el cliente con sudo.
+SUBSYSTEM=="hidraw", KERNEL=="hidraw*", ATTRS{idVendor}=="1d6b", ATTRS{idProduct}=="0126", MODE="0660", GROUP="users", TAG+="uaccess"

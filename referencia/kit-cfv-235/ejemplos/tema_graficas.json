@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#08090c",
+  "widgets": [
+    {
+      "tipo": "grafica",
+      "x": 40,
+      "y": 40,
+      "ancho": 600,
+      "alto": 120,
+      "etiqueta": "CPU (%)",
+      "fuente": "CPU Usage",
+      "puntos": 120,
+      "auto": true,
+      "unidad": "%",
+      "color_relleno": "#00d0ff"
+    },
+    {
+      "tipo": "grafica",
+      "x": 40,
+      "y": 190,
+      "ancho": 600,
+      "alto": 120,
+      "etiqueta": "MEMORIA (%)",
+      "fuente": "Memory Usage",
+      "puntos": 120,
+      "min": 0,
+      "max": 100,
+      "unidad": "%",
+      "color_relleno": "#ff00c8"
+    },
+    {
+      "tipo": "grafica",
+      "x": 40,
+      "y": 340,
+      "ancho": 600,
+      "alto": 100,
+      "etiqueta": "RED (MB/s)",
+      "fuente": "Red",
+      "puntos": 120,
+      "auto": true,
+      "color_relleno": "#00ff9a"
+    },
+    {
+      "tipo": "dato",
+      "x": 680,
+      "y": 40,
+      "ancho": 380,
+      "alto": 400,
+      "etiqueta": "CPU",
+      "fuente": "CPU Temperature",
+      "unidad": "C",
+      "min": 20,
+      "max": 100,
+      "detalle": "{cpu_modelo}    {cpu_w} W"
+    },
+    {
+      "tipo": "dato",
+      "x": 1090,
+      "y": 40,
+      "ancho": 380,
+      "alto": 400,
+      "etiqueta": "GPU",
+      "fuente": "GPU Usage",
+      "unidad": "%",
+      "detalle": "{gpu_temp} C    {gpu_mhz} MHz",
+      "color_relleno": "#ffb300"
+    },
+    {
+      "tipo": "dato",
+      "x": 1500,
+      "y": 40,
+      "ancho": 380,
+      "alto": 400,
+      "etiqueta": "MEMORIA",
+      "fuente": "Memory Usage",
+      "unidad": "%",
+      "mostrar_porcentaje": true,
+      "detalle": "{ram_usado_gb} / {ram_total_gb} GB",
+      "color_relleno": "#ff00c8"
+    }
+  ]
+}

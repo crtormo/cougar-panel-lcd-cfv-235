@@ -1,0 +1,7 @@
+# bytecode y cachés
+__pycache__/
+*.pyc
+
+# lo que genera cada prueba
+/tmp/
+*.log

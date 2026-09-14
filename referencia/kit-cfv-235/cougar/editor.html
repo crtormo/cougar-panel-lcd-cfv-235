@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Editor de temas — panel COUGAR CFV235</title>
+<style>
+  :root { --fondo:#0e1117; --panel:#161b24; --borde:#2c3442; --texto:#ebf0f8;
+          --gris:#788291; --acento:#00d0ff; --acento2:#ff00c8; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#0a0d12; color:var(--texto);
+         font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+  header { display:flex; align-items:center; gap:14px; padding:10px 16px;
+           border-bottom:1px solid var(--borde); flex-wrap:wrap; }
+  h1 { font-size:16px; margin:0 12px 0 0; font-weight:600; }
+  button, select, input { background:var(--panel); color:var(--texto);
+           border:1px solid var(--borde); border-radius:8px; padding:7px 11px; font-size:13px; }
+  button:hover { border-color:var(--acento); cursor:pointer; }
+  button.principal { background:#0b3c4d; border-color:var(--acento); }
+  button.rojo { background:#3d0b1c; border-color:#ff4d6d; }
+  #aviso { margin-left:auto; color:var(--gris); font-size:12px; }
+  main { display:flex; gap:14px; padding:14px; align-items:flex-start; }
+  #lienzo-caja { flex:0 0 auto; overflow:auto; border:1px solid var(--borde);
+                 border-radius:10px; background:#000; }
+  #lienzo { position:relative; width:1920px; height:462px; background:var(--fondo);
+            transform-origin: top left; }
+  .widget { position:absolute; border:2px dashed transparent; border-radius:12px;
+            cursor:move; user-select:none; overflow:hidden; }
+  .widget:hover { border-color:#4a566b; }
+  .widget.sel { border-color:var(--acento); }
+  .widget .etiqueta { font-size:26px; color:var(--gris); }
+  .widget .valor { font-weight:700; line-height:1.05; }
+  .widget .unidad { font-size:28px; color:var(--gris); }
+  .widget .barra-fondo { position:absolute; left:28px; right:28px; bottom:70px; height:26px;
+                         background:#262d3a; border-radius:8px; overflow:hidden; }
+  .widget .barra-relleno { height:100%; background:var(--acento); }
+  .widget .pie { position:absolute; left:28px; bottom:34px; font-size:20px; color:var(--gris); }
+  .tarjeta { background:var(--panel); border:2px solid var(--borde); }
+  .asidero { position:absolute; right:-2px; bottom:-2px; width:18px; height:18px;
+             background:var(--acento); border-radius:4px; cursor:nwse-resize; display:none; }
+  .widget.sel .asidero { display:block; }
+  aside { flex:1 1 320px; min-width:300px; background:var(--panel); border:1px solid var(--borde);
+          border-radius:10px; padding:14px; }
+  aside h2 { font-size:14px; margin:0 0 10px; color:var(--gris); font-weight:600;
+             text-transform:uppercase; letter-spacing:.06em; }
+  .campo { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .campo label { flex:0 0 92px; font-size:12px; color:var(--gris); }
+  .campo input, .campo select { flex:1 1 auto; min-width:0; }
+  #lista { max-height:190px; overflow:auto; margin-top:8px; }
+  .fila { display:flex; justify-content:space-between; gap:8px; padding:5px 8px;
+          border-radius:6px; font-size:12px; cursor:pointer; }
+  .fila:hover { background:#1e2531; }
+  .fila.sel { background:#0b3c4d; }
+  .clave { color:var(--gris); }
+  small { color:var(--gris); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Editor de temas — CFV235</h1>
+  <select id="nuevo">
+    <option value="texto">texto</option>
+    <option value="dato">dato (tarjeta)</option>
+    <option value="barra">barra</option>
+    <option value="grafica">gráfica</option>
+    <option value="reloj">reloj</option>
+  </select>
+  <button onclick="anadir()">Añadir widget</button>
+  <button onclick="duplicar()">Duplicar</button>
+  <button class="rojo" onclick="borrar()">Borrar</button>
+  <button onclick="guardar()">Guardar JSON</button>
+  <button class="principal" onclick="aplicar()">Aplicar al panel</button>
+  <span>periodo</span><input id="periodo" type="number" value="2" min="1" max="60" step="1"
+       style="width:64px">
+  <button id="btnBucle" onclick="alternarBucle()">Bucle: parado</button>
+  <button onclick="cargarPlantilla()">Tema de ejemplo</button>
+  <button onclick="escalaAjustar()">Ajustar vista</button>
+  <span id="aviso">cargando…</span>
+</header>
+
+<main>
+  <div id="lienzo-caja"><div id="lienzo"></div></div>
+  <aside>
+    <h2>Propiedades</h2>
+    <div id="props"><small>Selecciona un widget en el lienzo.</small></div>
+    <h2 style="margin-top:16px">Fuentes en vivo</h2>
+    <div id="lista"></div>
+  </aside>
+</main>
+
+<script>
+let tema = null, seleccion = -1, valores = {}, nombresEditor = [], bucleActivo = false;
+
+async function pedir(ruta, cuerpo) {
+  const opciones = cuerpo ? { method:'POST', headers:{'Content-Type':'application/json'},
+                              body: JSON.stringify(cuerpo) } : {};
+  const r = await fetch(ruta, opciones);
+  return r.json();
+}
+
+// ---------------------------------------------------------------- pintar el lienzo
+function pintar() {
+  const lienzo = document.getElementById('lienzo');
+  lienzo.style.background = tema.fondo || '#0e1117';
+  lienzo.innerHTML = '';
+  (tema.widgets || []).forEach((w, i) => {
+    const d = document.createElement('div');
+    d.className = 'widget' + (i === seleccion ? ' sel' : '') +
+                  (['dato','data'].includes(String(w.tipo)) ? ' tarjeta' : '');
+    d.style.left = (w.x||0) + 'px';
+    d.style.top = (w.y||0) + 'px';
+    d.style.width = (w.ancho || (String(w.tipo)==='texto' ? 700 : 340)) + 'px';
+    d.style.height = (w.alto || (String(w.tipo)==='texto' ? (w.tamano||28)*1.6 : 342)) + 'px';
+    if (String(w.tipo)==='dato') { d.style.background = w.fondo || '#161b24';
+                                   d.style.borderColor = w.borde || '#2c3442'; }
+    const valor = valorDe(w);
+    if (String(w.tipo) === 'reloj') {
+      d.innerHTML = `<div class="valor" style="font-size:${w.tamano||120}px;color:${w.color||'#ebf0f8'}">${hora(w.formato||'%H:%M')}</div>`;
+    } else if (String(w.tipo) === 'texto') {
+      d.innerHTML = `<div style="font-size:${w.tamano||28}px;color:${w.color||'#ebf0f8'}">${marcadores(w.texto||'')}</div>`;
+    } else if (['dato','data'].includes(String(w.tipo))) {
+      d.innerHTML =
+        `<div class="etiqueta" style="position:absolute;left:28px;top:24px">${w.etiqueta||''}</div>
+         <div class="valor" style="position:absolute;left:24px;top:74px;font-size:${w.tamano||74}px;color:${w.color||'#ebf0f8'}">${valor}</div>
+         <div class="unidad" style="position:absolute;left:${24 + String(valor).length*(w.tamano||74)*0.62}px;top:${74 + (w.tamano||74)*0.42}px">${w.unidad||''}</div>
+         <div class="barra-fondo"><div class="barra-relleno" style="width:${pct(w)}%;background:${w.color_relleno||'#00d0ff'}"></div></div>
+         <div class="pie">${valor} ${w.unidad||''}</div>`;
+    } else if (['barra','bar'].includes(String(w.tipo))) {
+      d.style.height = (w.alto||34)+'px';
+      d.innerHTML = `<div class="barra-fondo" style="left:0;right:0;bottom:0;height:${w.alto||34}px;border-radius:${(w.alto||34)/2}px">
+                       <div class="barra-relleno" style="width:${pct(w)}%;background:${w.color_relleno||'#00d0ff'}"></div>
+                     </div>`;
+    } else if (['grafica','chart'].includes(String(w.tipo))) {
+      d.style.background = w.fondo || '#161b24';
+      d.style.borderColor = w.borde || '#2c3442';
+      d.innerHTML = `<div class="etiqueta" style="position:absolute;left:18px;top:10px">${w.etiqueta||''}</div>
+                     <div style="position:absolute;right:18px;top:10px;font-size:24px;font-weight:700">${valor} ${w.unidad||''}</div>
+                     <svg width="100%" height="100%" style="position:absolute;left:0;top:0">
+                       <polyline points="${puntosGrafica(w)}" fill="none"
+                                 stroke="${w.color_relleno||'#00d0ff'}" stroke-width="${w.grosor||3}"/>
+                     </svg>`;
+    }
+    const asa = document.createElement('div'); asa.className = 'asidero';
+    d.appendChild(asa);
+    arrastrable(d, asa, i);
+    lienzo.appendChild(d);
+  });
+  document.getElementById('aviso').textContent =
+    `${(tema.widgets||[]).length} widgets · ${valores && Object.keys(valores).length} fuentes`;
+}
+
+function hora(formato) {
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return formato.replace('%H', p(d.getHours())).replace('%M', p(d.getMinutes()))
+                .replace('%S', p(d.getSeconds()));
+}
+
+function marcadores(plantilla) {
+  return plantilla.replace(/\{([^}]+)\}/g, (m, dentro) => {
+    if (dentro.startsWith('fuente:')) return valores[claveDe(dentro.slice(7))] ?? '--';
+    return valores[dentro] ?? '--';
+  });
+}
+
+function claveDe(nombre) {
+  const mapa = { 'CPU Usage':'cpu_uso','CPU Temperature':'cpu_temp','CPU Hz':'cpu_mhz',
+    'CPU Power':'cpu_w','CPU Fan Speed':'cpu_vent','GPU Usage':'gpu_uso',
+    'GPU Temperature':'gpu_temp','Memory Usage':'ram_uso','Memory Size':'ram_total_gb',
+    'Disk Space':'disco_uso','Motherboard Name':'placa','CPU Brand':'cpu_modelo' };
+  return mapa[nombre] || String(nombre).trim().toLowerCase().replace(/ /g,'_');
+}
+
+function valorDe(w) {
+  if (!w.fuente) return '--';
+  const v = valores[claveDe(w.fuente)];
+  if (v === undefined || v === null) return '--';
+  if (w.unidad === '%') return Math.round(v);
+  return (typeof v === 'number' && v % 1) ? v.toFixed(1) : v;
+}
+
+function pct(w) {
+  const v = Number(valorDe(w)); if (isNaN(v)) return 0;
+  const min = w.min ?? 0, max = w.max ?? 100;
+  return Math.max(0, Math.min(100, (v - min) / ((max - min) || 1) * 100));
+}
+
+function puntosGrafica(w) {
+  const serie = historial[claveDe(w.fuente)] || [];
+  const trozo = serie.slice(-(w.puntos||120));
+  if (trozo.length < 2) return '';
+  const min = w.min ?? Math.min(...trozo), max = w.max ?? Math.max(...trozo);
+  const rango = (max - min) || 1;
+  const alto = (w.alto||136) - 34, ancho = (w.ancho||570) - 36;
+  return trozo.map((v,i) =>
+    `${18 + ancho*i/(trozo.length-1)},${alto + 34 - (alto-10)*Math.max(0,Math.min(1,(v-min)/rango))}`
+  ).join(' ');
+}
+
+// ---------------------------------------------------------------- arrastrar / redimensionar
+function arrastrable(nodo, asa, indice) {
+  let modo = null, iniX = 0, iniY = 0, orig = null, escala = escalaActual();
+  nodo.addEventListener('mousedown', e => {
+    if (e.target === asa) return;
+    seleccion = indice; pintarProps(); modo = 'mover';
+    iniX = e.clientX; iniY = e.clientY; orig = {...tema.widgets[indice]};
+    e.preventDefault();
+  });
+  asa.addEventListener('mousedown', e => {
+    seleccion = indice; modo = 'tamano';
+    iniX = e.clientX; iniY = e.clientY; orig = {...tema.widgets[indice]};
+    e.preventDefault(); e.stopPropagation();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!modo) return;
+    const dx = (e.clientX - iniX) / escala, dy = (e.clientY - iniY) / escala;
+    const w = tema.widgets[indice];
+    if (modo === 'mover') {
+      w.x = Math.round(Math.max(0, Math.min(1920, (orig.x||0) + dx)));
+      w.y = Math.round(Math.max(0, Math.min(462, (orig.y||0) + dy)));
+    } else {
+      w.ancho = Math.round(Math.max(80, (orig.ancho||340) + dx));
+      w.alto = Math.round(Math.max(40, (orig.alto||342) + dy));
+    }
+    pintar();
+  });
+  document.addEventListener('mouseup', () => { modo = null; });
+}
+
+function escalaActual() {
+  const leyenda = document.getElementById('lienzo').style.transform || '';
+  const m = /scale\(([\d.]+)\)/.exec(leyenda);
+  return m ? parseFloat(m[1]) : 1;
+}
+
+// ---------------------------------------------------------------- propiedades
+function pintarProps() {
+  const caja = document.getElementById('props');
+  const w = tema.widgets[seleccion];
+  if (!w) { caja.innerHTML = '<small>Selecciona un widget en el lienzo.</small>'; return; }
+  const fuentes = nombresEditor.map(n => `<option ${w.fuente===n?'selected':''}>${n}</option>`).join('');
+  caja.innerHTML = `
+    <div class="campo"><label>tipo</label>
+      <select onchange="cambiar('tipo', this.value)">
+        ${['texto','dato','barra','grafica','reloj'].map(t =>
+          `<option ${String(w.tipo)===t?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+    ${['dato','barra','grafica'].includes(String(w.tipo)) ? `
+    <div class="campo"><label>fuente</label><select onchange="cambiar('fuente', this.value)">
+      <option value="">(elige)</option>${fuentes}</select></div>
+    <div class="campo"><label>etiqueta</label><input value="${w.etiqueta||''}" oninput="cambiar('etiqueta', this.value)"></div>
+    <div class="campo"><label>unidad</label><input value="${w.unidad||''}" oninput="cambiar('unidad', this.value)"></div>` : ''}
+    ${String(w.tipo)==='texto' ? `
+    <div class="campo"><label>texto</label><input value="${(w.texto||'').replace(/"/g,'&quot;')}" oninput="cambiar('texto', this.value)"></div>` : ''}
+    ${String(w.tipo)==='reloj' ? `
+    <div class="campo"><label>formato</label><input value="${w.formato||'%H:%M'}" oninput="cambiar('formato', this.value)"></div>` : ''}
+    <div class="campo"><label>x / y</label>
+      <input type="number" value="${w.x||0}" oninput="cambiar('x', +this.value)">
+      <input type="number" value="${w.y||0}" oninput="cambiar('y', +this.value)"></div>
+    <div class="campo"><label>ancho/alto</label>
+      <input type="number" value="${w.ancho||''}" oninput="cambiar('ancho', +this.value)">
+      <input type="number" value="${w.alto||''}" oninput="cambiar('alto', +this.value)"></div>
+    <div class="campo"><label>tamaño</label>
+      <input type="number" value="${w.tamano||''}" oninput="cambiar('tamano', +this.value)"></div>
+    <div class="campo"><label>min / max</label>
+      <input type="number" value="${w.min ?? ''}" oninput="cambiar('min', +this.value)">
+      <input type="number" value="${w.max ?? ''}" oninput="cambiar('max', +this.value)"></div>
+    <div class="campo"><label>color</label>
+      <input value="${w.color||'#ebf0f8'}" oninput="cambiar('color', this.value)"></div>
+    <div class="campo"><label>relleno</label>
+      <input value="${w.color_relleno||'#00d0ff'}" oninput="cambiar('color_relleno', this.value)"></div>
+    <div class="campo"><label>puntos</label>
+      <input type="number" value="${w.puntos||120}" oninput="cambiar('puntos', +this.value)"></div>`;
+}
+
+function cambiar(clave, valor) {
+  const w = tema.widgets[seleccion]; if (!w) return;
+  if (Number.isNaN(valor)) valor = undefined;
+  w[clave] = valor;
+  pintar();
+}
+
+// ---------------------------------------------------------------- acciones
+function anadir() {
+  const tipo = document.getElementById('nuevo').value;
+  const base = { tipo, x: 100, y: 100 };
+  if (tipo === 'dato') Object.assign(base, { ancho:340, alto:342, etiqueta:'NUEVO',
+      fuente:'CPU Temperature', unidad:'C', color_relleno:'#00d0ff' });
+  if (tipo === 'barra') Object.assign(base, { ancho:500, alto:34, etiqueta:'NUEVA',
+      fuente:'CPU Usage', unidad:'%', min:0, max:100, color_relleno:'#ff00c8' });
+  if (tipo === 'grafica') Object.assign(base, { ancho:570, alto:136, etiqueta:'GRÁFICA',
+      fuente:'CPU Usage', min:0, max:100, unidad:'%', puntos:120, color_relleno:'#00d0ff' });
+  if (tipo === 'texto') Object.assign(base, { texto:'texto de ejemplo', tamano:28, color:'#ebf0f8' });
+  if (tipo === 'reloj') Object.assign(base, { formato:'%H:%M', tamano:120, color:'#ebf0f8' });
+  tema.widgets.push(base);
+  seleccion = tema.widgets.length - 1;
+  pintar(); pintarProps();
+}
+
+function duplicar() {
+  if (seleccion < 0) return;
+  const copia = JSON.parse(JSON.stringify(tema.widgets[seleccion]));
+  copia.x = (copia.x||0) + 30; copia.y = (copia.y||0) + 30;
+  tema.widgets.push(copia); seleccion = tema.widgets.length - 1; pintar(); pintarProps();
+}
+
+function borrar() {
+  if (seleccion < 0) return;
+  tema.widgets.splice(seleccion, 1); seleccion = -1; pintar(); pintarProps();
+}
+
+async function guardar() {
+  const r = await pedir('/guardar', { tema });
+  document.getElementById('aviso').textContent = r.ok ? 'guardado: ' + r.ruta : 'error: ' + r.error;
+}
+
+async function aplicar() {
+  document.getElementById('aviso').textContent = 'aplicando…';
+  const r = await pedir('/aplicar', { tema });
+  document.getElementById('aviso').textContent =
+    r.ok ? 'aplicado al panel (' + r.detalle + ')' : 'fallo: ' + (r.error || r.detalle);
+}
+
+async function alternarBucle() {
+  if (bucleActivo) { await pedir('/bucle', { parar:true }); bucleActivo = false; }
+  else { await pedir('/bucle', { tema, periodo: +document.getElementById('periodo').value });
+         bucleActivo = true; }
+  document.getElementById('btnBucle').textContent = 'Bucle: ' + (bucleActivo ? 'en marcha' : 'parado');
+}
+
+async function cargarPlantilla() {
+  const r = await pedir('/plantilla', {});
+  if (r.ok) { tema = r.tema; seleccion = -1; pintar(); pintarProps(); }
+}
+
+function escalaAjustar() {
+  const caja = document.getElementById('lienzo-caja');
+  const escala = Math.min(1, (caja.clientWidth - 4) / 1920);
+  document.getElementById('lienzo').style.transform = 'scale(' + escala + ')';
+  caja.style.height = (462 * escala + 6) + 'px';
+}
+
+// ---------------------------------------------------------------- arranque
+let historial = {};
+async function refrescar() {
+  const r = await pedir('/estado');
+  if (!tema && r.tema) { tema = r.tema; }
+  valores = r.valores || {};
+  nombresEditor = r.nombres_editor || [];
+  bucleActivo = r.bucle;
+  document.getElementById('btnBucle').textContent = 'Bucle: ' + (bucleActivo ? 'en marcha' : 'parado');
+  if (r.ultimo) document.getElementById('aviso').textContent = r.ultimo;
+  for (const [k,v] of Object.entries(valores)) {
+    if (typeof v === 'number') { (historial[k] = historial[k] || []).push(v);
+                                if (historial[k].length > 300) historial[k].shift(); }
+  }
+  pintar();
+  const lista = document.getElementById('lista');
+  lista.innerHTML = Object.keys(valores).sort().map(k =>
+    `<div class="fila"><span class="clave">${k}</span><span>${valores[k]}</span></div>`).join('');
+}
+
+(async () => {
+  const r = await pedir('/estado');
+  tema = r.tema; valores = r.valores || {}; nombresEditor = r.nombres_editor || [];
+  escalaAjustar();
+  pintar(); pintarProps(); refrescar();
+  setInterval(refrescar, 1500);
+})();
+</script>
+</body>
+</html>

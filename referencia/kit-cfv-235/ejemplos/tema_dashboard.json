@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "ancho": 1920,
+  "alto": 462,
+  "fondo": "#0e1117",
+  "widgets": [
+    {
+      "tipo": "reloj",
+      "x": 60,
+      "y": 52,
+      "tamano": 122,
+      "formato": "%H:%M"
+    },
+    {
+      "tipo": "texto",
+      "x": 66,
+      "y": 226,
+      "tamano": 30,
+      "color": "#788291",
+      "texto": "{fecha}"
+    },
+    {
+      "tipo": "texto",
+      "x": 66,
+      "y": 268,
+      "tamano": 22,
+      "color": "#5c6675",
+      "texto": "{cpu_modelo}"
+    },
+    {
+      "tipo": "grafica",
+      "x": 60,
+      "y": 300,
+      "ancho": 570,
+      "alto": 142,
+      "etiqueta": "CPU (%)",
+      "fuente": "CPU Usage",
+      "min": 0,
+      "max": 100,
+      "unidad": "%",
+      "puntos": 120,
+      "color_relleno": "#00d0ff",
+      "auto": true
+    },
+    {
+      "tipo": "dato",
+      "x": 680,
+      "y": 60,
+      "ancho": 340,
+      "alto": 342,
+      "etiqueta": "CPU",
+      "fuente": "CPU Usage",
+      "unidad": "%",
+      "color_relleno": "#00d0ff",
+      "detalle": "{cpu_temp} C      {cpu_mhz} MHz"
+    },
+    {
+      "tipo": "dato",
+      "x": 1050,
+      "y": 60,
+      "ancho": 340,
+      "alto": 342,
+      "etiqueta": "MEMORIA",
+      "fuente": "Memory Usage",
+      "unidad": "%",
+      "color_relleno": "#ff00c8",
+      "detalle": "{ram_usado_gb} / {ram_total_gb} GB"
+    },
+    {
+      "tipo": "dato",
+      "x": 1420,
+      "y": 60,
+      "ancho": 340,
+      "alto": 342,
+      "etiqueta": "GPU",
+      "fuente": "GPU Usage",
+      "unidad": "%",
+      "color_relleno": "#00d0ff",
+      "detalle": "{gpu_temp} C      {gpu_mhz} MHz"
+    },
+    {
+      "tipo": "texto",
+      "x": 680,
+      "y": 418,
+      "tamano": 22,
+      "color": "#788291",
+      "texto": "CPU {cpu_temp} C    {cpu_mhz} MHz    {cpu_w} W    RAM {ram_usado_gb}/{ram_total_gb} GB    Disco {disco_uso}%    Red {red_mb} MB/s"
+    }
+  ]
+}
