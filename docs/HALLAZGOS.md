@@ -67,7 +67,7 @@ concreto, asi que la sospecha del kit era infundada.
 | Comando | Que hace |
 |---|---|
 | `POST conn` | estado completo (15+ campos) |
-| **`GET waterBlockScreen`** | **200 + el mismo JSON que `conn`** según esta medición — el kit lo daba por inexistente. **Sin confirmar**: desde otro equipo (2026-09-14) dio `400` las dos veces, con GET y con POST (ver `docs/VERIFICACION_INDEPENDIENTE.md`) |
+| **`GET waterBlockScreen`** | **`400` o silencio** — no responde 200 (el `200` que se midio al principio era una respuesta vieja mal emparejada) |
 | **`POST mode {"value":0..3}`** | **comando no documentado**; el panel lo guarda |
 | `POST realtimeDisplay {"enable":bool}` | 200, pero **no cambia `osdState`** |
 | `POST displayInSleep {"enable":bool}` | 200; **`true` deja `displayInSleep=1`** |

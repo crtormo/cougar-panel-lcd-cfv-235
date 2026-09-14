@@ -164,7 +164,7 @@ Medido hoy con el panel sano (`bootFinish: 1`):
 | Petición | Resultado |
 |---|---|
 | `POST conn` (sin cuerpo) | **200** + propiedades (15 campos) |
-| **`GET waterBlockScreen`** | **200** + las mismas propiedades ← **el kit lo daba por inexistente**. OJO: desde otro equipo (2026-09-14) dio **400**, sin confirmar (ver `docs/VERIFICACION_INDEPENDIENTE.md`) |
+| **`GET waterBlockScreen`** | **400** (o silencio) ← no responde 200. La medicion que daba 200 era una respuesta vieja mal emparejada (confirmado 2026-09-14) |
 | `GET waterBlockScreenId` | 400 |
 | `POST waterBlockScreen` | 400 |
 | `STATE waterBlockScreen` | 400 |
@@ -176,10 +176,11 @@ Medido hoy con el panel sano (`bootFinish: 1`):
 | `STATE all` **sin cuerpo** | **400** (exige la telemetría en el cuerpo) |
 | `POST inventado` | 400 |
 
-**`GET waterBlockScreen` merece atención**: responde `200` con el JSON de propiedades, igual
-que `conn`. No lista medios (eso lo pedía el kit), pero desmiente que el comando no exista.
-Sigue sin haber forma conocida de **listar ni borrar** medios: la única limpieza es
-`POST recovery {"enable":true}` (Reset), que borra todo y reinicia el panel.
+**`GET waterBlockScreen` no responde 200**: da `400` (o silencio). La medicion anterior que
+daba 200 era una respuesta vieja mal emparejada; lo confirmo la revision independiente y esta
+re-medicion. No hay forma conocida de **listar ni borrar** medios: la unica limpieza es
+`POST recovery {"enable":true}` (Reset), que en este firmware tampoco borra los medios (ver
+§10).
 
 ## 6.bis Comando NO documentado: `mode`
 
