@@ -196,6 +196,8 @@ Barrido de los nombres que expone la API interna del editor (`waterBlockScreen()
 | `POST displayInformations {"enable":true}` | 400 (no existe) |
 | `POST customScreenMode`, `customScreenSplitting`, `displayInSleepMode`, `fan`, `list`, `id`, `enable`, `defaultMedia`, `mediaInfoGet`, `mediaFrameGet`, `presetTheme`, `sleepClock`, `theme`, `sysinfo` | **silencio** (ni 200 ni 400: el panel los ignora) |
 | `POST displayInSleep`, `POST mode` | 200 (existen) |
+| `POST logo {"value":0..4}` | **200** (acepta), pero el campo `logo` de `conn` **no cambia** (queda en 2): como `mode`, su efecto no se ve por el protocolo |
+| `POST presetTheme` / `POST sleepClock` (con `value`, `id` o `enable`) | **silencio**: los campos `presetThemeId` y `sleepClockId` quedan en 0 y no se controlan por protocolo conocido |
 
 **`mode` es un comando real que el kit no documentaba.** No cambia `logo`, `osdState`,
 `background` ni `brightness`, así que su efecto visible no está determinado; queda como
