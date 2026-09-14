@@ -125,6 +125,13 @@ def main(argv=None):
             informe = argumentos[posicion + 1]
             del argumentos[posicion + 1]
         del argumentos[posicion]
+    # Deja constancia en el registro de que dialogo de ficheros se va a usar: cuando el
+    # portal falla, el boton no hace nada y sin esta linea no hay forma de saber por que.
+    if os.environ.get("GTK_USE_PORTAL") == "0":
+        print("dialogos de fichero: los propios de GTK (GTK_USE_PORTAL=0)", flush=True)
+    else:
+        print("dialogos de fichero: el portal del escritorio (necesita token de activacion)",
+              flush=True)
     aplicacion = Aplicacion(informe=informe)
     return aplicacion.run(argumentos)
 
