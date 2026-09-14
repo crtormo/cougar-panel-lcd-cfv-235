@@ -134,8 +134,10 @@ Probado dos veces:
 | desde el panel | dejo de responder **~107 s**; al volver, el espacio y el fondo **iguales** |
 | desde `cfv235` | contesto **200**; dejo de responder **~8 minutos**; al volver, espacio y fondo **exactamente iguales** |
 
-El kit dice que `recovery` "borra los medios y deja `osdState` en 0". Medido: **no los borra**.
-Y el reinicio tarda **entre 2 y 8 minutos**, no los 60-80 s que se suponen.
+El kit dice que `recovery` "borra los medios y deja `osdState` en 0". Medido: **no libera el
+espacio ni borra los medios**, pero **si restablece la capa OSD** (`osdState` 1 → 0) y **restaura
+el fondo que tenia configurado antes**. Y el reinicio tarda **entre 2 y 8 minutos**, no los
+60-80 s que se suponen.
 
 Mientras no responde, **sigue en el USB** (`lsusb` lo ve como `1d6b:0126`) y `/dev/hidrawN`
 existe, pero no contesta a `conn`. **Hay que esperar, no desconectarlo.**
