@@ -269,8 +269,9 @@ def cmd_power(args) -> int:
 
 def cmd_recovery(args) -> int:
     if not args.si:
-        print("`recovery` REINICIA el panel: el dispositivo desaparece del USB unos segundos "
-              "y se BORRAN todos los medios (fondos, temas subidos).\n"
+        print("`recovery` REINICIA el panel: desaparece del USB y tarda entre 2 y 8 minutos "
+              "en volver. NO borra los medios (medido: no libera espacio, apaga la OSD y "
+              "restaura el fondo anterior).\n"
               "Si de verdad quieres hacerlo: cfv235 recovery --si")
         return 2
     panel = _abrir(args)
@@ -664,7 +665,7 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("grados", type=int, choices=[0, 90, 180, 270])
     p.set_defaults(funcion=cmd_girar)
 
-    p = sub.add_parser("no-dormir", help="que no se apague sin trafico")
+    p = sub.add_parser("no-dormir", help="conmuta displayInSleep (efecto sobre el apagado sin confirmar)")
     p.add_argument("--dormir", action="store_true", help="volver a permitir el apagado")
     p.set_defaults(funcion=cmd_no_dormir)
 
@@ -672,7 +673,7 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("evento", nargs="?", default="resume")
     p.set_defaults(funcion=cmd_power)
 
-    p = sub.add_parser("recovery", help="Reset: reinicia y borra los medios")
+    p = sub.add_parser("recovery", help="Reset: reinicia (no borra los medios)")
     p.add_argument("--si", action="store_true", help="confirmar")
     p.set_defaults(funcion=cmd_recovery)
 

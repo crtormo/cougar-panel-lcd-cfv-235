@@ -1596,7 +1596,8 @@ class VentanaPrincipal(Adw.ApplicationWindow):
 
         self.interruptor_no_dormir = Adw.SwitchRow(
             title="No dormir",
-            subtitle="Impide que el panel se apague por inactividad.")
+            subtitle="Conmuta displayInSleep (mostrar en reposo); su efecto sobre el "
+                     "apagado no esta claro. Lo que de verdad lo evita es trafico periodico.")
         self.interruptor_no_dormir.set_icon_name("weather-clear-night-symbolic")
         self.interruptor_no_dormir.connect("notify::active", self._cambiar_no_dormir)
         grupo_control.add(self.interruptor_no_dormir)
@@ -1626,20 +1627,20 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         grupo_control.add(self.fila_acciones)
         caja.append(grupo_control)
 
-        # --- mantenimiento: recovery (borra los medios y reinicia el panel)
+        # --- mantenimiento: recovery (reinicia el panel y apaga la OSD; NO borra medios)
         grupo_mantenimiento = Adw.PreferencesGroup(
             title="Mantenimiento del panel",
-            description="Operaciones que dejan el panel sin medios (o sin conexion) unos "
-                        "segundos.")
+            description="Reinicio del panel: apaga la capa OSD y restaura el fondo; no "
+                        "borra medios.")
         self.fila_recovery = fila_accion(
             "Recovery",
-            "Borra TODOS los medios del panel y lo reinicia; tarda 60-80 s en volver.",
+            "Reinicia el panel y apaga la OSD; no borra medios. Tarda 2-8 min.",
             icono="edit-clear-all-symbolic")
         self.boton_recovery = Gtk.Button(label="Recovery...")
         self.boton_recovery.add_css_class("destructive-action")
         self.boton_recovery.set_valign(Gtk.Align.CENTER)
         self.boton_recovery.set_tooltip_text(
-            "Borra todos los medios y reinicia el panel. Pide confirmacion antes.")
+            "Reinicia el panel y apaga la capa OSD. Pide confirmacion antes.")
         self.boton_recovery.connect("clicked", self._confirmar_recovery)
         self.fila_recovery.add_suffix(self.boton_recovery)
         grupo_mantenimiento.add(self.fila_recovery)
@@ -1822,19 +1823,20 @@ class VentanaPrincipal(Adw.ApplicationWindow):
 
     def _texto_recovery(self):
         """Aviso del recovery, en un solo sitio (lo ensena el dialogo y lo prueba el test)."""
-        return ("Esto BORRA TODOS los medios guardados en el panel (fondo, temas y "
-                "cualquier imagen subida) y lo reinicia.\n\n"
-                "El panel desaparecera de la pantalla y del sistema entre 60 y 80 "
-                "segundos. No lo desconectes ni le cortes la corriente mientras tanto.\n\n"
-                "Al volver tendras que subir otra vez el fondo y el tema.")
+        return ("Esto REINICIA el panel y apaga la capa OSD (osdState pasa a 0), pero "
+                "NO borra los medios: medido, el espacio no se libera y el fondo vuelve "
+                "al que tenia configurado antes.\n\n"
+                "El panel desaparecera de la pantalla y del sistema entre 2 y 8 minutos. "
+                "No lo desconectes ni le cortes la corriente mientras tanto.\n\n"
+                "En este firmware no hay forma conocida de borrar medios.")
 
     def _confirmar_recovery(self, *_):
-        """Recovery pide confirmacion: borra TODOS los medios y deja el panel a oscuras."""
+        """Recovery pide confirmacion: reinicia el panel y apaga la capa OSD."""
         dialogo = Adw.AlertDialog(
             heading="Recovery del panel",
             body=self._texto_recovery())
         dialogo.add_response("cancelar", "Cancelar")
-        dialogo.add_response("recovery", "Borrar todo y reiniciar")
+        dialogo.add_response("recovery", "Reiniciar")
         dialogo.set_response_appearance("recovery", Adw.ResponseAppearance.DESTRUCTIVE)
         dialogo.set_close_response("cancelar")
         dialogo.choose(self, None, self._recovery_confirmado)

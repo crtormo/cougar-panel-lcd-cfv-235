@@ -233,7 +233,7 @@ para que no vuelvan. En total **92 pruebas**.
 | `cfv235 mantener` | mantiene el panel despierto (vuelve solo a brillo 0 sin tráfico) |
 | `cfv235 sondear` | sondeo del canal: descriptor + las 6 formas de escribir |
 | `cfv235 simular` | panel falso en `/dev/pts/N`, para trabajar sin hardware |
-| `cfv235 recovery --si` | Reset: reinicia el panel y borra los medios |
+| `cfv235 recovery --si` | Reset: reinicia el panel y apaga la OSD (no borra los medios) |
 
 La app de escritorio (`cfv235-gtk`) tiene **nueve páginas**:
 
@@ -399,7 +399,8 @@ docs/CANAL.md    el canal medido: descriptor, variantes, acuses, comandos, estad
 
 - **Vídeo (`mp4`) y grabación de pantalla** del editor oficial: fuera de alcance.
 - **Listar o borrar medios sueltos**: este firmware no tiene `mediaDelete` ni un listado (lo
-  hemos vuelto a comprobar). La única limpieza es `recovery`, que borra todo.
+  hemos vuelto a comprobar). Ni siquiera `recovery` los borra: reinicia y apaga la OSD, pero
+  no libera el espacio.
 - **Reproducir el aspecto exacto del editor oficial**: él dibuja en un `webview` de Electron
   con sus tipografías; aquí se dibuja con Pillow y DejaVu.
 - **Ventiladores y temperatura de placa**: en este equipo el módulo `nct6775` no está cargado,
