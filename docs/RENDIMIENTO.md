@@ -128,7 +128,28 @@ Los cuatro responden **200** y el panel los guarda (`conn` devuelve el mismo val
 **ninguno cambia nada observable por el protocolo**: ni `osdState`, ni la memoria libre, ni el
 brillo. Su efecto, si lo tiene, solo se ve en la pantalla fisica.
 
-## 10. Como repetir la medicion
+## 10. El `recovery` no borra los medios (y tarda mucho)
+
+Probado dos veces en el panel real, con el panel ya tocado por las pruebas de tamano:
+
+| Intento | Que paso |
+|---|---|
+| 1 (desde el panel) | el panel dejo de responder **~107 s** y volvio con `bootFinish=1`. El espacio y el fondo **iguales** |
+| 2 (desde `cfv235`) | `recovery` contesto **200**, el panel dejo de responder **~8 minutos** y volvio con `bootFinish=1`. El espacio (64,6 MB) y el fondo (`prueba_grande.jpg`) **exactamente igual** |
+
+Conclusiones:
+
+1. **`recovery` no libera la memoria** en este panel (firmware V1.0.5): se acepta, el panel se
+   reinicia, pero los medios siguen ahi. El kit dice que "borra los medios y deja osdState en
+   0"; medido, **no lo hace**.
+2. **El reinicio tarda entre ~2 y ~8 minutos**, no los 60-80 s que anuncia la app. Durante ese
+   rato el panel **sigue en el USB** (`lsusb` lo ve) y `/dev/hidrawN` existe, pero **no
+   contesta a `conn`** (`code=None`). Es normal: hay que esperar, no desconectarlo.
+
+Para saber si el panel esta vivo en ese estado, lo util no es que conteste (no lo hara), sino
+que **siga apareciendo en `lsusb`** con `ID 1d6b:0126`.
+
+## 11. Como repetir la medicion
 
 ```bash
 # deja libre el panel (app y servicio)
