@@ -182,7 +182,14 @@ class TestSubida(BaseSimulador):
         self.assertEqual(resultado.transported.code, 200)
         self.assertEqual(resultado.transported.cuerpo.strip(), "",
                          "con la sesion caducada el cuerpo va vacio")
-        self.assertEqual(sim.panel.subidas_fallidas, 1)
+        # `subir_datos` reintenta UNA vez los fallos que pueden mejorar (no los definitivos).
+        # Aqui la sesion caduca siempre contra este simulador, asi que el reintento tambien
+        # falla y el panel cuenta dos intentos. Lo que importa es que el reintento se hizo.
+        self.assertEqual(resultado.reintentos, 1, "deberia haber reintentado una vez")
+        self.assertEqual(sim.panel.subidas_fallidas, 2,
+                         "el fallo persiste: el intento y su reintento cuentan los dos")
+        self.assertTrue(any("reintento" in aviso for aviso in resultado.avisos),
+                        "el resultado deberia avisar de que hubo reintento")
 
     def test_no_sube_si_no_cabe(self):
         sim = self.levantar()
