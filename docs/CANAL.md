@@ -296,7 +296,7 @@ Consecuencias prácticas, que son las que importan:
 | Formato | ¿Lo acepta el panel? | ¿Lo muestra? |
 |---|---|---|
 | **PNG** | ✅ `{"state":"success"}`, `background` cambia | ✅ (subida verificada; el kit lo confirmó en pantalla) |
-| **JPEG** | ✅ **medido hoy**: 15 325 B, 16 bloques, acuse `200`, `background` → `["prueba.jpg"]` | ⚠️ **sin confirmar visualmente** (el kit no lo probó) |
+| **JPEG** | ✅ **medido**: 15 325 B, 16 bloques, acuse `200`, `background` → `["prueba.jpg"]` | ✅ **confirmado**: se subio un .jpg de 1024x240 y **se vio en pantalla** |
 | GIF | ✅ (según el kit) | ❌ pantalla blanca |
 
 El JPEG es una novedad frente al kit: **se acepta**. Queda por confirmar en pantalla si se
@@ -322,11 +322,17 @@ python3 -m cfv235 subir mi_imagen.png --osd
 ## 10. Riesgos (leer antes de subir cosas)
 
 - **Un fichero mayor que la memoria del panel lo deja atascado** (`bootFinish: 0`, `transport`
-  → 400) y el único desatascador conocido es **cortarle la alimentación de verdad** (~30 s;
-  desenchufar el USB no basta porque se alimenta de la fuente). El README del kit lo documenta
+  → 400). Medido: con **10,2 MB** se atasca (12,2 s de espera). Puede **recuperarse solo** unos
+  minutos despues, pero el kit documenta un caso en el que hizo falta **cortarle la alimentacion
+  de verdad** (~30 s; desenchufar el USB no basta porque se alimenta de la fuente). El limite
+  real esta **entre 5 y 10 MB**, no en los 20 MB que se le suponen (ver `docs/RENDIMIENTO.md`). El README del kit lo documenta
   como algo que le pasó. `cfv235.panel` **comprueba el espacio libre antes de subir** y aborta
   con un mensaje claro si no cabe; es la única defensa y el kit no la tiene.
 - **Solo un programa puede hablar con el panel a la vez.** El editor de COUGAR ocupa el HID en
   exclusiva.
-- `recovery` **reinicia el panel**: el dispositivo desaparece del USB unos segundos y se borran
-  todos los medios.
+- `recovery` **reinicia el panel y NO borra los medios.** Medido dos veces (una desde el panel y
+  otra desde `cfv235 recovery`): el comando se acepta (200), el panel deja de responder entre
+  **~107 s y ~8 minutos**, y al volver el espacio y el `background` estan **exactamente iguales**.
+  El kit dice que borra los medios: no lo hace con este firmware (V1.0.5).
+- Mientras no responde, **el panel sigue en el USB** (`lsusb` lo ve como `1d6b:0126`) y
+  `/dev/hidrawN` existe, pero no contesta a `conn`. **Hay que esperar, no desconectarlo.**
