@@ -600,5 +600,47 @@ class TestReproductor(unittest.TestCase):
         self.assertIn("ERROR", proceso.stdout)
 
 
+class TestFuentePantalla(unittest.TestCase):
+    """La fuente de reflejo de pantalla, con capturador inyectado (sin portal)."""
+
+    @staticmethod
+    def _png_bytes(color=(30, 180, 120), ancho=ANCHO, alto=ALTO):
+        if not HAY_PIL:
+            raise unittest.SkipTest("hace falta Pillow")
+        import io
+        memoria = io.BytesIO()
+        Image.new("RGB", (ancho, alto), color).save(memoria, format="PNG")
+        return memoria.getvalue()
+
+    def test_abrir_fuente_reconoce_pantalla(self):
+        for clave in ("pantalla", "stream", "PANTALLA", "pantalla:"):
+            fuente = video.abrir_fuente(clave)
+            self.assertIsInstance(fuente, video.FuentePantalla, clave)
+            fuente.cerrar()
+
+    def test_entrega_fotogramas_ajustados_sin_acabarse(self):
+        fuente = video.FuentePantalla(capturador=self._png_bytes, ajuste="estirar")
+        try:
+            for _ in range(3):                    # nunca se acaba: tres fotogramas seguidos
+                cuadro = fuente.siguiente()
+                self.assertIsNotNone(cuadro)
+                imagen, duracion = cuadro
+                self.assertEqual(imagen.size, (ANCHO, ALTO))
+                self.assertGreater(duracion, 0)
+        finally:
+            fuente.cerrar()
+
+    def test_el_error_del_capturador_se_convierte_en_error_video(self):
+        def roto():
+            raise RuntimeError("no hay portal")
+
+        fuente = video.FuentePantalla(capturador=roto)
+        try:
+            with self.assertRaises(video.ErrorVideo):
+                fuente.siguiente()
+        finally:
+            fuente.cerrar()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

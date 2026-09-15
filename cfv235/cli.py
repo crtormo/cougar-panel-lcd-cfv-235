@@ -554,6 +554,48 @@ def cmd_video(args) -> int:
     return 0 if subidos else 1
 
 
+def cmd_stream(args) -> int:
+    """`cfv235 stream`: reflejo de pantalla en vivo (escritorio -> capa OSD).
+
+    Es `video` con la fuente de pantalla, que no se acaba: se para con Ctrl+C. El techo
+    realista es ~3 fps (medido en el panel); lo comodo es 2 fps. La primera captura puede
+    pedir permiso al portal de escritorio.
+    """
+    from . import video
+    fuente = video.FuentePantalla(ajuste=args.ajuste)
+    panel = _abrir(args)
+    with panel:
+        props = _estado_panel(panel)
+        if props.get("brightness") == 0:
+            print("aviso: el panel esta a brillo 0 (no se vera nada). "
+                  "Se arregla con: cfv235 brillo 100", file=sys.stderr)
+        if props.get("bootFinish") == 0:
+            print("aviso: bootFinish=0, el panel rechazara las subidas", file=sys.stderr)
+        reproductor = video.Reproductor(panel, fuente, fps=args.fps, bucle=True,
+                                        capa=args.capa, verboso=args.verbose)
+        print(f"reflejo de pantalla -> panel {video.ANCHO}x{video.ALTO}")
+        print(f"  ajuste {args.ajuste}, {args.fps:g} fps, capa {args.capa}")
+        if args.fps > video.FPS_MAXIMO_REALISTA:
+            print(f"  aviso: por encima de {video.FPS_MAXIMO_REALISTA:g} fps el panel no da "
+                  f"mas; se saltaran fotogramas")
+        print("  la primera captura puede pedir permiso (portal de escritorio)")
+        print("  Ctrl+C para parar")
+
+        def avisar(n, ok, error, ms):
+            if not ok:
+                print(f"fotograma {n}: FALLO ({error})")
+            elif args.verbose or n % 10 == 0:
+                print(f"fotograma {n}: OK  ({ms:.0f} ms)")
+
+        try:
+            subidos = reproductor.reproducir(max_fotogramas=args.max, avisar=avisar)
+        except KeyboardInterrupt:
+            print("\ncortado")
+            subidos = reproductor.fotogramas
+        print(f"\n{reproductor.resumen()}")
+    return 0 if subidos else 1
+
+
 def cmd_modo(args) -> int:
     """`mode`: comando no documentado por el kit (medido: existe y acepta 0..3)."""
     panel = _abrir(args)
@@ -746,6 +788,15 @@ def construir_parser() -> argparse.ArgumentParser:
                    help="maximo de fotogramas (0 = sin limite)")
     p.add_argument("--capa", default="osd", choices=["osd", "fondo"])
     p.set_defaults(funcion=cmd_video)
+
+    p = sub.add_parser("stream", help="reflejo de pantalla en vivo (escritorio -> panel)")
+    p.add_argument("--fps", type=float, default=2.0,
+                   help="fotogramas por segundo (medido: el panel sostiene ~3)")
+    p.add_argument("--ajuste", default="ajustar", choices=["ajustar", "recortar", "estirar"])
+    p.add_argument("--max", type=int, default=0, metavar="N",
+                   help="maximo de fotogramas (0 = sin limite)")
+    p.add_argument("--capa", default="osd", choices=["osd", "fondo"])
+    p.set_defaults(funcion=cmd_stream)
 
     p = sub.add_parser("modo", help="modo de pantalla (comando no documentado, 0..3)")
     p.add_argument("valor", type=int, choices=[0, 1, 2, 3])

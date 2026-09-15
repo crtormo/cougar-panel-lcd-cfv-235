@@ -306,6 +306,17 @@ campo en `conn`, `logo` ni eso), pero **la pantalla no cambió en ningún caso**
 por el dueño). Son campos sin efecto visible en este panel: probablemente reservados o de
 otras variantes del firmware (p. ej. los paneles 480×480). Pendiente cerrado.
 
+### Stream: reflejo de pantalla en vivo (fuente nueva)
+
+Se añade `cfv235 stream` (y `video pantalla`): `FuentePantalla` captura el escritorio con
+el portal XDG y lo sirve fotograma a fotograma (nunca se acaba); el `Reproductor` lo sube
+a la capa OSD con nombre fijo, igual que el resto. `herramientas/capturar_pantalla.py` gana
+`capturar_bytes()` (bytes en memoria, sin mensajes por fotograma). 3 pruebas nuevas con
+capturador inyectado (corren sin portal).
+
+Pendiente de probar en Linux: la captura REAL por el portal y el ritmo real del stream. En
+el banco solo se compila y se prueba el motor con captura simulada.
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**

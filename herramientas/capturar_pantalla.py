@@ -11,12 +11,14 @@ cualquier aplicacion en Wayland. La primera vez GNOME pide permiso al usuario (y
     python3 herramientas/capturar_pantalla.py /tmp/pantalla.png [--interactivo]
 
 Con `--interactivo` GNOME deja elegir la ventana o el area; sin el, captura todo el escritorio.
+
+`capturar_bytes()` es la variante pensada para el stream: devuelve los bytes de la captura sin
+escribir en disco y sin imprimir nada por cada fotograma.
 """
 
 import sys
 import urllib.parse
 
-RAIZ = None
 import gi  # noqa: E402
 
 gi.require_version("Gio", "2.0")
@@ -28,11 +30,16 @@ IFACE_SCREENSHOT = "org.freedesktop.portal.Screenshot"
 IFACE_REQUEST = "org.freedesktop.portal.Request"
 
 
-def capturar(destino: str, interactivo: bool = False, timeout: float = 60.0) -> int:
+def capturar_bytes(interactivo: bool = False, timeout: float = 5.0) -> bytes:
+    """Captura el escritorio y devuelve los bytes (PNG). No imprime nada.
+
+    Lanza `RuntimeError` si no hay bus de sesion, el portal no responde o la captura se
+    rechaza/cancela. `timeout` corto para que un stream no se quede colgado si el usuario no
+    autoriza a tiempo: se reintenta en el siguiente fotograma.
+    """
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     if bus is None:
-        print("!! no hay bus de sesion", file=sys.stderr)
-        return 1
+        raise RuntimeError("no hay bus de sesion (¿hay un escritorio activo?)")
 
     resultado = {"codigo": 1, "uri": None}
     bucle = GLib.MainLoop()
@@ -49,9 +56,7 @@ def capturar(destino: str, interactivo: bool = False, timeout: float = 60.0) -> 
             GLib.Variant("(sa{sv})", ("", {"interactive": GLib.Variant("b", interactivo)})),
             GLib.VariantType("(o)"), Gio.DBusCallFlags.NONE, 5000, None)
     except GLib.Error as exc:
-        print(f"!! el portal no responde: {exc.message}", file=sys.stderr)
-        print("   (¿esta xdg-desktop-portal-gnome instalado y en marcha?)", file=sys.stderr)
-        return 1
+        raise RuntimeError(f"el portal no responde: {exc.message}") from exc
     handle = respuesta.unpack()[0]
     bus.signal_subscribe(PORTAL, IFACE_REQUEST, "Response", handle, None,
                          Gio.DBusSignalFlags.NONE, al_responder, None)
@@ -61,18 +66,33 @@ def capturar(destino: str, interactivo: bool = False, timeout: float = 60.0) -> 
     bucle.run()
 
     if resultado["codigo"] != 0 or not resultado["uri"]:
-        print(f"!! captura rechazada o cancelada (codigo {resultado['codigo']})", file=sys.stderr)
-        return 1
+        raise RuntimeError(f"captura rechazada o cancelada (codigo {resultado['codigo']})")
     # el portal devuelve un URI con la ruta escapada (%C3%A1 = "a" con tilde)
     origen = urllib.parse.unquote(resultado["uri"].replace("file://", ""))
     try:
-        datos = open(origen, "rb").read()
+        with open(origen, "rb") as fh:
+            return fh.read()
+    except OSError as exc:
+        raise RuntimeError(f"no pude leer la captura: {exc}") from exc
+
+
+def capturar(destino: str, interactivo: bool = False, timeout: float = 60.0) -> int:
+    """Captura y escribe el PNG en `destino`. Devuelve 0 si fue bien, 1 si no."""
+    try:
+        datos = capturar_bytes(interactivo, timeout)
+    except RuntimeError as exc:
+        print(f"!! {exc}", file=sys.stderr)
+        mensaje = str(exc).lower()
+        if "portal" in mensaje or "bus de sesion" in mensaje:
+            print("   (¿esta xdg-desktop-portal-gnome instalado y en marcha?)", file=sys.stderr)
+        return 1
+    try:
         with open(destino, "wb") as fh:
             fh.write(datos)
-        print(f"captura: {destino} ({len(datos)} B) desde {origen}")
     except OSError as exc:
-        print(f"!! no pude copiar la captura: {exc}", file=sys.stderr)
+        print(f"!! no pude escribir la captura: {exc}", file=sys.stderr)
         return 1
+    print(f"captura: {destino} ({len(datos)} B)")
     return 0
 
 
