@@ -317,6 +317,24 @@ capturador inyectado (corren sin portal).
 Pendiente de probar en Linux: la captura REAL por el portal y el ritmo real del stream. En
 el banco solo se compila y se prueba el motor con captura simulada.
 
+### Pendiente 9 resuelto: la capa la decide el tipo de medio (tres valores)
+
+Releyendo la captura del editor, el byte [9] de cada bloque de medios codifica la capa, y
+hay TRES valores, no dos:
+
+| byte [9] | capa | ejemplo |
+|---|---|---|
+| `0x02` | fondo | el PNG de 1,58 MB |
+| `0x01` | OSD | todos los `.osd` |
+| `0x00` | **video** | el `.mp4` que sube el editor |
+
+El `transport` no lleva un campo de capa: el tipo va en cada bloque. El contador [4]
+tambien varia por tipo (0x13 fondo, 0x16 OSD, 0x0f video).
+
+**NUEVO por investigar:** que hace el `0x00`. Si el panel reproduce el video internamente,
+se podria subir un mp4 como `0x00` y olvidarse del stream OSD a 3 fps: el panel lo
+reproduciria el solo a 60 Hz.
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**

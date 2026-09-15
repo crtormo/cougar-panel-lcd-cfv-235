@@ -52,3 +52,18 @@ incrementando entre transferencias (0x2c, 0x2d, …), como ya se sospechaba.
 - `captura_editor.muestra.txt` — primeras escrituras, para ver el formato de línea.
 - `reconstruidos/primer_osd.bin` — un `.osd` reconstruido (PNG 1920×462).
 - `reconstruidos/video_subido.mp4` — el mp4 que el editor subió (re-codificado).
+
+## La capa (byte [9] de los bloques): tres tipos
+
+Analizando cada bloque de la captura se confirma que la capa la decide el **tipo de
+medio**, codificado en el byte [9] del informe de medios, no un campo del `transport`:
+
+| byte [9] | capa | se vio en |
+|---|---|---|
+| `0x02` | fondo | el PNG de 1,58 MB |
+| `0x01` | OSD | todos los `.osd` (el dashboard en vivo) |
+| `0x00` | **video** | el `.mp4` (63 KB) |
+
+El contador [4] acompaña al tipo (0x13 fondo, 0x16 OSD, 0x0f video). Queda por
+determinar qué hace el tipo `0x00`: si el panel reproduce el vídeo por sí solo, sería
+la vía para vídeo a 60 Hz sin stream OSD.

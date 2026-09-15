@@ -117,7 +117,7 @@ no ser 1920x462). El límite de tamaño de fichero es el mismo: 5-10 MB.
 - Dimensiones máximas por formato (¿rechaza algo mayor que cierta resolución?).
 - Si el GIF tiene algún tamaño/duración en que **sí** se anime (hoy nos sale blanco).
 
-### 9. ¿Solo fondo, solo OSD, o ambos?
+### 9. ¿Solo fondo, solo OSD, o ambos? — RESUELTO: 3 tipos en el byte [9] (0x02 fondo, 0x01 OSD, 0x00 video)
 
 Sabido: el panel compone **dos capas** — fondo (acumula) y OSD (superposición, reutiliza hueco).
 Nosotros subimos a una u otra con `capa`.
