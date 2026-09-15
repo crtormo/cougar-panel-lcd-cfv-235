@@ -85,7 +85,12 @@ function abrir() {
   const d = devices().find((x) => x.vendorId === VID && x.productId === PID);
   if (!d) return false;
   try { if (hid) hid.close(); } catch (e) { /* nada */ }
-  hid = new HID(d.path);
+  try {
+    hid = new HID(d.path);
+  } catch (e) {
+    hid = null;              // el dispositivo desaparecio justo en el corte
+    return false;
+  }
   buffer = Buffer.alloc(0);
   respuestas = [];
   hid.on('data', (datos) => {
@@ -99,11 +104,12 @@ function abrir() {
       if (info.code !== null) respuestas.push({ ...info, cuando: Date.now() });
     }
   });
-  hid.on('error', () => { /* el reinicio corta el USB */ });
+  hid.on('error', () => { hid = null; });   // el handle muere con la desconexion: se descarta
   return true;
 }
 
 async function pedirConn(timeoutMs) {
+  if (!hid) return null;
   const { t, seq: s } = tramaConn();
   respuestas = [];
   const cuerpo = Buffer.concat([Buffer.from([0x00]), t,
