@@ -27,7 +27,7 @@ ahí corre el editor oficial de COUGAR y se pueden espiar sus bytes por el inspe
 
 ## Lo que falta (ordenado por valor)
 
-### 1. Qué pone `bootFinish` en 1 (la puerta de todo) — PENDIENTE (cortar la fuente, no el USB)
+### 1. Qué pone `bootFinish` en 1 — RESUELTO: tras reconectar responde ya con 1 (0 s); el 0 es atasco
 
 Sin `bootFinish=1` el panel no acepta `transport` (da 400) ni registra nada. Queremos el
 **ciclo exacto** que lo deja en 1.

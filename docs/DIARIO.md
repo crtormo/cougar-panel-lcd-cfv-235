@@ -282,6 +282,22 @@ Y separa dos fases del arranque que no son lo mismo:
 Para no volver a confundirlas, `herramientas/windows/sondas/vigilar_boot.js` distingue los
 tres estados: USB ausente / presente pero mudo / bootFinish=0 o 1.
 
+## 2026-09-14 — Windows: ciclo de alimentación (medida real)
+
+Medido con `vigilar_boot.js` corriendo en la consola del dueño (mi entorno no mantiene
+procesos entre turnos). Resultado del ciclo completo:
+
+```
+t=14s  USB ausente (corte detectado)
+t=14s -> t=50s  USB ausente (~36 s desenchufado)
+t=52s  USB reaparecido -> conn 200, bootFinish=1  (0 s de retraso)
+```
+
+**Conclusión del pendiente #1:** en un corte/reconexión normal **no existe el estado
+`bootFinish=0`** — el panel reaparece en el USB ya listo. Por tanto `bootFinish=0` es
+síntoma de **atasco** (memoria llena u otro), no del arranque. La pantalla/medio puede
+tardar un poco más en mostrarse, pero el control responde al instante.
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**
