@@ -61,7 +61,7 @@ El editor sube algo con extensión `.osd` que no es PNG. Queremos saber su forma
 - Los primeros bytes del fichero que sube (está en su directorio de trabajo temporal).
 - Compararlos con el PNG origen: ¿es PNG con cabecera distinta? ¿otro contenedor?
 
-### 4. `osdState`, `mode`, `logo`, `presetThemeId`, `sleepClockId` — qué significan en pantalla
+### 4. `osdState`, `mode`, `logo`, `presetThemeId`, `sleepClockId` — RESUELTO: mode y logo no cambian nada visible
 
 `mode` y `logo` aceptan 200 pero **no cambian nada visible por `conn`**. Solo mirando la pantalla
 se sabe qué hacen.

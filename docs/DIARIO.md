@@ -298,6 +298,14 @@ t=52s  USB reaparecido -> conn 200, bootFinish=1  (0 s de retraso)
 síntoma de **atasco** (memoria llena u otro), no del arranque. La pantalla/medio puede
 tardar un poco más en mostrarse, pero el control responde al instante.
 
+### Pendiente 4 resuelto: mode y logo no tienen efecto visible
+
+Con un patrón de colores 1920×462 visible en el fondo (y una OSD encima) se recorrió
+`mode` 0→1→2→3 y `logo` 0→4: todos responden 200 y el panel los acepta (`mode` cambia el
+campo en `conn`, `logo` ni eso), pero **la pantalla no cambió en ningún caso** (confirmado
+por el dueño). Son campos sin efecto visible en este panel: probablemente reservados o de
+otras variantes del firmware (p. ej. los paneles 480×480). Pendiente cerrado.
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**
