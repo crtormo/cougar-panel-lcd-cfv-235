@@ -1115,6 +1115,15 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         self._video_activo = False
         self._video_fotogramas = 0
 
+        # Keepalive: trafico periodico (telemetria) para que el panel no se apague por
+        # espera cuando solo hay una foto puesta, sin dashboard ni video en marcha.
+        # El hilo lo arranca el interruptor de la pagina Estado (y solo hablo con el
+        # panel si el dashboard/video no estan corriendo: ellos ya generan trafico).
+        self._parar_keepalive = None
+        self._hilo_keepalive = None
+        self._keepalive_activo = False
+        self._keepalive_tramas = 0
+
         # Evita que rellenar los controles dispare las ordenes al panel.
         self._silenciar = False
 
@@ -1230,6 +1239,8 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         # trabajo: mirar, crear y aplicar.
         self._anadir_pagina(paginas_extra.pagina_patrones(self), "patrones", "Patrones",
                             "view-grid-symbolic")
+        self._anadir_pagina(paginas_extra.pagina_fondos(self), "fondos", "Fondos",
+                            "wallpaper-symbolic")
         self._anadir_pagina(paginas_extra.pagina_temas(self), "editor", "Editor",
                             "document-edit-symbolic")
         self._anadir_pagina(paginas_extra.pagina_paletas(self), "paletas", "Paletas",
@@ -1248,6 +1259,10 @@ class VentanaPrincipal(Adw.ApplicationWindow):
 
         # A partir de aqui los cambios de controles ya se apuntan en las preferencias.
         self._persistir_activo = True
+
+        # Keepalive: si quedo activado de la sesion anterior, arranca al montar.
+        if bool(self._config.get("keepalive", False)):
+            self._arrancar_keepalive()
 
     # --- menu y atajos
 
@@ -1358,7 +1373,9 @@ class VentanaPrincipal(Adw.ApplicationWindow):
                   "Ctrl+3   Temas\n"
                   "Ctrl+4   Dashboard\n"
                   "Ctrl+5   Video\n"
-                  "Ctrl+6   Diagnostico"))
+                  "Ctrl+6   Diagnostico\n"
+                  "\nLas paginas Patrones, Fondos, Editor y Paletas se eligen en la barra "
+                  "lateral."))
         dialogo.add_response("cerrar", "Cerrar")
         dialogo.set_close_response("cerrar")
         dialogo.present(self)
@@ -1603,6 +1620,15 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         self.interruptor_no_dormir.set_icon_name("weather-clear-night-symbolic")
         self.interruptor_no_dormir.connect("notify::active", self._cambiar_no_dormir)
         grupo_control.add(self.interruptor_no_dormir)
+
+        self.interruptor_keepalive = Adw.SwitchRow(
+            title="Mantener el panel despierto",
+            subtitle="Trafico periodico para que la imagen no se apague a ~1 minuto. "
+                     "Solo actua sin dashboard ni video: ellos ya generan trafico.")
+        self.interruptor_keepalive.set_icon_name("coffee-symbolic")
+        self.interruptor_keepalive.set_active(bool(self._config.get("keepalive", False)))
+        self.interruptor_keepalive.connect("notify::active", self._cambiar_keepalive)
+        grupo_control.add(self.interruptor_keepalive)
 
         self.fila_acciones = fila_accion("Acciones",
                                          "Refresca el estado o despierta el panel.",
@@ -2190,6 +2216,66 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         grados = GRADOS_ROTACION[indice]
         self._orden("rotacion a %d" % grados, lambda panel: panel.girar(grados),
                     exito="Rotacion aplicada: %d grados" % grados, fila=fila)
+
+    # ------------------------------------------------------------------ keepalive
+
+    INTERVALO_KEEPALIVE = 25.0   # medido: el panel se apaga ~1 min sin trafico
+
+    def _cambiar_keepalive(self, fila, _parametro=None):
+        activo = fila.get_active()
+        self._guardar(keepalive=bool(activo))
+        if activo:
+            self._arrancar_keepalive()
+            self.avisar("Keepalive activado: el panel se mantiene despierto.")
+        else:
+            self._parar_hilo_keepalive()
+            self.avisar("Keepalive desactivado.")
+
+    def _arrancar_keepalive(self):
+        """Arranca el hilo del keepalive (si no esta ya)."""
+        if self._keepalive_activo:
+            return
+        self._keepalive_activo = True
+        self._parar_keepalive = threading.Event()
+        self._hilo_keepalive = threading.Thread(
+            target=self._bucle_keepalive, name="keepalive", daemon=True)
+        self._hilo_keepalive.start()
+
+    def _parar_hilo_keepalive(self):
+        self._keepalive_activo = False
+        if self._parar_keepalive is not None:
+            self._parar_keepalive.set()
+        # NO se hace join() aqui: si alguien llama desde el propio hilo se colgaria.
+
+    def _bucle_keepalive(self):
+        """Telemetria cada INTERVALO_KEEPALIVE sin dashboard ni video en marcha.
+
+        Usa `compartido.sesion()` en cada trama (nunca un Panel capturado): si el panel
+        se reconecta en otro /dev/hidrawN, la trama siguiente va al objeto nuevo. Los
+        errores se ignoran — el keepalive es oportunista, el estado lo pinta la pagina
+        Estado. Si el dashboard o el video se ponen en marcha, el hilo se queda dormido
+        esperando a que terminen (ellos ya generan trafico).
+        """
+        parar = self._parar_keepalive
+        while parar is not None and not parar.wait(self.INTERVALO_KEEPALIVE):
+            if self._dashboard_activo or self._video_activo:
+                continue
+            try:
+                from cfv235.panel import telemetria_desde_sensores
+                Sensores, _error = cargar_sensores()
+                datos = None
+                if Sensores is not None:
+                    try:
+                        datos = telemetria_desde_sensores(Sensores(intervalo=1.0).muestra())
+                    except Exception:             # noqa: BLE001
+                        datos = None
+                with self.panel.sesion() as panel:
+                    with escritura_fiable(panel):
+                        panel.telemetria(datos)
+                self._keepalive_tramas += 1
+            except Exception:                     # noqa: BLE001
+                # Sin panel u ocupado: se reintenta en el proximo ciclo.
+                continue
 
     def _cambiar_no_dormir(self, fila, _parametro=None):
         if self._silenciar:
@@ -4906,6 +4992,7 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         if self._parar_video is not None:
             self._parar_video.set()
         self._video_activo = False
+        self._parar_hilo_keepalive()
         self.panel.cerrar()
 
     def _al_cerrar(self, *_):

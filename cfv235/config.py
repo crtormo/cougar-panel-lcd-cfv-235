@@ -52,6 +52,8 @@ DEFECTOS = {
     # --- carpetas recordadas
     "carpeta_imagen": "",
     "carpeta_video": "",
+    # --- keepalive
+    "keepalive": False,        # trafico periodico para que el panel no se apague
     # --- ventana
     "ancho": 1060,
     "alto": 800,
@@ -67,6 +69,7 @@ _TIPOS = {
     "fps": int,
     "bucle": bool,
     "ajuste": str,
+    "keepalive": bool,
     "carpeta_imagen": str,
     "carpeta_video": str,
     "ancho": int,

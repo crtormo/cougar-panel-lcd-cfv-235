@@ -656,6 +656,284 @@ def pagina_patrones(ventana):
     return _GaleriaPatrones(ventana).raiz
 
 
+# ================================================================ fondos generados
+
+# Fondos generados por codigo, siguiendo docs/PROMPT_FOTOS.md: composiciones en bandas
+# horizontales (el panel es 4.16:1), fondo oscuro casi-negro (#0b0e14 y parecidos),
+# alto contraste y franja central despejada para que encima quepan los datos del PC.
+
+CATALOGO_FONDOS = ("degradado-azul", "montanas", "olas", "estrellas", "ciudad")
+
+
+def _fondo_bytes(nombre, ancho=1920, alto=462):
+    """PNG de un fondo EN MEMORIA con Pillow. Cada fondo es una funcion _fondo_*."""
+    funcion = {
+        "degradado-azul": _fondo_degradado_azul,
+        "montanas": _fondo_montanas,
+        "olas": _fondo_olas,
+        "estrellas": _fondo_estrellas,
+        "ciudad": _fondo_ciudad,
+    }.get(nombre)
+    if funcion is None:
+        raise ValueError("no conozco el fondo %r" % nombre)
+    imagen = funcion(ancho, alto)
+    salida = io.BytesIO()
+    imagen.save(salida, format="PNG", optimize=True)
+    return salida.getvalue()
+
+
+def _banda_degradado(dib, alto, arriba, abajo, x0=0, x1=1920):
+    """Pinta un degradado vertical entre dos colores RGB."""
+    for y in range(alto):
+        t = y / max(alto - 1, 1)
+        dib.line([(x0, y), (x1, y)],
+                 fill=tuple(int(arriba[i] + (abajo[i] - arriba[i]) * t) for i in range(3)))
+
+
+def _fondo_degradado_azul(ancho, alto):
+    """Degradado azul COUGAR: de casi-negro a azul profundo, franja central oscura."""
+    from PIL import Image, ImageDraw
+    imagen = Image.new("RGB", (ancho, alto), (8, 10, 18))
+    dib = ImageDraw.Draw(imagen)
+    _banda_degradado(dib, alto, (10, 14, 22), (0, 55, 90))
+    # franja central despejada (encaja con la fila del dashboard): se oscurece el medio
+    franja = int(alto * 0.28)
+    dib.rectangle([0, (alto - franja) // 2, ancho, (alto + franja) // 2], fill=(6, 8, 14))
+    return imagen
+
+
+def _fondo_montanas(ancho, alto):
+    """Montanas geometricas en capas, con cielo degradado. Silueta dentada determinista."""
+    from PIL import Image, ImageDraw
+    imagen = Image.new("RGB", (ancho, alto))
+    dib = ImageDraw.Draw(imagen)
+    _banda_degradado(dib, alto, (12, 16, 28), (24, 34, 60))
+    capas = [
+        ((4, 40, 70), 0.55, 6),    # (color, altura de la cresta, densidad de picos)
+        ((3, 26, 48), 0.72, 4),
+        ((2, 14, 28), 0.86, 3),
+    ]
+    for color, altura, picos in capas:
+        base = int(alto * altura)
+        puntos = [(0, alto)]
+        paso = ancho / (picos * 2)
+        for i in range(picos * 2 + 1):
+            x = i * paso
+            cima = base - (alto * 0.10 if i % 2 == 0 else 0)
+            puntos.append((x, cima))
+        puntos.append((ancho, alto))
+        dib.polygon(puntos, fill=color)
+    return imagen
+
+
+def _fondo_olas(ancho, alto):
+    """Olas horizontales de luz que se desplazan: bandas sinusoidales suaves."""
+    import math
+    from PIL import Image, ImageDraw
+    imagen = Image.new("RGB", (ancho, alto), (8, 10, 18))
+    dib = ImageDraw.Draw(imagen)
+    for indice in range(5):
+        y_centro = alto * (0.2 + 0.15 * indice)
+        amplitud = 14 + 4 * indice
+        color = (0, int(45 + 12 * indice), int(75 + 20 * indice))
+        puntos = [(x, y_centro + amplitud * math.sin(x / 220.0 + indice * 1.3))
+                  for x in range(0, ancho + 20, 20)]
+        puntos += [(ancho, alto), (0, alto)]
+        dib.polygon(puntos, fill=color)
+    # franja central despejada
+    dib.rectangle([0, alto * 0.36, ancho, alto * 0.64], fill=(6, 8, 14))
+    return imagen
+
+
+def _fondo_estrellas(ancho, alto):
+    """Cielo con estrellas: puntos deterministas sobre un degradado nocturno."""
+    import random
+    from PIL import Image, ImageDraw
+    imagen = Image.new("RGB", (ancho, alto))
+    dib = ImageDraw.Draw(imagen)
+    _banda_degradado(dib, alto, (6, 8, 16), (14, 24, 48))
+    aleatorio = random.Random(235)            # semilla fija: la vista previa es estable
+    for _ in range(240):
+        x, y = aleatorio.randrange(ancho), aleatorio.randrange(alto)
+        tamano = aleatorio.choice((1, 1, 1, 2))
+        brillo = aleatorio.randrange(120, 255)
+        dib.rectangle([x, y, x + tamano - 1, y + tamano - 1], fill=(brillo, brillo, brillo))
+    return imagen
+
+
+def _fondo_ciudad(ancho, alto):
+    """Ciudad al atardecer: silueta de edificios contra un cielo calido."""
+    import random
+    from PIL import Image, ImageDraw
+    imagen = Image.new("RGB", (ancho, alto))
+    dib = ImageDraw.Draw(imagen)
+    _banda_degradado(dib, alto, (40, 18, 60), (120, 60, 40))
+    aleatorio = random.Random(47)
+    x = 0
+    while x < ancho:
+        ancho_edificio = aleatorio.randrange(60, 160)
+        alto_edificio = aleatorio.randrange(int(alto * 0.30), int(alto * 0.62))
+        dib.rectangle([x, alto - alto_edificio, min(x + ancho_edificio, ancho), alto],
+                      fill=(10, 10, 18))
+        # ventanas encendidas
+        for vx in range(x + 8, min(x + ancho_edificio, ancho) - 10, 22):
+            for vy in range(alto - alto_edificio + 10, alto - 12, 26):
+                if aleatorio.random() < 0.35:
+                    dib.rectangle([vx, vy, vx + 8, vy + 12], fill=(220, 170, 80))
+        x += ancho_edificio + aleatorio.randrange(4, 18)
+    return imagen
+
+
+class _GaleriaFondos:
+    """Galeria de los fondos generados de `CATALOGO_FONDOS`, con miniatura y subida.
+
+    Se suben a la capa de FONDO (son para dejarlos puestos), con opcion de OSD para
+    quien quiera cambiarlos a menudo (docs/PROMPT_FOTOS.md 4).
+    """
+
+    def __init__(self, ventana):
+        self.ventana = ventana
+        self._generacion = 0
+        self._pictures = {}
+        self._botones_subir = {}
+
+        caja = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+
+        grupo_info = Adw.PreferencesGroup(
+            title="Fondos para el panel",
+            description="Composiciones generadas por codigo a 1920x462 (bandas "
+                        "horizontales, fondo casi-negro, franja central despejada para "
+                        "los datos del PC). Se suben a la capa de FONDO.")
+        caja.append(grupo_info)
+
+        grupo_capa = Adw.PreferencesGroup(
+            title="Capa de subida",
+            description="El fondo acumula memoria en el panel; la OSD reutiliza su hueco. "
+                        "Si vas a cambiar de fondo a menudo, elige OSD.")
+        self.fila_capa = Adw.ComboRow(
+            title="Capa", subtitle="A que capa del panel se sube el fondo.",
+            model=Gtk.StringList.new(["fondo", "OSD"]))
+        self.fila_capa.set_icon_name("layers-symbolic")
+        grupo_capa.add(self.fila_capa)
+        caja.append(grupo_capa)
+
+        grupo_galeria = Adw.PreferencesGroup(title="Galeria")
+        for nombre in CATALOGO_FONDOS:
+            fila = _ayuda.fila_accion(nombre, "Generando miniatura...",
+                                      icono="image-x-generic-symbolic")
+            picture = Gtk.Picture()
+            picture.set_content_fit(Gtk.ContentFit.CONTAIN)
+            picture.set_size_request(-1, 120)
+            fila.add_suffix(picture)
+            boton = _boton("Subir", lambda _b, n=nombre: self._subir(n))
+            boton.set_valign(Gtk.Align.CENTER)
+            fila.add_suffix(boton)
+            self._pictures[nombre] = picture
+            self._botones_subir[nombre] = boton
+            grupo_galeria.add(fila)
+        caja.append(grupo_galeria)
+
+        grupo_acciones = Adw.PreferencesGroup(
+            title="Estado",
+            description="Las miniaturas se generan en memoria; nada toca el panel hasta "
+                        "que pulsas Subir.")
+        self.fila_estado = _ayuda.fila_accion("Miniaturas", "Generando...",
+                                              icono="view-refresh-symbolic")
+        self.spinner = Gtk.Spinner()
+        self.spinner.set_valign(Gtk.Align.CENTER)
+        self.spinner.set_visible(False)
+        self.fila_estado.add_suffix(self.spinner)
+        grupo_acciones.add(self.fila_estado)
+        caja.append(grupo_acciones)
+
+        self.raiz = _ayuda.pagina_desplazable(caja, ancho_maximo=1040)
+
+        # Las miniaturas se generan cuando la pagina ya esta montada.
+        GLib.idle_add(self._refrescar_miniaturas)
+
+    def _capa(self):
+        eleccion = self.fila_capa.get_selected_item()
+        texto = eleccion.get_string() if eleccion is not None else "fondo"
+        return "osd" if texto == "OSD" else "fondo"
+
+    def _refrescar_miniaturas(self, *_):
+        """Genera las miniaturas en un hilo: Pillow tarda y no debe bloquear la UI."""
+        self._generacion += 1
+        generacion = self._generacion
+        self.spinner.set_visible(True)
+        self.spinner.start()
+        self.fila_estado.set_subtitle("Generando miniaturas...")
+
+        def tarea():
+            return {nombre: _reducir_png(_fondo_bytes(nombre)) for nombre in CATALOGO_FONDOS}
+
+        def hecho(miniaturas):
+            self.spinner.stop()
+            self.spinner.set_visible(False)
+            if generacion != self._generacion:
+                return False                       # pidieron refrescar de nuevo
+            for nombre, datos in miniaturas.items():
+                try:
+                    self._pictures[nombre].set_from_bytes(datos, "miniatura.png")
+                except Exception:                 # noqa: BLE001
+                    pass
+            self.fila_estado.set_subtitle("Miniaturas listas.")
+            return False
+
+        def fallo(exc):
+            self.spinner.stop()
+            self.spinner.set_visible(False)
+            self.fila_estado.set_subtitle("No se pudieron generar las miniaturas.")
+            _avisar_error(self.ventana, "Fondos: %s" % _mensaje(exc, corto=True))
+            return False
+
+        _ayuda.en_hilo(tarea, hecho, fallo, nombre="fondos-miniaturas")
+        return False
+
+    def _subir(self, nombre):
+        """Sube UN fondo a la capa elegida, sin bloquear la interfaz."""
+        boton = self._botones_subir.get(nombre)
+        if boton is not None:
+            boton.set_sensitive(False)
+        capa = self._capa()
+        self.fila_estado.set_subtitle("Subiendo el fondo %s (capa %s)..." % (nombre, capa))
+
+        def tarea():
+            datos = _fondo_bytes(nombre)
+            return _subir_bytes(self.ventana, datos, _nombre_seguro(nombre, "fondo"),
+                                capa=capa)
+
+        def hecho(resultado):
+            if boton is not None:
+                boton.set_sensitive(True)
+            self.fila_estado.set_subtitle(resultado.resumen())
+            if resultado.ok:
+                _avisar(self.ventana, "Fondo %s subido al panel (capa %s)" % (nombre, capa))
+            else:
+                _avisar_error(self.ventana, "El panel rechazo el fondo %s: %s"
+                              % (nombre, resultado.motivo or resultado.resumen()))
+            return False
+
+        def fallo(exc):
+            if boton is not None:
+                boton.set_sensitive(True)
+            self.fila_estado.set_subtitle("No se pudo subir el fondo %s." % nombre)
+            _avisar_error(self.ventana, "Fondo %s: %s" % (nombre, _mensaje(exc, corto=True)))
+            return False
+
+        _ayuda.en_hilo(tarea, hecho, fallo, nombre="fondo-subir")
+        return False
+
+
+def pagina_fondos(ventana):
+    """Pagina: galeria de fondos generados por codigo (docs/PROMPT_FOTOS.md).
+
+    Devuelve el widget raiz. Se puede llamar sin panel: solo las acciones de subida
+    hablan con el, y avisan con un toast si no esta.
+    """
+    return _GaleriaFondos(ventana).raiz
+
+
 # ================================================================ 2. editor de temas
 
 
