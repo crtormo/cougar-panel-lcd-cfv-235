@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import json
 import logging
+import shutil
+import subprocess
 import time
 import urllib.parse
 import urllib.request
@@ -138,6 +140,197 @@ class Clima:
         if 71 <= codigo <= 77 or codigo in (85, 86):
             return "Nieve"
         return "?"
+
+
+class Notificaciones:
+    """Cuenta y resume las notificaciones del escritorio. Interfaz: `.muestra()`.
+
+    PORTABILIDAD HONESTA (investigado en un VPS headless, 2026-09):
+
+    * El estandar freedesktop (`org.freedesktop.Notifications` en D-Bus) define
+      `Notify` para ENVIAR y `NotificationClosed`/`ActionInvoked` para AVISAR: no hay
+      metodo ni propiedad que devuelva el historial. Por eso `notify-send` no sirve
+      para leer y no existe API portable.
+    * La API de D-Bus solo se puede *escuchar* (Connect + signal listener en vivo).
+      Eso exigiria un hilo/bucle GLib pegado a un bus de sesion, y ademas solo veria
+      lo notificado DESPUES de arrancar el panel: no da "ultima notificacion" al
+      abrir. YAGNI.
+    * GNOME Shell no expone su historial de ningun modo (ni D-Bus ni CLI).
+    * Dunst si lo hace: `dunstctl history` imprime el historial en JSON, y
+      `dunstctl count history` el total.
+
+    Se implementa el minimo portable: si `dunstctl` existe en el PATH Y hay bus de
+    sesion, se lee `dunstctl count history` (contador) mas `dunstctl history` (ultima,
+    el historial viene en orden cronologico, el ultimo elemento es la mas reciente).
+    En cualquier otro caso (GNOME, KDE, headless, dunst apagado) `muestra()` devuelve
+    `{}` y el widget se auto-oculta, que es el patron del repo. No hay dependencias
+    nuevas: `subprocess` de stdlib, ni siquiera el `gi` perezoso que ya usa la app GTK.
+
+    `lector` es inyectable (`callable() -> dict` crudo) para los tests y recibe el
+    bucket completo `{"history": [...], "count": int|None}`, no una notificacion
+    suelta: asi el corte a 20 y la eleccion de la ultima se prueban sin dunst.
+
+    Cachea `cache_segundos` para no lanzar dos procesos por fotograma. Ojo: en la
+    ventana de cache, borrar una notificacion no se refleja hasta que expire.
+    """
+
+    CLAVES = ("notif_cantidad", "notif_ultima")
+    LIMITE = 20          # notificaciones que se retienen en memoria
+    CLAVES_TEXTO = ("summary", "appname", "body")   # orden de preferencia del texto
+
+    def __init__(self, lector=None, cache_segundos: float = 5.0, limite: int = LIMITE):
+        self._leer = lector or self._leer_dunst
+        self.cache_segundos = float(cache_segundos)
+        self.limite = max(0, int(limite))
+        # Lector que no usa dunst: sin cache, para no esconder el estado real tras la
+        # ventana (los tests inyectan historiales distintos y esperan verlos ya).
+        self._cachear = lector is None
+        self._stamp = 0.0
+        self._valores: dict = {}
+
+    def muestra(self) -> dict:
+        """`{"notif_cantidad": int, "notif_ultima": str}`, o {} si no hay nada usable."""
+        ahora = time.time()
+        if (self._valores and self._cachear
+                and ahora - self._stamp < self.cache_segundos):
+            return dict(self._valores)
+        try:
+            valores = self._mapear(self._leer())
+        except Exception as exc:                          # noqa: BLE001 (nunca lanza)
+            _log.info("no se pudo leer las notificaciones (%s)", exc)
+            return {}
+        if valores:
+            self._valores = valores
+            self._stamp = ahora
+        else:
+            self._valores = {}
+        return dict(valores)
+
+    def _mapear(self, crudo) -> dict:
+        """De `{"history": [...], "count": int|None}` a las claves planas, o {}.
+
+        El historial se recorta a `limite` desde el final: es lo reciente lo que
+        importa y no queremos retener en memoria un historial de miles de entradas.
+        """
+        if not isinstance(crudo, dict):
+            return {}
+        bruto = crudo.get("history")
+        if not isinstance(bruto, list):
+            bruto = []
+
+        # El total se lee ANTES de recortar: `count` manda, y sin el el total real es
+        # el historial completo (que luego no se retiene entero en memoria).
+        cantidad = crudo.get("count")
+        if not isinstance(cantidad, int) or isinstance(cantidad, bool):
+            cantidad = len(bruto)
+        if cantidad <= 0:
+            cantidad = len(bruto)
+
+        historial = bruto[-self.limite:] if self.limite else []
+        ultima = self._texto(historial[-1]) if historial else ""
+        if cantidad <= 0 and not ultima:
+            # Ni contador ni texto: no hay nada que pintar, el widget se auto-oculta.
+            return {}
+        return {"notif_cantidad": int(cantidad), "notif_ultima": ultima}
+
+    @classmethod
+    def _texto(cls, entrada) -> str:
+        """Texto legible de una entrada de `dunstctl history`.
+
+        Cada campo viene como `{"type": "s", "data": "..."}`; el titulo ("summary")
+        es lo util para un widget, con la app entre parentesis. Se limpia el marcado
+        Pango (`<b>`, `<i>`...) porque el panel pinta texto plano.
+        """
+        if not isinstance(entrada, dict):
+            return ""
+        campos = {clave: cls._campo(entrada.get(clave)) for clave in cls.CLAVES_TEXTO}
+        titulo = cls._limpiar(campos["summary"])
+        cuerpo = cls._limpiar(campos["body"])
+        app = cls._limpiar(campos["appname"])
+        if not titulo:
+            # Sin titulo: la primera linea del cuerpo hace de titular.
+            titulo, _, resto = cuerpo.partition("\n")
+            cuerpo = resto
+        if not titulo:
+            return app
+        if app:
+            return "{} ({})".format(titulo, app)
+        return titulo
+
+    @classmethod
+    def _campo(cls, valor) -> str:
+        """`{"data": "..."}` -> "...". Tolerante a que ya venga como cadena suelta."""
+        if isinstance(valor, dict):
+            valor = valor.get("data")
+        return valor if isinstance(valor, str) else ""
+
+    @staticmethod
+    def _limpiar(texto: str) -> str:
+        """Quita el marcado Pango y colapsa espacios/saltos a una sola linea."""
+        import re
+
+        texto = re.sub(r"<[^<>]{1,40}>", "", texto)
+        return " ".join(texto.split())
+
+    @classmethod
+    def _leer_dunst(cls, timeout: float = 2.0) -> dict:
+        """Camino real: `dunstctl count history` + `dunstctl history`.
+
+        Devuelve `{}` sin intentarlo siquiera si no hay `dunstctl` o no hay bus de
+        sesion (headless, systemd sin sesion, SSH sin DBUS_SESSION_BUS_ADDRESS): no
+        vale la pena pagar dos procesos para que dunst conteste "no hay bus".
+        """
+        ruta = shutil.which("dunstctl")
+        if not ruta or not cls._hay_bus():
+            return {}
+        return {"count": cls._contar_dunst(ruta, timeout),
+                "history": cls._historial_dunst(ruta, timeout)}
+
+    @staticmethod
+    def _hay_bus() -> bool:
+        """Heuristica de bus de sesion, sin abrir conexion: variable o socket."""
+        import os
+
+        if os.environ.get("DBUS_SESSION_BUS_ADDRESS"):
+            return True
+        return os.path.exists("/run/user/{}/bus".format(os.getuid()))
+
+    @classmethod
+    def _contar_dunst(cls, ruta: str, timeout: float):
+        """`dunstctl count history` -> int, o None si no se pudo interpretar."""
+        try:
+            salida = cls._ejecutar([ruta, "count", "history"], timeout)
+            return int((salida or "").strip())
+        except Exception as exc:                          # noqa: BLE001 (nunca lanza)
+            _log.info("dunstctl count history no respondio (%s)", exc)
+            return None
+
+    @classmethod
+    def _historial_dunst(cls, ruta: str, timeout: float) -> list:
+        """`dunstctl history` -> lista cruda (es JSON: viene en una sola linea larga)."""
+        try:
+            salida = cls._ejecutar([ruta, "history"], timeout)
+            datos = json.loads(salida or "")
+        except Exception as exc:                          # noqa: BLE001 (nunca lanza)
+            _log.info("dunstctl history no devolvio JSON (%s)", exc)
+            return []
+        if isinstance(datos, dict):
+            datos = datos.get("data", datos.get("history", []))
+        return datos if isinstance(datos, list) else []
+
+    @staticmethod
+    def _ejecutar(orden: list, timeout: float) -> str:
+        """Corre un comando con timeout corto. Cualquier fallo es cadena vacia."""
+        try:
+            proceso = subprocess.run(orden, capture_output=True, text=True,
+                                     timeout=timeout)
+        except (OSError, subprocess.SubprocessError) as exc:
+            _log.info("%s no respondio (%s)", orden[0], exc)
+            return ""
+        if proceso.returncode != 0:
+            _log.info("%s salio con %s", orden[0], proceso.returncode)
+            return ""
+        return proceso.stdout or ""
 
 
 class Combinada:
