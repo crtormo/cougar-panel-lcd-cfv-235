@@ -21,8 +21,9 @@ case "${1:-}" in
     rendimiento) conjunto="tests/test_rendimiento.py" ;;
     ejemplos)  conjunto="tests/test_ejemplos.py" ;;
     fuentes)   conjunto="tests/test_fuentes_ext.py tests/test_dashboard_clima.py" ;;
-    "")        conjunto="tests/test_protocolo.py tests/test_simulador.py tests/test_temas.py tests/test_video.py tests/test_regresiones.py tests/test_rendimiento.py tests/test_ejemplos.py tests/test_fuentes_ext.py tests/test_dashboard_clima.py" ;;
-    *) echo "no conozco '$1' (protocolo | simulador | temas | video | regresion | rendimiento | ejemplos | fuentes)" >&2; exit 2 ;;
+    gtk)       conjunto="tests/test_gtk_clima.py" ;;
+    "")        conjunto="tests/test_protocolo.py tests/test_simulador.py tests/test_temas.py tests/test_video.py tests/test_regresiones.py tests/test_rendimiento.py tests/test_ejemplos.py tests/test_fuentes_ext.py tests/test_dashboard_clima.py tests/test_gtk_clima.py" ;;
+    *) echo "no conozco '$1' (protocolo | simulador | temas | video | regresion | rendimiento | ejemplos | fuentes | gtk)" >&2; exit 2 ;;
 esac
 
 FALLOS=0

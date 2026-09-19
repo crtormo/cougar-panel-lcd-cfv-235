@@ -75,6 +75,12 @@ ORDEN_PROPIEDADES = [
     "presetThemeId", "sleepClockId",
 ]
 
+# Defectos del config (copia de `cfv235.config.DEFECTOS`). Se usan para que las filas de
+# coordenadas arranquen con el mismo valor que el resto de la aplicacion usa cuando la
+# clave no esta guardada, sin volver a escribir la constante ni llamar a `config.obtener()`
+# (que relee el fichero) al montar la ventana.
+DEFECTOS_CONFIG = dict(config.DEFECTOS)
+
 ETIQUETAS_PROPIEDADES = {
     "bootFinish": "bootFinish (panel arrancado)",
     "space": "space (espacio libre)",
@@ -1163,6 +1169,21 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         valor = self._config.get(clave, defecto)
         return valor if isinstance(valor, int) and not isinstance(valor, bool) else defecto
 
+    def _numero_guardado(self, clave, defecto):
+        """Numero guardado (float), o `defecto` si lo que hay no es un numero.
+
+        `bool` se descarta a proposito: es subclase de `int` y un `true` escrito a mano en
+        el JSON no es una coordenada valida.
+        """
+        valor = self._config.get(clave, defecto)
+        if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+            return defecto
+        return float(valor)
+
+    def _texto_guardado(self, clave, defecto):
+        valor = self._config.get(clave, defecto)
+        return valor if isinstance(valor, str) else defecto
+
     def _perfil_guardado(self):
         perfil = self._config.get("perfil")
         claves = [clave for clave, _etiqueta, _desc in PERFILES_DASHBOARD]
@@ -1477,6 +1498,118 @@ class VentanaPrincipal(Adw.ApplicationWindow):
 
     # ------------------------------------------------------------------ pagina 1: Estado
 
+    def _fila_coordenada(self, titulo, clave, valor, subtitulo):
+        """`Adw.EntryRow` de texto libre con el valor ya guardado.
+
+        Se guarda al APLICAR (Enter o el boton de visto bueno), no en cada tecla: escribir
+        "‑33.45" pasa por "‑33" y por "‑33." y guardar ahi dejaria la configuracion a medias.
+
+        El `apply` de `Adw.EntryRow` no lleva la clave guardada, asi que se pasa un `estado`
+        mutable con la clave, el ultimo valor bueno y el valor actual: es lo que permite
+        restaurar el campo cuando lo escrito no vale.
+        """
+        fila = Adw.EntryRow(title=titulo)
+        fila.set_show_apply_button(True)          # boton de visto bueno explicito
+        fila.set_subtitle(subtitulo)
+        fila.set_text(self._texto_de_coordenada(valor))
+        estado = {"clave": clave, "valor": valor}
+        fila.connect("apply", self._aplicar_coordenada, estado)
+        return fila
+
+    def _texto_de_coordenada(self, valor):
+        """Texto con el que se rellena una fila de coordenada (float sin ceros de relleno)."""
+        if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+            return str(valor)
+        return ("%.6f" % float(valor)).rstrip("0").rstrip(".")
+
+    def _aplicar_coordenada(self, fila, estado):
+        """Valida y guarda una fila de coordenada. Si no parsea, restaura y avisa.
+
+        Las dos filas de coordenadas son numeros; la zona horaria es texto IANA y no se
+        toca (su `apply` guarda el texto tal cual: no hay nada que validar sin una lista de
+        zonas, y `fuentes_ext` ya cae a la zona del sistema si el nombre no vale).
+        """
+        clave = estado["clave"]
+        anterior = estado["valor"]
+        if isinstance(anterior, str):
+            texto = fila.get_text().strip()
+            if texto and texto != anterior:
+                estado["valor"] = texto
+                self._guardar(**{clave: texto})
+                self._refrescar_clima()
+            elif not texto:
+                fila.set_text(anterior)               # vacio no vale: se queda lo de antes
+            return
+        crudo = fila.get_text().strip()
+        valor = None
+        try:
+            valor = float(crudo.replace(",", "."))    # teclado en espanol: -33,45
+        except (TypeError, ValueError):
+            valor = None
+        if valor is None or not -90.0 <= valor <= 90.0:
+            # Fuera de rango: una latitud de 200 no existe y Open-Meteo devolveria un error
+            # de red. El texto ilegible tambien cae aqui.
+            fila.set_text(self._texto_de_coordenada(anterior))
+            estado["valor"] = anterior
+            self.avisar_error("Valor no valido en %s: se queda en %s."
+                              % (clave, self._texto_de_coordenada(anterior)))
+            return
+        fila.set_text(self._texto_de_coordenada(valor))
+        estado["valor"] = valor
+        if valor == anterior:
+            return                                    # nada que guardar
+        self._guardar(**{clave: valor})
+        self._refrescar_clima()
+
+    def _cambiar_clima(self, fila, _parametro=None):
+        """Interruptor del clima: mismo mecanismo que el keepalive (config + refresco)."""
+        activo = bool(fila.get_active())
+        self._guardar(clima=activo)
+        # La fuente de datos esta memoizada; con el clima recien encendido o apagado hay que
+        # tirarla o el dashboard seguiria con la fuente vieja hasta reabrir la app.
+        self._refrescar_clima()
+        if activo:
+            self.avisar("Clima activado: se descarga de Open-Meteo en cuanto se use.")
+        else:
+            self.avisar("Clima desactivado.")
+
+    def _refrescar_clima(self):
+        """Tira la fuente de datos memoizada para que el proximo fotograma relea la config.
+
+        `cfv235.widgets.crear_fuentes()` memoiza la instancia de `Clima` (su cache y la
+        gracia sin red solo sirven si la misma instancia sobrevive entre fotogramas) y su
+        clave de cache es la configuracion: con otro `clima_lat` la rehace sola, pero al
+        APAGAR el clima la fuente se queda siendo la combinada. `_reset_fuentes()` lo
+        resuelve sin tocar nada mas. Nunca lanza: si el modulo no esta, no hay nada que
+        tirar y la aplicacion sigue igual.
+        """
+        widget = self._modulo_widgets()
+        reiniciar = getattr(widget, "_reset_fuentes", None)
+        if not callable(reiniciar):
+            return
+        with contextlib.suppress(Exception):
+            reiniciar()
+
+    @staticmethod
+    def _modulo_widgets():
+        """El modulo que el dashboard usa para dibujar (`cfv235.widgets`), o None.
+
+        Se prefiere el modulo que ya tiene cargado `cfv235.temas` (el que de verdad se usa)
+        y se cae a importarlo si aun no esta.
+        """
+        try:
+            modulo_temas = sys.modules.get("cfv235.temas")
+            motor = getattr(modulo_temas, "motor", None)
+            if motor is not None:
+                return motor
+        except Exception:                             # noqa: BLE001
+            pass
+        try:
+            from cfv235 import widgets as modulo_widgets
+            return modulo_widgets
+        except Exception:                             # noqa: BLE001
+            return None
+
     def _pagina_estado(self):
         caja = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
 
@@ -1629,6 +1762,49 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         self.interruptor_keepalive.set_active(bool(self._config.get("keepalive", False)))
         self.interruptor_keepalive.connect("notify::active", self._cambiar_keepalive)
         grupo_control.add(self.interruptor_keepalive)
+
+        # --- servicios externos: lo unico de la aplicacion que sale a internet. Va en su
+        # propio grupo para que quede claro que es opt-in y que hay datos del equipo
+        # (las coordenadas) a la vista.
+        grupo_externos = Adw.PreferencesGroup(
+            title="Servicios externos",
+            description="Descargas por internet. Apagadas por defecto: activalas solo si el "
+                        "equipo las quiere.")
+
+        self.interruptor_clima = Adw.SwitchRow(
+            title="Clima (internet)",
+            subtitle="Descarga el tiempo de Open-Meteo cada 15 minutos y lo deja en la "
+                     "seccion Clima del dashboard. Sin conexion se mantiene el ultimo dato.")
+        self.interruptor_clima.set_icon_name("weather-fog-symbolic")
+        self.interruptor_clima.set_active(bool(self._config.get("clima", False)))
+        self.interruptor_clima.connect("notify::active", self._cambiar_clima)
+        grupo_externos.add(self.interruptor_clima)
+
+        # Coordenadas del equipo: se leen del config con sus defectos (Santiago) para que
+        # la fila nunca arranque vacia.
+        clima_lat = self._numero_guardado("clima_lat", DEFECTOS_CONFIG.get("clima_lat", 0.0))
+        clima_lon = self._numero_guardado("clima_lon", DEFECTOS_CONFIG.get("clima_lon", 0.0))
+        clima_tz = self._texto_guardado("clima_tz", DEFECTOS_CONFIG.get("clima_tz", ""))
+
+        self.fila_clima_lat = self._fila_coordenada(
+            "clima_lat", "Latitud", clima_lat,
+            "Latitud en grados decimales (sur, negativo).")
+        grupo_externos.add(self.fila_clima_lat)
+
+        self.fila_clima_lon = self._fila_coordenada(
+            "clima_lon", "Longitud", clima_lon,
+            "Longitud en grados decimales (oeste, negativo).")
+        grupo_externos.add(self.fila_clima_lon)
+
+        self.fila_clima_tz = self._fila_coordenada(
+            "clima_tz", "Zona horaria", clima_tz,
+            "Zona horaria IANA, p. ej. America/Santiago.")
+        grupo_externos.add(self.fila_clima_tz)
+
+        # Las coordenadas solo tienen sentido si el clima esta encendido, pero se dejan
+        # SIEMPRE editables: quien las rellena antes de encenderlo no deberia pelearse con
+        # un control apagado.
+        caja.append(grupo_externos)
 
         self.fila_acciones = fila_accion("Acciones",
                                          "Refresca el estado o despierta el panel.",
