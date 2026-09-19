@@ -54,6 +54,12 @@ DEFECTOS = {
     "carpeta_video": "",
     # --- keepalive
     "keepalive": False,        # trafico periodico para que el panel no se apague
+    # --- fuentes externas (internet, opt-in; por defecto TODO apagado)
+    "clima": False,           # activar la descarga del clima (Open-Meteo)
+    "clima_lat": -33.45,      # Santiago por defecto
+    "clima_lon": -70.67,
+    "clima_tz": "America/Santiago",
+    "clima_cache_min": 15,    # minutos entre descargas
     # --- ventana
     "ancho": 1060,
     "alto": 800,
@@ -70,6 +76,12 @@ _TIPOS = {
     "bucle": bool,
     "ajuste": str,
     "keepalive": bool,
+    "clima": bool,
+    # float: necesita el chequeo extra porque un JSON puede traer un int (-33) y servir.
+    "clima_lat": float,
+    "clima_lon": float,
+    "clima_tz": str,
+    "clima_cache_min": int,
     "carpeta_imagen": str,
     "carpeta_video": str,
     "ancho": int,
@@ -120,6 +132,11 @@ def _normalizar(bruto) -> dict:
         elif esperado is int:
             if isinstance(valor, bool) or not isinstance(valor, int):
                 continue
+        elif esperado is float:
+            # Un entero redondo escrito a mano (`-33`) vale como coordenada; se convierte.
+            if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+                continue
+            valor = float(valor)
         elif esperado is not None and not isinstance(valor, esperado):
             continue
         datos[clave] = valor
