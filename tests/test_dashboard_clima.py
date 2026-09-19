@@ -10,7 +10,12 @@ en un equipo con CPU, GPU, RAM y disco) no hay hueco y **no se pinta ninguna tar
 antes que pisar una tarjeta, el clima no sale. Con `presentacion`/`minimo`, que dejan
 columnas vacias, si aparece.
 """
+import os
+import sys
 import unittest
+
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, RAIZ)          # ejecutable tambien a mano: python3 -B tests/...
 
 from cfv235 import dashboard
 

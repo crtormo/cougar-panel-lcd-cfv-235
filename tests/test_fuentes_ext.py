@@ -1,6 +1,11 @@
 """Tests de las fuentes de datos externas (clima)."""
 import json
+import os
+import sys
 import unittest
+
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, RAIZ)          # ejecutable tambien a mano: python3 -B tests/...
 
 from cfv235 import fuentes_ext
 
