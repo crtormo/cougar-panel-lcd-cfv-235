@@ -178,6 +178,9 @@ CLAVES_CONOCIDAS = (
     # sinteticas y de otros backends
     "hora", "fecha", "uptime", "disco_libre_gb", "cpu_w", "gpu_w", "placa",
     "sistema", "red_interfaz", "red_tarjeta", "chipset", "vent_control",
+    # fuentes externas (cfv235.fuentes_ext): se pintan como cualquier otra
+    "clima_temp", "clima_sensacion", "clima_humedad", "clima_viento",
+    "clima_codigo", "clima_descripcion", "clima_icono",
 )
 
 _PATRON_MARCADOR = re.compile(r"\{([^{}]*)\}")
@@ -483,20 +486,50 @@ def _aplanar_muestra(crudo):
     return dict(valores), historial
 
 
+def _clima_de_config():
+    """`fuentes_ext.Clima` segun la configuracion, o None si esta apagado.
+
+    Nunca lanza: si el modulo no existe o la configuracion no se puede leer, se
+    devuelve None y el panel se queda sin clima (que es el defecto de todos modos).
+    """
+    try:
+        from . import config
+        if not config.obtener("clima", False):
+            return None
+        from .fuentes_ext import Clima
+        minutos = config.obtener("clima_cache_min", 15)
+        return Clima(lat=config.obtener("clima_lat", -33.45),
+                     lon=config.obtener("clima_lon", -70.67),
+                     tz=config.obtener("clima_tz", "America/Santiago"),
+                     cache_segundos=float(minutos) * 60.0)
+    except Exception as exc:                              # modulo ausente o config rota
+        _log.info("sin clima (%s): se dibujara sin datos del tiempo", exc)
+        return None
+
+
 def crear_fuentes():
     """Intenta crear `cfv235.sensores.Sensores` de forma perezosa.
 
     Si el modulo no existe todavia, o falla al arrancar, devuelve `{}`: los temas se
-    dibujan igual, con "--" en los datos.
+    dibujan igual, con "--" en los datos. Con `clima` activado en la configuracion, el
+    resultado se envuelve en `fuentes_ext.Combinada` para anadir las claves `clima_*`.
     """
     try:
         from .sensores import Sensores
         sensores = Sensores()
         sensores.muestra()
-        return sensores
     except Exception as exc:                              # modulo ausente o sin /proc
         _log.info("sin cfv235.sensores (%s): se dibujara con valores vacios", exc)
-        return {}
+        sensores = {}
+    clima = _clima_de_config()
+    if clima is None:
+        return sensores
+    try:
+        from .fuentes_ext import Combinada
+        return Combinada(sensores, clima=clima)
+    except Exception as exc:                              # noqa: BLE001
+        _log.info("sin fuentes externas (%s): se dibujara solo con el equipo", exc)
+        return sensores
 
 
 class _Lector:
