@@ -67,6 +67,9 @@ DEFECTOS = {
 }
 
 # Claves cuyo tipo se comprueba al leer: lo que no encaje se queda en el valor por defecto.
+# OJO: esto valida el TIPO, no el RANGO. Un `clima_cache_min=-5` o un `periodo=0` pasan
+# esta criba tal cual; cada consumidor tiene que validar sus rangos (`widgets._clima_de_config`
+# lo hace con `clima_cache_min`).
 _TIPOS = {
     "perfil": str,
     "secciones": dict,

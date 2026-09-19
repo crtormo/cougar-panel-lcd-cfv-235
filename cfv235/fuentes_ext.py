@@ -14,7 +14,8 @@ import time
 import urllib.parse
 import urllib.request
 
-_log = logging.getLogger(__name__)
+_log = logging.getLogger("cfv235.fuentes_ext")
+_log.addHandler(logging.NullHandler())
 
 # Catalogo WMO 4677-2 recortado (fuente: open-meteo.com/docs/weather-codes)
 WMO = {
@@ -40,6 +41,13 @@ class Clima:
     """Lector del clima con cache. Interfaz publica: `.muestra()` / `.resumen()`.
 
     `descargador` es `(url, timeout) -> str` inyectable para los tests.
+
+    La cache se sirve mientras tenga menos de `cache_segundos`. Si la descarga falla y
+    la ultima muestra tiene menos de `GRACIA_SIN_RED` (2 h) se devuelve la vieja; pasada
+    esa frontera `muestra()` devuelve `{}` (el panel se queda sin clima, no con un dato
+    de hace medio dia). La gracia es un intervalo semiabierto: edad exactamente igual a
+    `GRACIA_SIN_RED` ya NO se sirve. Cambiar `lat`/`lon` invalida la cache: el dato
+    guardado es de otro sitio.
     """
 
     CLAVES = ("clima_temp", "clima_sensacion", "clima_humedad", "clima_viento",
@@ -54,23 +62,34 @@ class Clima:
         self._descargar = descargador or self._descargar_urllib
         self._stamp = 0.0
         self._valores: dict = {}
+        # Ubicacion que produjo la cache. Si `lat`/`lon` cambian, la cache es de otro
+        # sitio y no vale: se trata como vencida (ni siquiera se sirve por la gracia).
+        self._stamp_ubicacion = (self.lat, self.lon)
 
     def muestra(self) -> dict:
         """Dict con las claves CLAVES, o {} si no hay datos usables."""
         ahora = time.time()
-        if self._valores and ahora - self._stamp < self.cache_segundos:
+        ubicacion = (self.lat, self.lon)
+        if (self._valores and ubicacion == self._stamp_ubicacion
+                and ahora - self._stamp < self.cache_segundos):
             return dict(self._valores)
         try:
             crudo = self._descargar(self._url(), 6.0)
             self._guardar(self._mapear(json.loads(crudo)))
         except Exception as exc:                          # noqa: BLE001 (nunca lanza)
             _log.info("clima no renovado (%s)", exc)
-            if self._valores and ahora - self._stamp < self.GRACIA_SIN_RED:
+            if (self._valores and ubicacion == self._stamp_ubicacion
+                    and ahora - self._stamp < self.GRACIA_SIN_RED):
                 return dict(self._valores)
             return {}
         return dict(self._valores)
 
     def resumen(self) -> list:
+        """Snapshot de la cache actual (lista de {"clave", "valor"}).
+
+        No descarga: si nunca se llamo a `muestra()` la cache esta vacia y devuelve [].
+        Es simetria con `Sensores.resumen()`, no una fuente de datos por si misma.
+        """
         return [{"clave": k, "valor": v} for k, v in self._valores.items()]
 
     @staticmethod
@@ -89,6 +108,7 @@ class Clima:
     def _guardar(self, valores: dict) -> None:
         self._valores = {k: valores.get(k) for k in self.CLAVES}
         self._stamp = time.time()
+        self._stamp_ubicacion = (self.lat, self.lon)
 
     def _mapear(self, datos: dict) -> dict:
         actual = datos.get("current") or {}
@@ -132,9 +152,12 @@ class Combinada:
         self._clima = clima   # inyectable para tests; None -> sin clima
 
     def muestra(self) -> dict:
+        base = self._base
+        if isinstance(base, Combinada):                   # nunca envolver dos veces
+            base = base.muestra()
         try:
-            valores = (dict(self._base.muestra()) if hasattr(self._base, "muestra")
-                       else dict(self._base or {}))
+            valores = (dict(base.muestra()) if hasattr(base, "muestra")
+                       else dict(base or {}))
         except Exception as exc:                          # noqa: BLE001 (nunca lanza)
             _log.info("la fuente base de datos no respondio (%s)", exc)
             valores = {}
@@ -144,3 +167,23 @@ class Combinada:
             except Exception as exc:                      # noqa: BLE001
                 _log.info("la fuente de clima no respondio (%s)", exc)
         return valores
+
+    def resumen(self) -> list:
+        """Resumen de la base (si lo tiene) mas las claves del clima, si las hay.
+
+        El motor no lo usa (`_Lector` solo llama a `muestra()`): existe para que
+        `Combinada` presente la misma interfaz que sus fuentes.
+        """
+        filas = []
+        try:
+            propio = getattr(self._base, "resumen", None)
+            if callable(propio):
+                filas.extend(propio() or ())
+        except Exception as exc:                          # noqa: BLE001 (nunca lanza)
+            _log.info("la fuente base de datos no respondio (%s)", exc)
+        if self._clima is not None:
+            try:
+                filas.extend(self._clima.resumen() or ())
+            except Exception as exc:                      # noqa: BLE001
+                _log.info("la fuente de clima no respondio (%s)", exc)
+        return filas
