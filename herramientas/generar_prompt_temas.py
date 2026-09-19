@@ -41,15 +41,63 @@ def tabla_campos() -> str:
     return "\n".join(lineas)
 
 
-def tabla_datos() -> str:
+def _filas_externas() -> list:
+    """Filas de catalogo de las fuentes externas (clima, notificaciones), o [].
+
+    Import perezoso y tolerante: si `cfv235.fuentes_ext` no existe (o su `CATALOGO` no
+    tiene la forma esperada) el generador sigue documentando solo lo del equipo. No se
+    instancia nada a proposito: pedir el clima sacaria a la red y las notificaciones
+    lanzarian procesos, y generar documentacion no puede tener efectos secundarios.
+    """
+    try:
+        from cfv235 import fuentes_ext
+    except Exception:                                     # modulo ausente o roto
+        return []
+    catalogo = getattr(fuentes_ext, "CATALOGO", None)
+    if not isinstance(catalogo, (list, tuple)):
+        return []
+    filas = []
+    for fila in catalogo:
+        try:
+            clave, etiqueta, unidad = fila
+        except (TypeError, ValueError):
+            continue
+        if clave:
+            filas.append((clave, etiqueta, unidad))
+    return filas
+
+
+def filas_datos() -> list:
+    """Filas `(clave, etiqueta, unidad)` de la tabla de datos del prompt.
+
+    Primero las claves del equipo (`Sensores().resumen()`), despues las de las fuentes
+    externas (`fuentes_ext.CATALOGO`: clima y notificaciones). Sin duplicados y con el
+    orden del equipo primero, que es el que el usuario ve en el panel.
+    """
     from cfv235.sensores import Sensores
     sensores = Sensores()
     sensores.muestra()
-    resumen = sensores.resumen()
+    filas = []
+    vistas = set()
+    for fila in sensores.resumen():
+        clave = fila.get("clave")
+        if not clave or clave in vistas:
+            continue
+        vistas.add(clave)
+        filas.append((clave, fila.get("etiqueta", ""), fila.get("unidad") or "-"))
+    for clave, etiqueta, unidad in _filas_externas():
+        if clave in vistas:
+            continue
+        vistas.add(clave)
+        filas.append((clave, etiqueta, unidad or "-"))
+    return filas
+
+
+def tabla_datos() -> str:
     lineas = ["| clave (para `fuente` y para `{marcadores}`) | qué es | unidad |",
               "|---|---|---|"]
-    for fila in resumen:
-        lineas.append(f"| `{fila['clave']}` | {fila['etiqueta']} | {fila.get('unidad') or '-'} |")
+    for clave, etiqueta, unidad in filas_datos():
+        lineas.append(f"| `{clave}` | {etiqueta} | {unidad} |")
     return "\n".join(lineas)
 
 

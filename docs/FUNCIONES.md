@@ -310,7 +310,7 @@ asegurar legibilidad).
 | `sondear_canal.py` | Sondeos manuales del canal (la base de la ingeniería inversa). |
 | `medir_fps.py / medir_tamano.py` | Las mediciones publicadas en `RENDIMIENTO.md`. |
 | `validar_inactividad.py` | Verifica el apagado por espera de tráfico. |
-| `generar_prompts.py / generar_prompt_temas.py` | Regeneran los `PROMPT_*.md` desde el código real. `generar_prompt_temas.py` arma su tabla de datos con `Sensores().resumen()`, así que **no incluye las claves `clima_*`** (el catálogo de `temas.fuentes_disponibles()` sí las trae). Mientras no se cambie el generador, los prompts de temas no ofrecen datos del clima a la IA. |
+| `generar_prompts.py / generar_prompt_temas.py` | Regeneran los `PROMPT_*.md` desde el código real. `generar_prompt_temas.py` arma su tabla de datos con `Sensores().resumen()` **más `fuentes_ext.CATALOGO`** (`_filas_externas()`, import perezoso y tolerante), así que el prompt ya lista las claves `clima_*` y `notif_*`. |
 | `windows/sondas/vigilar_boot.js` | Sonda del banco Windows: vigila `bootFinish` sobreviviendo a la desconexión USB. |
 
 ## tests/

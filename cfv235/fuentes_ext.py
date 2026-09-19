@@ -38,6 +38,24 @@ URL = ("https://api.open-meteo.com/v1/forecast"
        "weather_code,wind_speed_10m"
        "&timezone={tz}")
 
+# Catalogo de las claves externas, con el MISMO formato que `sensores.CATALOGO`:
+# (clave, etiqueta, unidad). Es lo que permite que las herramientas que documentan el
+# panel (el generador de prompts) listen estas claves sin poder instanciarlas: pedir el
+# clima o las notificaciones sacaria a la red o lanzaria procesos, y documentar no debe
+# tener efectos secundarios. Se mantiene a mano al lado de `Clima.CLAVES` y
+# `Notificaciones.CLAVES`: hay una prueba que comprueba que coinciden.
+CATALOGO = (
+    ("clima_temp", "Temperatura exterior", "C"),
+    ("clima_sensacion", "Sensacion termica", "C"),
+    ("clima_humedad", "Humedad exterior", "%"),
+    ("clima_viento", "Viento", "km/h"),
+    ("clima_codigo", "Codigo WMO", ""),
+    ("clima_descripcion", "Cielo", ""),
+    ("clima_icono", "Icono del cielo", ""),
+    ("notif_cantidad", "Notificaciones", ""),
+    ("notif_ultima", "Ultima notificacion", ""),
+)
+
 
 class Clima:
     """Lector del clima con cache. Interfaz publica: `.muestra()` / `.resumen()`.

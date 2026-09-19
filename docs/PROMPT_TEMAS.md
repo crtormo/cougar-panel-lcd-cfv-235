@@ -191,6 +191,15 @@ construyas un panel entero sobre un dato que puede faltar.
 | `bateria` | Bateria | % |
 | `bomba_vent` | Bomba de agua | RPM |
 | `chipset_temp` | Temperatura de chipset | C |
+| `clima_temp` | Temperatura exterior | C |
+| `clima_sensacion` | Sensacion termica | C |
+| `clima_humedad` | Humedad exterior | % |
+| `clima_viento` | Viento | km/h |
+| `clima_codigo` | Codigo WMO | - |
+| `clima_descripcion` | Cielo | - |
+| `clima_icono` | Icono del cielo | - |
+| `notif_cantidad` | Notificaciones | - |
+| `notif_ultima` | Ultima notificacion | - |
 
 ### Marcadores en los textos
 
