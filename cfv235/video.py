@@ -665,6 +665,51 @@ def _descubrir_video(ruta: str) -> dict:
     return datos
 
 
+class FuentePantalla(Fuente):
+    """Reflejo de pantalla en vivo: captura el escritorio y lo sirve fotograma a fotograma.
+
+    Nunca se acaba: `siguiente()` devuelve un fotograma nuevo en cada llamada, asi que el
+    `Reproductor` con `bucle=True` no llega a rebobinar nunca. La captura la hace el portal
+    XDG de escritorio (Wayland), que pide permiso la PRIMERA vez y lo recuerda.
+
+    `capturador` es un callable `() -> bytes` que devuelve un PNG: existe para poder probar la
+    fuente sin portal (tests) y para enchufar otro metodo de captura sin tocar esta clase.
+    """
+
+    tipo = "pantalla"
+
+    def __init__(self, ajuste: str = AJUSTE_POR_DEFECTO, timeout_captura: float = 5.0,
+                 capturador=None):
+        super().__init__(ajuste)
+        self.timeout_captura = float(timeout_captura)
+        self._capturador = capturador
+
+    def _capturar(self) -> bytes:
+        if self._capturador is not None:
+            return self._capturador()
+        # Import tardio: `capturar_pantalla` necesita PyGObject, que no hace falta para el
+        # resto de este modulo (y menos para los tests con capturador inyectado).
+        from herramientas.capturar_pantalla import capturar_bytes
+        return capturar_bytes(timeout=self.timeout_captura)
+
+    def _generador(self):
+        while True:
+            try:
+                datos = self._capturar()
+            except Exception as exc:                      # noqa: BLE001 (ErrorVideo lo explica)
+                raise ErrorVideo(f"captura de pantalla: {exc}") from exc
+            try:
+                imagen = Image.open(io.BytesIO(datos))
+                imagen.load()
+                imagen = imagen.convert("RGB")
+            except Exception as exc:                      # noqa: BLE001
+                raise ErrorVideo(f"la captura no es una imagen legible: {exc}") from exc
+            yield imagen, DURACION_POR_DEFECTO_MS
+
+    def describe(self) -> str:
+        return "pantalla (reflejo en vivo)"
+
+
 def abrir_fuente(fuente, ajuste: str = AJUSTE_POR_DEFECTO):
     """Abre una fuente a partir de una ruta, una carpeta, una lista de rutas o un objeto.
 
@@ -679,6 +724,10 @@ def abrir_fuente(fuente, ajuste: str = AJUSTE_POR_DEFECTO):
         fuente = os.fspath(fuente)
     if not isinstance(fuente, str):
         raise ErrorVideo(f"no se entiende la fuente: {fuente!r} (ruta, carpeta o lista)")
+
+    clave = fuente.strip().lower()
+    if clave in ("pantalla", "stream", "pantalla:", "stream:"):
+        return FuentePantalla(ajuste=ajuste)
 
     ruta = os.path.abspath(os.path.expanduser(fuente))
     if os.path.isdir(ruta):

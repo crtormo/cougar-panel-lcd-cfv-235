@@ -7,7 +7,7 @@ imágenes, temas JSON, dashboard en vivo con las métricas del PC y app de escri
 Está construida sobre el kit `cfv-235-linux` que había en `~/Descargas`, pero **no es una
 copia**: el canal se ha vuelto a medir sobre el panel real, se han corregido los fallos del
 kit y se han resuelto varias de las incógnitas que dejaba abiertas. Todo eso está en
-[`docs/CANAL.md`](docs/CANAL.md) y en [`ANALISIS.md`](../cfv235/ANALISIS.md).
+[`docs/CANAL.md`](docs/CANAL.md) y la referencia completa del código en [`docs/FUNCIONES.md`](docs/FUNCIONES.md) y en [`ANALISIS.md`](../cfv235/ANALISIS.md).
 
 ---
 
@@ -93,6 +93,29 @@ saltos, sin sonido (el panel no tiene audio) y saltándose fotogramas cuando la 
 Para animaciones cortas y suaves (un logo, un reloj, un indicador) va perfecto. El GIF se lee
 con Pillow y el vídeo con GStreamer (`drop=false` en el `appsink`, que si no el tubo decodifica
 todo el vídeo mientras se sube un fotograma y tira el resto: se perdían 34 de 120).
+
+### Reflejo de pantalla en vivo (`stream`)
+
+`cfv235 stream` toma el escritorio (portal XDG, la primera vez pide permiso y lo recuerda) y
+lo sube al panel como fotogramas continuos a la capa OSD: un segundo monitor de 9 pulgadas.
+
+```bash
+cfv235 stream                 # escritorio -> panel, Ctrl+C para parar
+cfv235 stream --fps 2 --ajuste recortar --capa fondo
+```
+
+El techo realista es ~3 fps (medido); lo cómodo es 2. La primera captura puede pedir permiso
+al portal de escritorio. Si el panel está a brillo 0 o con `bootFinish=0`, el comando avisa.
+
+## La app GTK: keepalive y fondos generados
+
+- **Keepalive** (interruptor en la página Estado): manda telemetría cada 25 s para que el
+  panel no se apague por espera cuando solo hay una foto puesta. Solo habla con el panel si
+  ni el dashboard ni el vídeo están en marcha (ellos ya generan tráfico), y sobrevive a la
+  reconexión del panel. La preferencia queda guardada en la configuración.
+- **Fondos** (página nueva): cinco wallpapers generados por código a 1920×462
+  (`degradado-azul`, `montañas`, `olas`, `estrellas`, `ciudad`), con previsualización y subida
+  directa a la capa fondo.
 
 ## Generar contenido con otra IA
 

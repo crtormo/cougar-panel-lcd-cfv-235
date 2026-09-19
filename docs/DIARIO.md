@@ -224,6 +224,117 @@ repositorio, con su evidencia y su historia.
 
 ---
 
+## 2026-09-14 — Windows: captura del editor (segunda ronda)
+
+Espiando al editor por el inspector (`cdp_parche.js`), con el panel delante:
+
+- Los únicos comandos del editor son `conn`, `power resume`, `STATE all`, `transport` y
+  `transported`: el PC lo dibuja todo y lo sube como PNG.
+- El `.osd` es un **PNG 1920×462** con otra extensión (reconstruido y verificado). Pendiente 3.
+- El vídeo se **re-codifica** y se sube entero por `transport`; no hay comando «play»: el
+  editor decodifica y sube cada fotograma a la capa OSD (~47 KB, ~2/s). El panel NO reproduce
+  nada internamente. Pendiente 6.
+- Borrar un medio es local (`store.json` + fichero): no se manda nada al panel. Pendiente 2.
+- Saludo al reconectar: `conn` → `power resume` → `STATE all` → sube el fondo guardado.
+  Pendiente 1 (parcial).
+
+Evidencia en `docs/evidencia/` (`captura_editor.md` + `reconstruidos/`); captura completa
+local (5,7 MB).
+
+## 2026-09-14 — Windows: ciclo de alimentación (MEDICIÓN ANULADA)
+
+⚠️ Esta medición es inválida: se desconectó el **USB**, no la **fuente**. El panel
+(alimentado por la fuente) siguió encendido y reproduciendo el vídeo todo el rato, así
+que no hubo arranque. El «sin respuesta» de la sonda era el USB desenchufado, no el panel
+arrancando. La observación del dueño es concluyente: al reconectar el USB el panel
+respondió al momento y siguió con el vídeo.
+
+Lección (que ya estaba en la documentación y se volvió a aprender): **desenchufar el USB
+NO apaga el panel**. El pendiente #1 sigue abierto: para medir el arranque real hay que
+cortar la FUENTE de alimentación ~30 s.
+
+
+Corte de corriente real (~30 s) con la sonda vigilando `conn` cada 2 s:
+
+- Durante el arranque el panel **NO responde a `conn`** (ni 200 con `bootFinish: 0`, ni
+  nada): el sondeo estuvo ~4,5 min en «sin respuesta» y el panel apareció **ya con
+  `bootFinish: 1`**. Es decir, el estado «responde con 0» no es del arranque, es del
+  **atasco por memoria** (`g_40mb.jpg`); son dos cosas distintas.
+- Tiempo de arranque: **≥ 4,5 min**, coherente con los 2-8 min ya apuntados. (La medida
+  exacta quedó cortada porque se interrumpió el sondeo antes del 1; repetible.)
+- Al volver, el panel restauró como fondo el último medio que adoptó el editor:
+  `2026-09-14_20-23-43-260.mp4` (el vídeo), con `osdState: 1` y `space` ~81,7 MB.
+
+Conclusión práctica: tras un corte hay que **esperar ~5 min sin tocar nada**; el panel no
+dice «estoy arrancando», simplemente no contesta hasta que está listo.
+
+### Observación del dueño: desenchufar el USB SÍ apaga este panel
+
+Corrección importante, con observación directa: al desenchufar el USB, este panel **se
+apagó**, y al reconectarlo **se encendió y siguió con el vídeo**. O sea, en este panel el
+USB aporta la alimentación (o al menos su corte produce un reinicio), contra la nota antigua
+de «se alimenta de la fuente». Hay que revisar esa nota en CANAL.md/HALLAZGOS.md.
+
+Y separa dos fases del arranque que no son lo mismo:
+- la **pantalla/medio** vuelve rápido (segundos), que es lo que se ve a simple vista;
+- el **control (`conn`/`bootFinish`)** puede tardar más, que es lo que la sonda mide.
+
+Para no volver a confundirlas, `herramientas/windows/sondas/vigilar_boot.js` distingue los
+tres estados: USB ausente / presente pero mudo / bootFinish=0 o 1.
+
+## 2026-09-14 — Windows: ciclo de alimentación (medida real)
+
+Medido con `vigilar_boot.js` corriendo en la consola del dueño (mi entorno no mantiene
+procesos entre turnos). Resultado del ciclo completo:
+
+```
+t=14s  USB ausente (corte detectado)
+t=14s -> t=50s  USB ausente (~36 s desenchufado)
+t=52s  USB reaparecido -> conn 200, bootFinish=1  (0 s de retraso)
+```
+
+**Conclusión del pendiente #1:** en un corte/reconexión normal **no existe el estado
+`bootFinish=0`** — el panel reaparece en el USB ya listo. Por tanto `bootFinish=0` es
+síntoma de **atasco** (memoria llena u otro), no del arranque. La pantalla/medio puede
+tardar un poco más en mostrarse, pero el control responde al instante.
+
+### Pendiente 4 resuelto: mode y logo no tienen efecto visible
+
+Con un patrón de colores 1920×462 visible en el fondo (y una OSD encima) se recorrió
+`mode` 0→1→2→3 y `logo` 0→4: todos responden 200 y el panel los acepta (`mode` cambia el
+campo en `conn`, `logo` ni eso), pero **la pantalla no cambió en ningún caso** (confirmado
+por el dueño). Son campos sin efecto visible en este panel: probablemente reservados o de
+otras variantes del firmware (p. ej. los paneles 480×480). Pendiente cerrado.
+
+### Stream: reflejo de pantalla en vivo (fuente nueva)
+
+Se añade `cfv235 stream` (y `video pantalla`): `FuentePantalla` captura el escritorio con
+el portal XDG y lo sirve fotograma a fotograma (nunca se acaba); el `Reproductor` lo sube
+a la capa OSD con nombre fijo, igual que el resto. `herramientas/capturar_pantalla.py` gana
+`capturar_bytes()` (bytes en memoria, sin mensajes por fotograma). 3 pruebas nuevas con
+capturador inyectado (corren sin portal).
+
+Pendiente de probar en Linux: la captura REAL por el portal y el ritmo real del stream. En
+el banco solo se compila y se prueba el motor con captura simulada.
+
+### Pendiente 9 resuelto: la capa la decide el tipo de medio (tres valores)
+
+Releyendo la captura del editor, el byte [9] de cada bloque de medios codifica la capa, y
+hay TRES valores, no dos:
+
+| byte [9] | capa | ejemplo |
+|---|---|---|
+| `0x02` | fondo | el PNG de 1,58 MB |
+| `0x01` | OSD | todos los `.osd` |
+| `0x00` | **video** | el `.mp4` que sube el editor |
+
+El `transport` no lleva un campo de capa: el tipo va en cada bloque. El contador [4]
+tambien varia por tipo (0x13 fondo, 0x16 OSD, 0x0f video).
+
+**NUEVO por investigar:** que hace el `0x00`. Si el panel reproduce el video internamente,
+se podria subir un mp4 como `0x00` y olvidarse del stream OSD a 3 fps: el panel lo
+reproduciria el solo a 60 Hz.
+
 ## Pendiente
 
 - ~~La semántica de `displayInSleep`~~ **cerrado (parcialmente)**: con `1` el panel **tampoco**

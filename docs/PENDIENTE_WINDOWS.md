@@ -1,5 +1,13 @@
 # Pendiente para Windows (y qué capturar)
 
+> **ACTUALIZACION 2026-09-14 (banco de pruebas).** Espiando al editor por el inspector
+> (`cdp_parche.js`) se resolvieron tres de los pendientes: **#2** el editor no manda ningun
+> comando de borrado (borrar es local, store.json + fichero); **#3** el `.osd` es un PNG de
+> 1920x462 con otra extension; **#6** el video se re-codifica y se sube entero por
+> `transport`, no hay comando «play» — el editor decodifica y sube cada fotograma a la capa
+> OSD (~2/s). Detalle y ficheros reconstruidos en `docs/evidencia/captura_editor.md`.
+
+
 Esto es lo que queda por resolver del panel y que **solo se puede atacar desde Windows**, porque
 ahí corre el editor oficial de COUGAR y se pueden espiar sus bytes por el inspector de Electron.
 
@@ -19,7 +27,7 @@ ahí corre el editor oficial de COUGAR y se pueden espiar sus bytes por el inspe
 
 ## Lo que falta (ordenado por valor)
 
-### 1. Qué pone `bootFinish` en 1 (la puerta de todo)
+### 1. Qué pone `bootFinish` en 1 — RESUELTO: tras reconectar responde ya con 1 (0 s); el 0 es atasco
 
 Sin `bootFinish=1` el panel no acepta `transport` (da 400) ni registra nada. Queremos el
 **ciclo exacto** que lo deja en 1.
@@ -53,7 +61,7 @@ El editor sube algo con extensión `.osd` que no es PNG. Queremos saber su forma
 - Los primeros bytes del fichero que sube (está en su directorio de trabajo temporal).
 - Compararlos con el PNG origen: ¿es PNG con cabecera distinta? ¿otro contenedor?
 
-### 4. `osdState`, `mode`, `logo`, `presetThemeId`, `sleepClockId` — qué significan en pantalla
+### 4. `osdState`, `mode`, `logo`, `presetThemeId`, `sleepClockId` — RESUELTO: mode y logo no cambian nada visible
 
 `mode` y `logo` aceptan 200 pero **no cambian nada visible por `conn`**. Solo mirando la pantalla
 se sabe qué hacen.
@@ -109,7 +117,7 @@ no ser 1920x462). El límite de tamaño de fichero es el mismo: 5-10 MB.
 - Dimensiones máximas por formato (¿rechaza algo mayor que cierta resolución?).
 - Si el GIF tiene algún tamaño/duración en que **sí** se anime (hoy nos sale blanco).
 
-### 9. ¿Solo fondo, solo OSD, o ambos?
+### 9. ¿Solo fondo, solo OSD, o ambos? — RESUELTO: 3 tipos en el byte [9] (0x02 fondo, 0x01 OSD, 0x00 video)
 
 Sabido: el panel compone **dos capas** — fondo (acumula) y OSD (superposición, reutiliza hueco).
 Nosotros subimos a una u otra con `capa`.
