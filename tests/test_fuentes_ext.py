@@ -97,5 +97,44 @@ class TestCombinada(unittest.TestCase):
         self.assertEqual(combinada.muestra()["clima_temp"], 14.3)
 
 
+class TestIntegracion(unittest.TestCase):
+    """El motor ya pinta el clima: no hizo falta codigo nuevo en `widgets`."""
+
+    def test_widget_texto_con_marcador_clima(self):
+        """El motor resuelve {clima_*} via _Lector sin codigo nuevo."""
+        from cfv235 import widgets
+        lector = widgets._Lector({"clima_temp": 14.3, "clima_descripcion": "Nublado"})
+        texto = widgets.texto_con_marcadores(
+            "Afueras: {clima_temp}°, {clima_descripcion}", lector)
+        self.assertIn("14.3", texto)
+        self.assertIn("Nublado", texto)
+
+    def test_marcador_clima_formateado(self):
+        """`{clima_temp:.0f}` y `{clima_humedad}%` tambien salen."""
+        from cfv235 import widgets
+        lector = widgets._Lector({"clima_temp": 14.3, "clima_humedad": 62})
+        self.assertEqual(widgets.texto_con_marcadores("{clima_temp:.0f} C", lector), "14 C")
+        self.assertEqual(widgets.texto_con_marcadores("{clima_humedad}% hum", lector), "62% hum")
+
+    def test_combinada_alimenta_el_motor(self):
+        """La cadena completa: Sensores+Clima -> _Lector -> texto con marcadores."""
+        from cfv235 import fuentes_ext, widgets
+        combinada = fuentes_ext.Combinada(
+            {"cpu_uso": 20},
+            clima=fuentes_ext.Clima(descargador=lambda u, t: json.dumps(RESPUESTA_OM)))
+        lector = widgets._Lector(combinada)
+        texto = widgets.texto_con_marcadores("{clima_temp}°, {clima_descripcion} · "
+                                             "{cpu_uso}% cpu", lector)
+        self.assertIn("14.3", texto)
+        self.assertIn("Nublado", texto)
+        self.assertIn("20% cpu", texto)
+
+    def test_sin_clima_el_marcador_degrada(self):
+        """Sin fuente de clima el marcador pinta '--', no rompe el tema."""
+        from cfv235 import widgets
+        lector = widgets._Lector({"cpu_uso": 20})
+        self.assertEqual(widgets.texto_con_marcadores("{clima_temp}°", lector), "--°")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
