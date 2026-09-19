@@ -61,7 +61,7 @@ class TestInterruptorDelClima(unittest.TestCase):
         falso._guardar = guardar
         falso.avisar_error = falso.avisos.append
         falso.avisar = falso.avisos.append
-        falso._refrescar_clima = lambda: None
+        falso._refrescar_fuentes = lambda: None
         for nombre in ("_numero_guardado", "_texto_guardado", "_texto_de_coordenada",
                        "_aplicar_coordenada"):
             original = getattr(clase, nombre)
@@ -177,6 +177,23 @@ class TestInterruptorDelClima(unittest.TestCase):
         # El keepalive sigue existiendo: el clima se copio de el, no lo sustituye.
         cuerpo_keepalive = ast.unparse(metodos["_cambiar_keepalive"])
         self.assertIn("keepalive=bool(activo)", cuerpo_keepalive)
+
+    def test_el_interruptor_de_notificaciones_tambien_guarda_bool(self):
+        """El opt-in de notificaciones se guarda igual que el del clima (mismo patron)."""
+        self._clase()
+        import ast
+        fuente = open(os.path.join(RAIZ, "cfv235_gtk", "ventana.py"), encoding="utf-8").read()
+        arbol = ast.parse(fuente)
+        ventana = next(n for n in ast.walk(arbol)
+                       if isinstance(n, ast.ClassDef) and n.name == "VentanaPrincipal")
+        metodos = {n.name: n for n in ventana.body if isinstance(n, ast.FunctionDef)}
+        self.assertIn("_cambiar_notificaciones", metodos)
+        cuerpo = ast.unparse(metodos["_cambiar_notificaciones"])
+        self.assertIn("notificaciones=activo", cuerpo)
+        self.assertIn("bool(fila.get_active())", cuerpo)
+        self.assertNotIn("config.escribir", cuerpo)
+        # El interruptor se crea en el grupo de servicios externos, junto al del clima.
+        self.assertIn('self.interruptor_notificaciones', ast.unparse(arbol))
 
 
 if __name__ == "__main__":

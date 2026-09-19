@@ -1536,7 +1536,7 @@ class VentanaPrincipal(Adw.ApplicationWindow):
             if texto and texto != anterior:
                 estado["valor"] = texto
                 self._guardar(**{clave: texto})
-                self._refrescar_clima()
+                self._refrescar_fuentes()
             elif not texto:
                 fila.set_text(anterior)               # vacio no vale: se queda lo de antes
             return
@@ -1559,7 +1559,7 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         if valor == anterior:
             return                                    # nada que guardar
         self._guardar(**{clave: valor})
-        self._refrescar_clima()
+        self._refrescar_fuentes()
 
     def _cambiar_clima(self, fila, _parametro=None):
         """Interruptor del clima: mismo mecanismo que el keepalive (config + refresco)."""
@@ -1567,13 +1567,23 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         self._guardar(clima=activo)
         # La fuente de datos esta memoizada; con el clima recien encendido o apagado hay que
         # tirarla o el dashboard seguiria con la fuente vieja hasta reabrir la app.
-        self._refrescar_clima()
+        self._refrescar_fuentes()
         if activo:
             self.avisar("Clima activado: se descarga de Open-Meteo en cuanto se use.")
         else:
             self.avisar("Clima desactivado.")
 
-    def _refrescar_clima(self):
+    def _cambiar_notificaciones(self, fila, _parametro=None):
+        """Interruptor de notificaciones: igual que el clima, con su propio opt-in."""
+        activo = bool(fila.get_active())
+        self._guardar(notificaciones=activo)
+        self._refrescar_fuentes()
+        if activo:
+            self.avisar("Notificaciones activadas (solo si el escritorio usa dunst).")
+        else:
+            self.avisar("Notificaciones desactivadas.")
+
+    def _refrescar_fuentes(self):
         """Tira la fuente de datos memoizada para que el proximo fotograma relea la config.
 
         `cfv235.widgets.crear_fuentes()` memoiza la instancia de `Clima` (su cache y la
@@ -1779,6 +1789,18 @@ class VentanaPrincipal(Adw.ApplicationWindow):
         self.interruptor_clima.set_active(bool(self._config.get("clima", False)))
         self.interruptor_clima.connect("notify::active", self._cambiar_clima)
         grupo_externos.add(self.interruptor_clima)
+
+        self.interruptor_notificaciones = Adw.SwitchRow(
+            title="Notificaciones del escritorio",
+            subtitle="Cuenta las notificaciones y deja la ultima en las claves notif_*. Es "
+                     "local (no sale a internet): solo funciona si el escritorio usa dunst, "
+                     "en cualquier otro caso no muestra nada.")
+        self.interruptor_notificaciones.set_icon_name(
+            "preferences-system-notifications-symbolic")
+        self.interruptor_notificaciones.set_active(
+            bool(self._config.get("notificaciones", False)))
+        self.interruptor_notificaciones.connect("notify::active", self._cambiar_notificaciones)
+        grupo_externos.add(self.interruptor_notificaciones)
 
         # Coordenadas del equipo: se leen del config con sus defectos (Santiago) para que
         # la fila nunca arranque vacia.
