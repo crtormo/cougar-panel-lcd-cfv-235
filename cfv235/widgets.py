@@ -50,6 +50,7 @@ Tipos de widget
 import logging
 import os
 import re
+import sys
 import threading
 import time
 
@@ -91,6 +92,11 @@ _problemas_lock = threading.Lock()
 
 _fuentes_cache = {}
 _fuentes_lock = threading.Lock()
+
+# Claves de configuracion de las que depende `crear_fuentes()` (ver mas abajo): si alguna
+# cambia, la fuente memoizada se rehace.
+_CLAVES_FUENTES = ("clima", "clima_lat", "clima_lon", "clima_tz", "clima_cache_min")
+_cache_fuentes_lock = threading.Lock()
 
 
 class ErrorWidget(Exception):
@@ -491,6 +497,11 @@ def _clima_de_config():
 
     Nunca lanza: si el modulo no existe o la configuracion no se puede leer, se
     devuelve None y el panel se queda sin clima (que es el defecto de todos modos).
+
+    `config` solo comprueba TIPOS, no rangos (ver `config._TIPOS`), asi que el valor de
+    `clima_cache_min` se valida aqui: un numero > 0 significa minutos de cache (15 por
+    defecto). Un valor absurdo (-5 daba una cache negativa: descarga en cada llamada) se
+    sustituye por el defecto.
     """
     try:
         from . import config
@@ -498,6 +509,10 @@ def _clima_de_config():
             return None
         from .fuentes_ext import Clima
         minutos = config.obtener("clima_cache_min", 15)
+        if not _es_numero(minutos) or float(minutos) <= 0:
+            _registrar_problema("'clima_cache_min' invalido (%r): se usan 15 min"
+                                % (minutos,), minutos)
+            minutos = 15
         return Clima(lat=config.obtener("clima_lat", -33.45),
                      lon=config.obtener("clima_lon", -70.67),
                      tz=config.obtener("clima_tz", "America/Santiago"),
@@ -507,13 +522,31 @@ def _clima_de_config():
         return None
 
 
-def crear_fuentes():
-    """Intenta crear `cfv235.sensores.Sensores` de forma perezosa.
+# Fuente de datos memoizada: el dashboard redibuja cada `periodo` segundos (2 s por
+# defecto) y sin esto cada fotograma creaba su propio `Clima`, con lo que la cache y la
+# gracia sin red no protegian de nada (5 fotogramas = 5 descargas, y una red colgada
+# bloqueaba 6 s el hilo de dibujo). Se guarda tambien la configuracion con la que se
+# construyo para rehacerla en cuanto cambie. Mismo patron que `temas._cache_sensores`.
+_cache_fuentes = {"hecho": False, "fuentes": None, "config": None, "clima": False}
 
-    Si el modulo no existe todavia, o falla al arrancar, devuelve `{}`: los temas se
-    dibujan igual, con "--" en los datos. Con `clima` activado en la configuracion, el
-    resultado se envuelve en `fuentes_ext.Combinada` para anadir las claves `clima_*`.
-    """
+
+def _reset_fuentes():
+    """Tira la memoizacion de `crear_fuentes()` (lo usan las pruebas)."""
+    with _cache_fuentes_lock:
+        _cache_fuentes.update(hecho=False, fuentes=None, config=None, clima=False)
+
+
+def _clave_de_config():
+    """Valores de configuracion de los que depende `crear_fuentes()`, sin lanzar."""
+    try:
+        from . import config
+        return {clave: config.obtener(clave) for clave in _CLAVES_FUENTES}
+    except Exception:                                     # config ilegible: sin cache
+        return None
+
+
+def _construir_fuentes():
+    """Construye la fuente de datos (Sensores + clima si toca). Sin memoizar."""
     try:
         from .sensores import Sensores
         sensores = Sensores()
@@ -530,6 +563,32 @@ def crear_fuentes():
     except Exception as exc:                              # noqa: BLE001
         _log.info("sin fuentes externas (%s): se dibujara solo con el equipo", exc)
         return sensores
+
+
+def crear_fuentes():
+    """Fuente de datos del panel (Sensores, o `Combinada` con el clima). Memoizada.
+
+    Si `cfv235.sensores` no existe todavia, o falla al arrancar, devuelve `{}`: los temas
+    se dibujan igual, con "--" en los datos. Con `clima` activado en la configuracion, el
+    resultado se envuelve en `fuentes_ext.Combinada` para anadir las claves `clima_*`.
+
+    La instancia se conserva mientras no cambie la configuracion de la que depende (para
+    eso `_clave_de_config()`): es lo que hace que la cache del clima dure entre
+    fotogramas. `_reset_fuentes()` la tira (pruebas, o cambios externos).
+    """
+    clave = _clave_de_config()
+    with _cache_fuentes_lock:
+        if (clave is not None and _cache_fuentes["hecho"]
+                and _cache_fuentes["config"] == clave):
+            return _cache_fuentes["fuentes"]
+    fuentes = _construir_fuentes()
+    with _cache_fuentes_lock:
+        modulo_clima = sys.modules.get("cfv235.fuentes_ext")
+        combinada = getattr(modulo_clima, "Combinada", None)
+        _cache_fuentes.update(hecho=clave is not None, fuentes=fuentes, config=clave,
+                              clima=combinada is not None
+                              and isinstance(fuentes, combinada))
+    return fuentes
 
 
 class _Lector:
@@ -995,7 +1054,8 @@ def tema_por_defecto():
 __all__ = [
     "ANCHO", "ALTO", "TIPOS", "MAPA_EDITOR", "ALIAS_CLAVES", "CLAVES_CONOCIDAS",
     "ErrorWidget", "color", "es_color", "formatear", "nombre_a_clave",
-    "texto_con_marcadores", "crear_fuentes", "renderizar", "renderizar_datos",
+    "texto_con_marcadores", "crear_fuentes", "_reset_fuentes", "renderizar",
+    "renderizar_datos",
     "dibujar_dato", "dibujar_barra", "dibujar_grafica", "dibujar_texto", "dibujar_reloj",
     "ultimos_fallos", "ultimos_problemas", "ULTIMOS_FALLOS", "FALLOS", "PROBLEMAS",
     "tema_por_defecto", "TAMANO_MAXIMO", "TAMANO_MINIMO",
