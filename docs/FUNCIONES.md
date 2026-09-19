@@ -276,7 +276,7 @@ barra lateral:
 
 | Página | Contenido |
 |---|---|
-| **Estado** | Propiedades del panel en vivo, espacio, `bootFinish`, interruptores de control (brillo, no-dormir, **keepalive**) y acciones de recuperación. El interruptor de keepalive (`_cambiar_keepalive` → `_arrancar_keepalive` / `_parar_hilo_keepalive` → `_bucle_keepalive`) manda telemetría cada `INTERVALO_KEEPALIVE` (25 s, medido: el panel se apaga ~1 min sin tráfico) **solo cuando ni el dashboard ni el vídeo están corriendo**; el hilo usa `compartido.sesion()` en cada trama, así que sobrevive a la reconexión del panel, y se restaura solo si quedó activado en la sesión anterior. Incluye el grupo **Servicios externos**: el interruptor **Clima (internet)** (`_cambiar_clima`) y las filas de latitud, longitud y zona horaria (`_fila_coordenada` → `_aplicar_coordenada`, que valida el rango ±90° y deja el valor anterior si el texto no vale). Al conmutar el clima se llama `_refrescar_clima()`, que tira la fuente memoizada de `widgets` para que el cambio surta efecto sin reabrir la app. |
+| **Estado** | Propiedades del panel en vivo, espacio, `bootFinish`, interruptores de control (brillo, no-dormir, **keepalive**) y acciones de recuperación. El interruptor de keepalive (`_cambiar_keepalive` → `_arrancar_keepalive` / `_parar_hilo_keepalive` → `_bucle_keepalive`) manda telemetría cada `INTERVALO_KEEPALIVE` (25 s, medido: el panel se apaga ~1 min sin tráfico) **solo cuando ni el dashboard ni el vídeo están corriendo**; el hilo usa `compartido.sesion()` en cada trama, así que sobrevive a la reconexión del panel, y se restaura solo si quedó activado en la sesión anterior. Incluye el grupo **Servicios externos**: el interruptor **Clima (internet)** (`_cambiar_clima`) y las filas de latitud, longitud y zona horaria (`_fila_coordenada` → `_aplicar_coordenada`, que valida el rango ±90° y deja el valor anterior si el texto no vale). Al conmutar el clima o las notificaciones se llama `_refrescar_fuentes()`, que tira la fuente memoizada de `widgets` para que el cambio surta efecto sin reabrir la app (una sola memoización cubre las dos fuentes). |
 | **Patrones** | Galería de patrones de prueba con miniaturas (`pagina_patrones`, `_GaleriaPatrones`). |
 | **Fondos** | Galería de fondos generados por código (`pagina_fondos`): cinco composiciones en bandas horizontales a 1920×462 (`degradado-azul`, `montanas`, `olas`, `estrellas`, `ciudad`), con previsualización y subida a la capa fondo. Sigue las reglas de `docs/PROMPT_FOTOS.md`. |
 | **Editor** | Editor del JSON del tema con validación en vivo, previa EN MEMORIA (`temas.renderizar_datos`) y subida (`pagina_temas`, `_EditorTemas`). |
@@ -326,9 +326,13 @@ asegurar legibilidad).
 | `test_rendimiento.py` | Regresiones de tiempo de render. |
 | `test_regresiones.py` | Bugs concretos ya corregidos, incluido el diálogo de ficheros GTK. |
 | `test_fuentes_ext.py` | `fuentes_ext`: caché del clima, gracia de 2 h sin red, invalidación por cambio de coordenadas, catálogo WMO, `Notificaciones` con lector inyectado y fusión de `Combinada`. |
+| `test_fuentes_bordes.py` | Los bordes duros: frontera exacta de la gracia (7199/7200/7201 s), JSON basura, lector que lanza, y `Notificaciones` con `dunstctl` simulado. |
+| `test_fuentes_config.py` | El opt-in de verdad: `_clima_de_config` / `_notificaciones_de_config`, la memoización de `crear_fuentes()` (5 fotogramas → 1 descarga) y la validación de rango de `clima_cache_min`. |
+| `test_fuentes_notif.py` | La integración de `Notificaciones` como fuente opt-in (`config.notificaciones`) y su convivencia con el clima. |
+| `test_fuentes_prompt.py` | `fuentes_ext.CATALOGO` (formato, claves únicas) y que el generador de prompts incluya las claves `clima_*` / `notif_*`. |
 | `test_dashboard_clima.py` | La sección y la tarjeta `Exterior` del dashboard: `tarjetas_clima`, `columnas_libres` y los bordes de `_clima_de_config`. |
-| `test_gtk_clima.py` | El interruptor del clima y sus coordenadas en la página Estado (GTK). **Vive en su propio fichero a propósito**: importar GTK (Pango) en el proceso rompe el cálculo de anchos de texto de Pillow (`DecompressionBombError`, medido), y `ejecutar.sh` corre cada fichero por separado para que el efecto no se escape. |
+| `test_gtk_clima.py` | Los interruptores de clima y notificaciones, y sus coordenadas, en la página Estado (GTK). **Vive en su propio fichero a propósito**: importar GTK (Pango) en el proceso rompe el cálculo de anchos de texto de Pillow (`DecompressionBombError`, medido), y `ejecutar.sh` corre cada fichero por separado para que el efecto no se escape. |
 
-Cobertura medida: **147 pruebas en la corrida completa, con 1 fallo solo en equipos sin GTK**
+Cobertura medida: **232 pruebas en la corrida completa, con 1 fallo solo en equipos sin GTK**
 (el diálogo de ficheros de `test_regresiones.py` necesita display y los typelibs de GTK4; sin
 `gi` las pruebas de `test_gtk_clima.py` se saltan, no fallan).

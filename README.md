@@ -438,16 +438,16 @@ docs/CANAL.md    el canal medido: descriptor, variantes, acuses, comandos, estad
 ## Pruebas
 
 ```bash
-./tests/ejecutar.sh              # todo (147 pruebas)
+./tests/ejecutar.sh              # todo (232 pruebas)
 ./tests/ejecutar.sh video        # un conjunto: protocolo | simulador | temas | video
 ./tests/ejecutar.sh fuentes      # clima y notificaciones (fuentes externas)
-./tests/ejecutar.sh gtk          # interruptor del clima en la app GTK
+./tests/ejecutar.sh gtk          # interruptores del clima y de notificaciones en la GTK
 ```
 
 - **Protocolo** (22): ida y vuelta del framing, escapes, las dos reglas de checksum, el parser
   que no se desincroniza con escapes, los informes de medios, la validación de imágenes y
   nombres… y el contraste con **las 8 tramas documentadas y las 2 capturas reales del kit**.
-- **Canal y subida** (12, contra el simulador): autonegociación, comandos, acuse `200`,
+- **Canal y subida** (13, contra el simulador): autonegociación, comandos, acuse `200`,
   reconstrucción byte a byte del fichero subido, fallo por caducidad con acuse `400` y
   `transported` con cuerpo vacío, que no se sube si no cabe en el panel, **subidas grandes**
   (varios cientos de KB, mucho más que el buffer del PTY) sin perder escrituras y el bloqueo
@@ -455,18 +455,22 @@ docs/CANAL.md    el canal medido: descriptor, variantes, acuses, comandos, estad
 - **Temas** (13): validador y dibujo, que un color inválido no aborte el render, que los fallos
   de widget queden registrados, que `renderizar_datos` no deje temporales y funcione desde
   varios hilos, y que los temas del kit se sigan dibujando.
-- **Vídeo** (30): carga de GIF, secuencia y vídeo, ajustes a 1920×462, el bucle con
+- **Vídeo** (33): carga de GIF, secuencia y vídeo, ajustes a 1920×462, el bucle con
   `threading.Event`, saltar fotogramas sin colgarse, y una subida completa contra el simulador
   con el fotograma reconstruido.
-- **Fuentes externas** (26, `test_fuentes_ext.py` + `test_dashboard_clima.py`): la caché del
-  clima, la gracia de 2 h sin red, la invalidación al cambiar coordenadas, el catálogo WMO, la
-  fusión de `Combinada` y la tarjeta `Exterior` del dashboard.
-- **Clima en la GTK** (9, `test_gtk_clima.py`): el interruptor y las coordenadas. Vive en su
+- **Fuentes externas** (110, seis ficheros `test_fuentes_*.py` + `test_dashboard_clima.py`):
+  la caché del clima y su frontera exacta (7200 s), la gracia de 2 h sin red, la invalidación
+  al cambiar coordenadas, el catálogo WMO, el opt-in sin red ni subprocess, el catálogo que
+  alimenta el prompt de temas, el lector de notificaciones de dunst y la tarjeta `Exterior`
+  del dashboard. Detalle: `bordes` 32, `notif` 22, `prompt` 18, `dashboard_clima` 14,
+  `ext` 12, `config` 12.
+- **Clima y notificaciones en la GTK** (10, `test_gtk_clima.py`): los interruptores y las
+  coordenadas. Vive en su
   propio fichero porque importar GTK (Pango) **rompe el cálculo de anchos de texto de Pillow en
   el mismo proceso** (medido: `DecompressionBombError`); `ejecutar.sh` corre cada fichero en su
   propio proceso y el efecto queda encerrado.
 
-> En la corrida completa son **147 pruebas, con 1 fallo solo en equipos sin GTK**: el diálogo de
+> En la corrida completa son **232 pruebas, con 1 fallo solo en equipos sin GTK**: el diálogo de
 > ficheros de `test_regresiones.py` necesita un display y los typelibs de GTK4.
 
 > Nota técnica: el descriptor se abre en `O_NONBLOCK`, así que `os.write` puede devolver
