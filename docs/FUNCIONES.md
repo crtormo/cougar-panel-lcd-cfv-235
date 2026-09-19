@@ -136,7 +136,9 @@ Toda la rejilla calculada que describe el README vive aquí.
 | `Seccion` | Una sección del dashboard (cpu, red, ventiladores...) con su condición de existencia. |
 | `secciones_activas(perfil, ajustes)` | Aplica perfil (`completo`, `esencial`, `graficas`, `minimo`, `presentacion`) + `--con`/`--sin`, y descarta secciones sin datos en este equipo. |
 | `catalogo_secciones() / columnas(cuantas)` | Utilerías de la rejilla (4 columnas de 453 px). |
-| `tarjeta(x, ancho, etiqueta, ...)` | Construye el widget `dato` estándar en la posición dada. |
+| `tarjeta(x, ancho, etiqueta, ...)` | Construye el widget `dato` estándar en la posición dada. Con `detalle=` fija la línea de abajo a mano y `barra=False` la deja sin barra (el clima, que no es un porcentaje). |
+| `columnas_libres(activas, valores)` | Columnas de la fila de tarjetas que no ocupa una sección activa con dato. Es lo que permite meter la tarjeta opt-in del clima (ver `tarjetas_clima`) sin pisar ninguna. |
+| `tarjetas_clima(activas, valores, libres)` | Tarjeta `Exterior` (temperatura, descripción y humedad) o lista vacía: exige la sección **activa** y `clima_temp` con dato. Opt-in puro (`por_defecto=False`, ningún perfil la enciende). |
 | `_cabecera() / _zona_baja() / _hay() / _con_datos()` | Piezas del tema: cabecera (título/reloj/fecha), pie (sistema/procesos) y helpers de contenido condicional. |
 | `tema_dashboard(titulo, perfil, ...)` | El tema completo armado. `tema_esencial()` y `tema_minimo()` son atajos. |
 | `tema_desde_fichero(ruta)` | Carga un tema propio y lo usa de dashboard. |

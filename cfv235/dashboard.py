@@ -72,6 +72,7 @@ COLOR_RAM = "#00b4ff"
 COLOR_DISCO = "#e1b12c"
 COLOR_RED = "#00d2d3"
 COLOR_TEMP = "#ff6b6b"
+COLOR_CLIMA = "#7dd3fc"
 
 
 # ------------------------------------------------------------------ secciones
@@ -96,6 +97,7 @@ SECCIONES: tuple[Seccion, ...] = (
     Seccion("sistema", "Sistema", "Arranque, procesos y carga media"),
     Seccion("ventiladores", "Ventiladores", "RPM de CPU, bomba y caja (si el equipo los expone)"),
     Seccion("temperaturas", "Temperaturas", "Temperatura de placa y VRM (si el equipo las expone)"),
+    Seccion("clima", "Clima", "Tiempo actual (requiere activar el clima en config)", por_defecto=False),
 )
 
 PERFILES: dict[str, dict] = {
@@ -144,27 +146,58 @@ def columnas(cuantas: int) -> list[tuple[int, int]]:
 
 
 def tarjeta(x: int, ancho: int, etiqueta: str, fuente: str, sufijo: str, color: str,
-            partes=None, valores: dict | None = None) -> list[dict]:
+            partes=None, valores: dict | None = None, detalle: str | None = None,
+            barra: bool = True) -> list[dict]:
     """Tarjeta de dato + su barra + su linea de detalle, ya alineadas.
 
     `partes` es [(clave, plantilla), ...]: solo se incluyen las que tienen dato en este
-    equipo, para no acabar con un detalle lleno de "--".
+    equipo, para no acabar con un detalle lleno de "--". `detalle` fija la linea a mano
+    (para texto que no son sensores, como la descripcion del clima) y `barra=False` deja
+    la tarjeta sin barra de progreso, porque su valor no es un porcentaje.
     """
     # El ancho de la barra deja sitio al valor que `barra` dibuja a la derecha.
     ancho_barra = ancho - 86
-    detalle = _con_datos(valores, partes or [])
+    detalle = detalle if detalle is not None else _con_datos(valores, partes or [])
     widgets = [
         {"tipo": "dato", "x": x, "y": TARJETA_Y, "ancho": ancho, "alto": TARJETA_ALTO,
          "etiqueta": etiqueta, "fuente": fuente, "sufijo": sufijo, "tamano": VALOR_TAM,
-         "barra": False, "fondo": COLOR_TARJETA, "borde": COLOR_BORDE,
+         "barra": barra, "fondo": COLOR_TARJETA, "borde": COLOR_BORDE,
          "color": color, "color_etiqueta": COLOR_GRIS},
-        {"tipo": "barra", "x": x, "y": BARRA_Y, "ancho": ancho_barra, "alto": BARRA_ALTO,
-         "etiqueta": "", "fuente": fuente, "color_relleno": color,
-         "color": COLOR_TEXTO, "fondo": "#1b2230"},
-        {"tipo": "texto", "x": x, "y": DETALLE_Y, "tamano": DETALLE_TAM,
-         "texto": detalle, "color": COLOR_GRIS},
     ]
+    if barra:
+        widgets.append(
+            {"tipo": "barra", "x": x, "y": BARRA_Y, "ancho": ancho_barra, "alto": BARRA_ALTO,
+             "etiqueta": "", "fuente": fuente, "color_relleno": color,
+             "color": COLOR_TEXTO, "fondo": "#1b2230"})
+    widgets.append({"tipo": "texto", "x": x, "y": DETALLE_Y, "tamano": DETALLE_TAM,
+                    "texto": detalle, "color": COLOR_GRIS})
     return widgets
+
+
+def tarjetas_clima(activas: dict, valores: dict | None = None,
+                   libres: list[tuple[int, int]] | None = None) -> list[dict]:
+    """Tarjeta del clima exterior, o nada.
+
+    Doble condicion, y las dos hacen falta: la seccion tiene que estar activa (**opt-in**:
+    el clima se descarga de la red y no todo el mundo lo quiere) y tiene que haber dato
+    (`clima_temp`), porque `fuentes_ext.Clima` devuelve `{}` o claves a `None` cuando esta
+    sin red. Es el mismo criterio que usa `_zona_baja` con los ventiladores.
+
+    `libres` son las columnas que deja libres la fila de tarjetas: el clima ocupa la
+    primera, para no pisar ninguna y mantener el alineamiento de filas del README.
+    """
+    if not (activas.get("clima") and _hay(valores, "clima_temp")):
+        return []
+    if libres is None:
+        libres = columnas_libres(activas, valores)
+    if not libres:
+        return []
+    x, ancho = libres[0]
+    # El detalle lleva marcadores (no el valor de la muestra) para que se refresque en cada
+    # fotograma; con el clima apagado a mitad de bucle el motor dibuja "--", y ese caso no
+    # llega aqui porque `_hay` ya lo corta antes.
+    return tarjeta(x, ancho, "Exterior", "clima_temp", "°C", COLOR_CLIMA,
+                   detalle="{clima_descripcion} · {clima_humedad}% hum", barra=False)
 
 
 def _cabecera(titulo: str, activas: dict) -> list[dict]:
@@ -191,6 +224,33 @@ def _hay(valores, *claves) -> bool:
         if isinstance(valor, (int, float)) and not isinstance(valor, bool):
             return True
     return False
+
+
+# Clave que delata que una tarjeta tiene dato, por columna de la rejilla. Se usa para que
+# la tarjeta del clima (que va al final y es opt-in) no pise la de un bloque que, por
+# tener su seccion activa, ya ocupa ese sitio.
+_CLAVES_TARJETA = (
+    ("cpu_temp", "cpu_uso"),
+    ("gpu_temp", "gpu_uso"),
+    ("ram_uso",),
+    ("disco_uso",),
+)
+
+# Seccion que dibuja cada columna, en el mismo orden que `_CLAVES_TARJETA`.
+_CLAVES_TARJETA_DE = ("cpu", "gpu", "ram", "disco")
+
+
+def columnas_libres(activas: dict, valores: dict | None = None) -> list[tuple[int, int]]:
+    """Columnas de la fila de tarjetas que no ocupa ninguna seccion activa con datos."""
+    if not valores:
+        return []
+    libres = []
+    for indice, (x, ancho) in enumerate(columnas(4)):
+        seccion = _CLAVES_TARJETA_DE[indice]
+        if activas.get(seccion) and _hay(valores, *_CLAVES_TARJETA[indice]):
+            continue                # la ocupa su seccion; si no hay dato, el hueco queda libre
+        libres.append((x, ancho))
+    return libres
 
 
 def _con_datos(valores, partes, separador: str = "     ") -> str:
@@ -280,34 +340,40 @@ def tema_dashboard(titulo: str = "CFV 235", perfil: str = "completo",
     """
     activas = secciones_activas(perfil, ajustes)
     widgets = _cabecera(titulo, activas)
+    # Columnas de la fila de tarjetas que ya ocupan los bloques de siempre. La del clima,
+    # que es opt-in y va al final, coge la primera que quede libre: asi nunca pisa ninguna
+    # tarjeta y, si el equipo no da dato de ese bloque, se mete en su hueco.
+    libres = columnas_libres(activas, valores)
 
-    if activas.get("cpu"):
+    if activas.get("cpu") and _hay(valores, *_CLAVES_TARJETA[0]):
         x, ancho = columnas(4)[0]
         widgets += tarjeta(x, ancho, "CPU", "cpu_temp", " C", COLOR_CPU, [
             ("cpu_uso", "carga {cpu_uso:.0f} %"),
             ("cpu_mhz", "{cpu_mhz:.0f} MHz"),
             ("cpu_vent", "{cpu_vent:.0f} rpm"),
         ], valores)
-    if activas.get("gpu"):
+    if activas.get("gpu") and _hay(valores, *_CLAVES_TARJETA[1]):
         x, ancho = columnas(4)[1]
         widgets += tarjeta(x, ancho, "GPU", "gpu_temp", " C", COLOR_GPU, [
             ("gpu_uso", "uso {gpu_uso:.0f} %"),
             ("gpu_mhz", "{gpu_mhz:.0f} MHz"),
             ("gpu_vram_usado_gb", "vram {gpu_vram_usado_gb:.1f} GB"),
         ], valores)
-    if activas.get("ram"):
+    if activas.get("ram") and _hay(valores, *_CLAVES_TARJETA[2]):
         x, ancho = columnas(4)[2]
         widgets += tarjeta(x, ancho, "MEMORIA", "ram_uso", " %", COLOR_RAM, [
             ("ram_usado_gb", "{ram_usado_gb:.1f} / {ram_total_gb:.1f} GB"),
             ("ram_velocidad", "{ram_velocidad:.0f} MHz"),
         ], valores)
-    if activas.get("disco"):
+    if activas.get("disco") and _hay(valores, *_CLAVES_TARJETA[3]):
         x, ancho = columnas(4)[3]
         widgets += tarjeta(x, ancho, "DISCO", "disco_uso", " %", COLOR_DISCO, [
             ("disco_usado_gb", "{disco_usado_gb:.0f} / {disco_total_gb:.0f} GB"),
             ("disco_lectura_mb", "lectura {disco_lectura_mb:.0f}  escritura "
                                  "{disco_escritura_mb:.0f} MB/s"),
         ], valores)
+
+    widgets += tarjetas_clima(activas, valores, libres)
 
     widgets += _zona_baja(activas, valores)
 

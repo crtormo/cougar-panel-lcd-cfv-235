@@ -53,18 +53,27 @@ y 424 .. 452   pie: arranque, procesos, carga
 
 **Perfiles** (`--perfil`): `completo`, `esencial`, `graficas`, `minimo` y `presentacion`.
 **Secciones activables** (`--con` / `--sin`): `titulo`, `reloj`, `cpu`, `gpu`, `ram`, `disco`,
-`red`, `grafica`, `sistema`, `ventiladores`, `temperaturas`.
+`red`, `grafica`, `sistema`, `ventiladores`, `temperaturas`, `clima`.
 
 ```bash
 cfv235 perfiles                                  # ver qué hay
 cfv235 dashboard --perfil esencial               # sin gráfica ni pie
 cfv235 dashboard --sin red --sin sistema         # quitar secciones sueltas
+cfv235 dashboard --con clima                     # añadir la tarjeta del tiempo
 cfv235 dashboard --guardar-png /tmp/dash.png     # revisarlo sin tocar el panel
 ```
 
 Y una cosa que se agradece: **las secciones cuyos datos no existen en tu equipo no se pintan**.
 En este PC no hay sensores de ventilador ni de placa, así que en vez de una línea de `-- rpm`
-el dashboard simplemente no la muestra (con `sudo modprobe nct6775` aparecerían).
+el dashboard simplemente no la muestra (con `sudo modprobe nct6775` aparecerían, y con
+`cfv235 dashboard --con ventiladores` el hueco queda reservado).
+
+La tarjeta del **clima** (`--con clima`, apagada por defecto) sigue ese mismo criterio: sale
+solo si hay dato, o sea si el clima está activado en la config **y** la descarga de Open-Meteo
+funciona. Sin red, `clima_temp` llega como `None` y la tarjeta se auto-oculta en vez de pintar
+un `-- C`. Ocupa la primera columna libre de la fila de tarjetas, así que en `completo` (con
+CPU, GPU, RAM y disco ocupando las cuatro) no cabe y no se pinta: un hueco es mejor que pisar
+una tarjeta. Se ve en `graficas`, `minimo` o `presentacion`, o apagando un bloque con `--sin`.
 
 ## Vídeo y animación
 
