@@ -95,7 +95,8 @@ _fuentes_lock = threading.Lock()
 
 # Claves de configuracion de las que depende `crear_fuentes()` (ver mas abajo): si alguna
 # cambia, la fuente memoizada se rehace.
-_CLAVES_FUENTES = ("clima", "clima_lat", "clima_lon", "clima_tz", "clima_cache_min")
+_CLAVES_FUENTES = ("clima", "clima_lat", "clima_lon", "clima_tz", "clima_cache_min",
+                   "notificaciones")
 _cache_fuentes_lock = threading.Lock()
 
 
@@ -522,6 +523,24 @@ def _clima_de_config():
         return None
 
 
+def _notificaciones_de_config():
+    """`fuentes_ext.Notificaciones` segun la configuracion, o None si esta apagado.
+
+    Opt-in propio e independiente del clima: por defecto **apagado**, de modo que no se
+    lanza ni un subprocess mientras el usuario no lo pida. Nunca lanza: si el modulo no
+    existe o la configuracion no se puede leer, se devuelve None (que es el defecto).
+    """
+    try:
+        from . import config
+        if not config.obtener("notificaciones", False):
+            return None
+        from .fuentes_ext import Notificaciones
+        return Notificaciones()
+    except Exception as exc:                              # modulo ausente o config rota
+        _log.info("sin notificaciones (%s): se dibujara sin ellas", exc)
+        return None
+
+
 # Fuente de datos memoizada: el dashboard redibuja cada `periodo` segundos (2 s por
 # defecto) y sin esto cada fotograma creaba su propio `Clima`, con lo que la cache y la
 # gracia sin red no protegian de nada (5 fotogramas = 5 descargas, y una red colgada
@@ -546,7 +565,7 @@ def _clave_de_config():
 
 
 def _construir_fuentes():
-    """Construye la fuente de datos (Sensores + clima si toca). Sin memoizar."""
+    """Construye la fuente de datos (Sensores + clima y/o notificaciones, si tocan)."""
     try:
         from .sensores import Sensores
         sensores = Sensores()
@@ -555,22 +574,24 @@ def _construir_fuentes():
         _log.info("sin cfv235.sensores (%s): se dibujara con valores vacios", exc)
         sensores = {}
     clima = _clima_de_config()
-    if clima is None:
+    notificaciones = _notificaciones_de_config()
+    if clima is None and notificaciones is None:
         return sensores
     try:
         from .fuentes_ext import Combinada
-        return Combinada(sensores, clima=clima)
+        return Combinada(sensores, clima=clima, notificaciones=notificaciones)
     except Exception as exc:                              # noqa: BLE001
         _log.info("sin fuentes externas (%s): se dibujara solo con el equipo", exc)
         return sensores
 
 
 def crear_fuentes():
-    """Fuente de datos del panel (Sensores, o `Combinada` con el clima). Memoizada.
+    """Fuente de datos del panel (Sensores, o `Combinada` con las fuentes externas).
 
     Si `cfv235.sensores` no existe todavia, o falla al arrancar, devuelve `{}`: los temas
-    se dibujan igual, con "--" en los datos. Con `clima` activado en la configuracion, el
-    resultado se envuelve en `fuentes_ext.Combinada` para anadir las claves `clima_*`.
+    se dibujan igual, con "--" en los datos. Con `clima` o `notificaciones` activados en
+    la configuracion (cada uno es un opt-in aparte), el resultado se envuelve en
+    `fuentes_ext.Combinada` para anadir las claves `clima_*` y/o `notif_*`.
 
     La instancia se conserva mientras no cambie la configuracion de la que depende (para
     eso `_clave_de_config()`): es lo que hace que la cache del clima dure entre

@@ -60,6 +60,7 @@ DEFECTOS = {
     "clima_lon": -70.67,
     "clima_tz": "America/Santiago",
     "clima_cache_min": 15,    # minutos entre descargas
+    "notificaciones": False,  # leer las notificaciones del escritorio (dunstctl)
     # --- ventana
     "ancho": 1060,
     "alto": 800,
@@ -85,6 +86,7 @@ _TIPOS = {
     "clima_lon": float,
     "clima_tz": str,
     "clima_cache_min": int,
+    "notificaciones": bool,
     "carpeta_imagen": str,
     "carpeta_video": str,
     "ancho": int,

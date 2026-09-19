@@ -157,7 +157,9 @@ Detalles que conviene saber:
   **Lluvia**, **Niebla**, **Tormenta**…).
 - La lectura de las **notificaciones** del escritorio (`notif_cantidad` / `notif_ultima`) es
   local, no sale a internet: usa `dunstctl` si dunst está corriendo y devuelve vacío en
-  cualquier otro caso (GNOME, KDE o sin bus de sesión), auto-ocultándose.
+  cualquier otro caso (GNOME, KDE o sin bus de sesión), auto-ocultándose. Es **opt-in propio**
+  (clave de configuración `notificaciones`, apagada por defecto): apagada no se lanza ni un
+  subprocess, y encendida no bloquea al clima ni al revés si una de las dos falla.
 
 ## Generar contenido con otra IA
 

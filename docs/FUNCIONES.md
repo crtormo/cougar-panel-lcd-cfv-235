@@ -113,8 +113,9 @@ inyectable (`descargador`) para los tests, igual que `video.FuentePantalla(captu
 | `Notificaciones._mapear(crudo)` | De `{"history": [...], "count": n}` a las claves planas: recorta el historial a `limite` (20) y elige la última. |
 | `Notificaciones._texto(entrada)` / `_campo()` / `_limpiar()` | Texto legible de una entrada: título + app entre paréntesis, sin marcado Pango y en una sola línea. |
 | `Notificaciones._leer_dunst()` / `_hay_bus()` / `_contar_dunst()` / `_historial_dunst()` / `_ejecutar()` | El camino real: `dunstctl count history` + `dunstctl history`, con heurística de bus de sesión e invocación con timeout corto (todo fallo es cadena vacía). |
-| `Combinada(base, clima)` | Envuelve una fuente base (`Sensores` o dict) y le añade las fuentes externas. `.muestra()` fusiona y una fuente caída no tumba a la otra; nunca envuelve dos veces. Es lo que recibe `widgets._Lector`. |
-| `Combinada.resumen()` | Resumen de la base (si lo tiene) más las claves del clima. El motor no lo usa: existe para presentar la misma interfaz que sus fuentes. |
+| `Combinada(base, clima, notificaciones)` | Envuelve una fuente base (`Sensores` o dict) y le añade las fuentes externas (cada una opt-in e independiente; `None` = apagada). `.muestra()` fusiona y una fuente caída no tumba a las otras; nunca envuelve dos veces. Es lo que recibe `widgets._Lector`. |
+| `Combinada.resumen()` | Resumen de la base (si lo tiene) más el de las fuentes externas. El motor no lo usa: existe para presentar la misma interfaz que sus fuentes. |
+| `CATALOGO` | Las nueve claves externas como tuplas `(clave, etiqueta, unidad)`, con el mismo formato que `sensores.CATALOGO`. Es una constante (no instancia nada: pedir el clima saldría a la red y las notificaciones lanzarían procesos) y es lo que permite que `herramientas/generar_prompt_temas.py` documente estas claves. Una prueba comprueba que coincide con `Clima.CLAVES` + `Notificaciones.CLAVES`. |
 
 ## cfv235/widgets.py — el dibujo de los widgets del tema
 

@@ -354,13 +354,29 @@ class Notificaciones:
 class Combinada:
     """Envuelve una fuente base (Sensores o dict) y anade fuentes externas.
 
-    `.muestra()` fusiona; una fuente caida no tumba a la otra. Es lo que recibe
-    `widgets._Lector`, asi que nada mas cambia en el motor.
+    `.muestra()` fusiona; una fuente caida no tumba a ninguna de las otras. Es lo que
+    recibe `widgets._Lector`, asi que nada mas cambia en el motor.
     """
 
-    def __init__(self, base, clima=None):
+    def __init__(self, base, clima=None, notificaciones=None):
         self._base = base
-        self._clima = clima   # inyectable para tests; None -> sin clima
+        self._clima = clima                 # inyectables para los tests; None -> sin fuente
+        self._notificaciones = notificaciones
+
+    @staticmethod
+    def _externas(objeto):
+        """Claves de una fuente externa (`muestra()`), o {} si esta caida.
+
+        Cada fuente va en su propio try/except: que dunst no responda no puede dejar al
+        panel sin clima, ni al reves.
+        """
+        if objeto is None:
+            return {}
+        try:
+            return dict(objeto.muestra() or {})
+        except Exception as exc:                          # noqa: BLE001 (nunca lanza)
+            _log.info("una fuente externa no respondio (%s)", exc)
+            return {}
 
     def muestra(self) -> dict:
         base = self._base
@@ -372,15 +388,23 @@ class Combinada:
         except Exception as exc:                          # noqa: BLE001 (nunca lanza)
             _log.info("la fuente base de datos no respondio (%s)", exc)
             valores = {}
-        if self._clima is not None:
-            try:
-                valores.update(self._clima.muestra() or {})
-            except Exception as exc:                      # noqa: BLE001
-                _log.info("la fuente de clima no respondio (%s)", exc)
+        valores.update(self._externas(self._clima))
+        valores.update(self._externas(self._notificaciones))
         return valores
 
+    def _resumen_de(self, objeto) -> list:
+        """Resumen de una fuente externa, o [] si no lo tiene o esta caida."""
+        propio = getattr(objeto, "resumen", None)
+        if objeto is None or not callable(propio):
+            return []
+        try:
+            return list(propio() or ())
+        except Exception as exc:                          # noqa: BLE001 (nunca lanza)
+            _log.info("una fuente externa no respondio (%s)", exc)
+            return []
+
     def resumen(self) -> list:
-        """Resumen de la base (si lo tiene) mas las claves del clima, si las hay.
+        """Resumen de la base (si lo tiene) mas el de las fuentes externas.
 
         El motor no lo usa (`_Lector` solo llama a `muestra()`): existe para que
         `Combinada` presente la misma interfaz que sus fuentes.
@@ -392,9 +416,6 @@ class Combinada:
                 filas.extend(propio() or ())
         except Exception as exc:                          # noqa: BLE001 (nunca lanza)
             _log.info("la fuente base de datos no respondio (%s)", exc)
-        if self._clima is not None:
-            try:
-                filas.extend(self._clima.resumen() or ())
-            except Exception as exc:                      # noqa: BLE001
-                _log.info("la fuente de clima no respondio (%s)", exc)
+        filas.extend(self._resumen_de(self._clima))
+        filas.extend(self._resumen_de(self._notificaciones))
         return filas
