@@ -126,6 +126,39 @@ al portal de escritorio. Si el panel está a brillo 0 o con `bootFinish=0`, el c
   (`degradado-azul`, `montañas`, `olas`, `estrellas`, `ciudad`), con previsualización y subida
   directa a la capa fondo.
 
+## Clima exterior (opcional, sale a internet)
+
+Con el clima activado, el dashboard añade una tarjeta **Exterior** con la temperatura, la
+descripción del tiempo (en español) y la humedad del sitio donde estés. Es la **única parte del
+proyecto que sale a internet**, está **apagada por defecto** y habla con **Open-Meteo**, que no
+pide cuenta ni API key.
+
+| Qué | Detalle |
+|---|---|
+| Claves que añade | `clima_temp`, `clima_sensacion`, `clima_humedad`, `clima_viento`, `clima_codigo`, `clima_descripcion`, `clima_icono` |
+| Fuente | Open-Meteo (`api.open-meteo.com`), sin cuenta ni API key |
+| Cada cuánto descarga | Cada **15 min** (configurable con `clima_cache_min`) |
+| Coordenadas | `clima_lat` / `clima_lon` (por defecto Santiago: −33.45 / −70.67) y `clima_tz` (`America/Santiago`) |
+| Sin red | Mantiene el último dato hasta **2 h**; pasado ese plazo la tarjeta desaparece |
+
+Se enciende con el interruptor **Clima (internet)** de la página **Estado → Servicios externos**,
+o poniendo `"clima": true` en el `config.json`. En ese mismo grupo están las filas de latitud,
+longitud y zona horaria. El interruptor tira la fuente de datos memoizada para que el cambio se
+aplique en el siguiente fotograma, sin reabrir la app.
+
+Detalles que conviene saber:
+
+- **Es opt-in puro**: ningún perfil (`completo`, `esencial`, `gráficas`, `mínimo`,
+  `presentación`) la enciende; solo el interruptor o la clave de configuración.
+- La tarjeta ocupa la primera columna libre de la fila de tarjetas, así que no pisa ninguna de
+  las de siempre (CPU, GPU, memoria, disco).
+- Cambiar latitud o longitud invalida la caché: un dato guardado de otra ciudad no vale.
+- El catálogo de códigos meteorológicos es el WMO estándar traducido al español (**Despejado**,
+  **Lluvia**, **Niebla**, **Tormenta**…).
+- La lectura de las **notificaciones** del escritorio (`notif_cantidad` / `notif_ultima`) es
+  local, no sale a internet: usa `dunstctl` si dunst está corriendo y devuelve vacío en
+  cualquier otro caso (GNOME, KDE o sin bus de sesión), auto-ocultándose.
+
 ## Generar contenido con otra IA
 
 Hay cuatro prompts autocontenidos, listos para pegar en otra IA. Se generan desde el código
@@ -403,8 +436,10 @@ docs/CANAL.md    el canal medido: descriptor, variantes, acuses, comandos, estad
 ## Pruebas
 
 ```bash
-./tests/ejecutar.sh              # todo (77 pruebas)
+./tests/ejecutar.sh              # todo (147 pruebas)
 ./tests/ejecutar.sh video        # un conjunto: protocolo | simulador | temas | video
+./tests/ejecutar.sh fuentes      # clima y notificaciones (fuentes externas)
+./tests/ejecutar.sh gtk          # interruptor del clima en la app GTK
 ```
 
 - **Protocolo** (22): ida y vuelta del framing, escapes, las dos reglas de checksum, el parser
@@ -421,6 +456,16 @@ docs/CANAL.md    el canal medido: descriptor, variantes, acuses, comandos, estad
 - **Vídeo** (30): carga de GIF, secuencia y vídeo, ajustes a 1920×462, el bucle con
   `threading.Event`, saltar fotogramas sin colgarse, y una subida completa contra el simulador
   con el fotograma reconstruido.
+- **Fuentes externas** (26, `test_fuentes_ext.py` + `test_dashboard_clima.py`): la caché del
+  clima, la gracia de 2 h sin red, la invalidación al cambiar coordenadas, el catálogo WMO, la
+  fusión de `Combinada` y la tarjeta `Exterior` del dashboard.
+- **Clima en la GTK** (9, `test_gtk_clima.py`): el interruptor y las coordenadas. Vive en su
+  propio fichero porque importar GTK (Pango) **rompe el cálculo de anchos de texto de Pillow en
+  el mismo proceso** (medido: `DecompressionBombError`); `ejecutar.sh` corre cada fichero en su
+  propio proceso y el efecto queda encerrado.
+
+> En la corrida completa son **147 pruebas, con 1 fallo solo en equipos sin GTK**: el diálogo de
+> ficheros de `test_regresiones.py` necesita un display y los typelibs de GTK4.
 
 > Nota técnica: el descriptor se abre en `O_NONBLOCK`, así que `os.write` puede devolver
 > `EAGAIN` o una escritura corta. `canal._escribir()` lo reintenta esperando con `select` a

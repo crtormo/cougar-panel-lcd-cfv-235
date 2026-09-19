@@ -8,6 +8,7 @@ del código.
 ```
 capa USB/HID        protocolo.py  →  canal.py  →  panel.py
 capa de contenido   sensores.py → widgets.py / temas.py / dashboard.py → patrones.py / video.py
+                    fuentes_ext.py (clima y notificaciones) → widgets.Combinada
 capa de servicio    config.py · servicio.py · simulador.py · cli.py
 capa gráfica        cfv235_gtk/: app.py · ventana.py · paginas_extra.py · estilo.py
 ```
@@ -90,6 +91,31 @@ los sensores disponibles y solo reporta los que existen de verdad.
 | `_cargas_y_procesos() / _uptime_horas() / _procesos() / _bateria()` | Piezas menores del pie del dashboard. |
 | `_leer_texto() / _leer_entero() / _glob_seguro() / _entradas_seguro()` | Utilerías de lectura robusta: nunca lanzan, devuelven `None` ante lo inesperado. |
 
+## cfv235/fuentes_ext.py — el clima y las notificaciones
+
+Las fuentes que **no** son del PC. Misma interfaz que `Sensores` (`.muestra()` devuelve un dict
+de claves planas) y la misma filosofía: nunca lanzar, degradar a no pintar. La descarga es
+inyectable (`descargador`) para los tests, igual que `video.FuentePantalla(capturador=...)`.
+
+| Elemento | Qué hace |
+|---|---|
+| `WMO` | Catálogo de códigos meteorológicos WMO 4677-2 traducido al español (`0` → «Despejado», `61` → «Lluvia leve», `95` → «Tormenta»...). |
+| `URL` | Plantilla de la petición a Open-Meteo (`api.open-meteo.com/v1/forecast`): temperatura, sensación, humedad, código y viento actuales. Sin cuenta ni API key. |
+| `Clima(lat, lon, tz, cache_segundos)` | El lector con caché. Por defecto Santiago (−33.45 / −70.67), `America/Santiago` y 900 s (15 min) de caché. `descargador` inyectable. |
+| `Clima.CLAVES` | Las siete claves que publica: `clima_temp`, `clima_sensacion`, `clima_humedad`, `clima_viento`, `clima_codigo`, `clima_descripcion`, `clima_icono`. |
+| `Clima.GRACIA_SIN_RED` | 7200 s (2 h): cuánto se puede servir el último dato bueno cuando la descarga falla. Intervalo semiabierto (edad exactamente igual ya NO se sirve). |
+| `Clima.muestra()` | El dict de claves, o `{}` si no hay nada usable. Sirve caché si no ha vencido; si la descarga falla devuelve lo viejo mientras esté dentro de la gracia. Cambiar `lat`/`lon` invalida la caché (el dato es de otro sitio). |
+| `Clima.resumen()` | Snapshot de la caché como lista `{"clave", "valor"}` (simetría con `Sensores.resumen()`; no descarga). |
+| `Clima.descripcion(codigo)` / `_icono(codigo)` | Traducción del código WMO a texto y a un icono de cuatro palabras (`Sol`, `Parcial`, `Nubes`, `Lluvia`, `Nieve`). |
+| `Clima._mapear(datos)` / `_url()` / `_descargar_urllib()` / `_guardar()` | Las piezas internas: parseo del JSON de Open-Meteo, construcción de la URL, descarga por `urllib` con timeout de 6 s y escritura de la caché. |
+| `Notificaciones(lector, cache_segundos, limite)` | Lee el historial de notificaciones del escritorio vía `dunstctl` (Dunst no expone historial por D-Bus portable; GNOME no lo expone de ninguna forma). Sin dunst o sin bus de sesión `muestra()` devuelve `{}` y el widget se auto-oculta. `lector` inyectable. |
+| `Notificaciones.muestra()` | `{"notif_cantidad": int, "notif_ultima": str}` o `{}`. Cachea 5 s para no lanzar dos procesos por fotograma. |
+| `Notificaciones._mapear(crudo)` | De `{"history": [...], "count": n}` a las claves planas: recorta el historial a `limite` (20) y elige la última. |
+| `Notificaciones._texto(entrada)` / `_campo()` / `_limpiar()` | Texto legible de una entrada: título + app entre paréntesis, sin marcado Pango y en una sola línea. |
+| `Notificaciones._leer_dunst()` / `_hay_bus()` / `_contar_dunst()` / `_historial_dunst()` / `_ejecutar()` | El camino real: `dunstctl count history` + `dunstctl history`, con heurística de bus de sesión e invocación con timeout corto (todo fallo es cadena vacía). |
+| `Combinada(base, clima)` | Envuelve una fuente base (`Sensores` o dict) y le añade las fuentes externas. `.muestra()` fusiona y una fuente caída no tumba a la otra; nunca envuelve dos veces. Es lo que recibe `widgets._Lector`. |
+| `Combinada.resumen()` | Resumen de la base (si lo tiene) más las claves del clima. El motor no lo usa: existe para presentar la misma interfaz que sus fuentes. |
+
 ## cfv235/widgets.py — el dibujo de los widgets del tema
 
 Un «tema» del panel es un JSON con `fondo` y una lista de `widgets` (dato, barra, gráfica...).
@@ -106,7 +132,10 @@ Este módulo sabe **pintar cada tipo de widget** sobre una imagen Pillow, con lo
 | `_valor_sintetico(clave, valores)` | Valores derivados (`cpu_uso` a partir de los deltas, totals de red...). |
 | `texto_con_marcadores(plantilla, fuentes)` | Sustituye `{cpu_uso}` y marcadores en textos de widgets. |
 | `_anotar_historial(valores) / _aplanar_muestra(crudo)` | Mantiene series históricas en memoria para las gráficas. |
-| `crear_fuentes() / _Lector` | El puente entre `Sensores` y el dibujo: `_Lector.valor(nombre)` y `.serie(nombre)` dan el dato puntual o la serie. |
+| `crear_fuentes() / _construir_fuentes() / _reset_fuentes() / _clave_de_config()` | El puente entre `Sensores` y el dibujo, **memoizado a nivel de módulo**: crear la fuente en cada llamada destruía la caché del clima (5 fotogramas = 5 descargas y una red colgada bloqueaba 6 s). `_clave_de_config()` guarda la configuración de la que depende; `_reset_fuentes()` la tira (pruebas, o al conmutar el clima en la GTK). `_construir_fuentes()` es la versión sin memoizar. |
+| `_clima_de_config()` | `fuentes_ext.Clima` según la configuración, o `None` si el clima está apagado. Valida aquí el **rango** de `clima_cache_min` (un `-5` daba caché negativa: descarga por fotograma) y cae al defecto de 15 min. |
+| `_Lector` | El adaptador de lectura: `_Lector.valor(nombre)` y `.serie(nombre)` dan el dato puntual o la serie. Acepta un dict, un objeto con `muestra()` (`Sensores`, `Combinada`) o el `Fuentes` del kit. |
+| `CLAVES_CONCLUIDAS` | Claves que el motor considera «datos de una fuente» además de las de `Sensores`: incluye las siete `clima_*`. |
 | `_encajar(dib, contenido, tamano, limite)` | Dibuja texto recortándolo/escalándolo para que quepa en el ancho del widget. |
 | `dibujar_dato / dibujar_barra / dibujar_grafica` | Los tres tipos de widget: etiqueta+valor grande, barra de progreso, y gráfica de serie. |
 | `ultimos_problemas() / _registrar_problema()` | Los problemas de validación quedan coleccionados para mostrarlos en vez de romper el dashboard. |
@@ -118,7 +147,7 @@ El ciclo de vida del JSON: cargar → validar → normalizar → renderizar. Com
 
 | Elemento | Qué hace |
 |---|---|
-| `fuentes_disponibles(instanciar)` | Catálogo de datos que un widget puede pedir (desde `Sensores`), para validar claves. |
+| `fuentes_disponibles(instanciar)` | Catálogo de datos que un widget puede pedir, para validar claves. `instanciar=True` añade una muestra real de `Sensores`. Ojo: valida contra `CLAVES_CONOCIDAS` (incluye las `clima_*` y las `notif_*`), pero la muestra de `valores` sale solo de `Sensores`, así que las claves del clima aparecen en el catálogo aunque no vengan con valor. |
 | `marcadores() / campos(tipo) / catalogo_json()` | Documentación auto-generada: marcadores de texto, campos por tipo de widget y el catálogo completo para `PROMPT_TEMAS.md`. |
 | `plantilla(tipo, **valores) / tema_vacio() / tema_nuevo() / tema_por_defecto()` | Constructores de temas. |
 | `cargar(ruta) / guardar(ruta, tema)` | JSON del disco con los avisos del validador. |
@@ -133,12 +162,12 @@ Toda la rejilla calculada que describe el README vive aquí.
 
 | Elemento | Qué hace |
 |---|---|
-| `Seccion` | Una sección del dashboard (cpu, red, ventiladores...) con su condición de existencia. |
+| `Seccion` | Una sección del dashboard (cpu, red, ventiladores, **clima**...) con su condición de existencia. La de `clima` nace con `por_defecto=False` (opt-in). |
 | `secciones_activas(perfil, ajustes)` | Aplica perfil (`completo`, `esencial`, `graficas`, `minimo`, `presentacion`) + `--con`/`--sin`, y descarta secciones sin datos en este equipo. |
 | `catalogo_secciones() / columnas(cuantas)` | Utilerías de la rejilla (4 columnas de 453 px). |
 | `tarjeta(x, ancho, etiqueta, ...)` | Construye el widget `dato` estándar en la posición dada. Con `detalle=` fija la línea de abajo a mano y `barra=False` la deja sin barra (el clima, que no es un porcentaje). |
+| `tarjetas_clima(activas, valores, libres)` | Tarjeta `Exterior` (temperatura, descripción y humedad) o lista vacía: exige la sección **activa** y `clima_temp` con dato. Opt-in puro (`por_defecto=False`, ningún perfil la enciende). Ocupa la primera columna libre. |
 | `columnas_libres(activas, valores)` | Columnas de la fila de tarjetas que no ocupa una sección activa con dato. Es lo que permite meter la tarjeta opt-in del clima (ver `tarjetas_clima`) sin pisar ninguna. |
-| `tarjetas_clima(activas, valores, libres)` | Tarjeta `Exterior` (temperatura, descripción y humedad) o lista vacía: exige la sección **activa** y `clima_temp` con dato. Opt-in puro (`por_defecto=False`, ningún perfil la enciende). |
 | `_cabecera() / _zona_baja() / _hay() / _con_datos()` | Piezas del tema: cabecera (título/reloj/fecha), pie (sistema/procesos) y helpers de contenido condicional. |
 | `tema_dashboard(titulo, perfil, ...)` | El tema completo armado. `tema_esencial()` y `tema_minimo()` son atajos. |
 | `tema_desde_fichero(ruta)` | Carga un tema propio y lo usa de dashboard. |
@@ -177,9 +206,10 @@ abstrae las fuentes y controla el ritmo.
 | Elemento | Qué hace |
 |---|---|
 | `directorio() / ruta()` | Dónde vive `config.json` (XDG, con override por entorno). |
-| `defectos()` | Los valores por defecto (incluye `keepalive`, añadido con la galería de fondos). |
+| `defectos()` | Los valores por defecto (incluye `keepalive`, añadido con la galería de fondos, y el bloque del clima: `clima: False`, `clima_lat: -33.45`, `clima_lon: -70.67`, `clima_tz: "America/Santiago"`, `clima_cache_min: 15`). |
 | `leer() / obtener(clave, defecto) / escribir(**cambios) / escribir_todo(datos)` | API de configuración; `escribir` fusiona y persiste atómicamente. |
 | `_normalizar(bruto)` | Fusiona con defectos y valida tipos: un `config.json` a medio editar no rompe la app. |
+| `_TIPOS` | El mapa de tipos por clave. Valida el **tipo**, no el rango: un `clima_cache_min` o un `periodo` fuera de rango pasan esta criba y cada consumidor valida lo suyo (`widgets._clima_de_config`, en el caso del clima). |
 
 ## cfv235/servicio.py — el servicio systemd
 
@@ -245,7 +275,7 @@ barra lateral:
 
 | Página | Contenido |
 |---|---|
-| **Estado** | Propiedades del panel en vivo, espacio, `bootFinish`, interruptores de control (brillo, no-dormir, **keepalive**) y acciones de recuperación. El interruptor de keepalive (`_cambiar_keepalive` → `_arrancar_keepalive` / `_parar_hilo_keepalive` → `_bucle_keepalive`) manda telemetría cada `INTERVALO_KEEPALIVE` (25 s, medido: el panel se apaga ~1 min sin tráfico) **solo cuando ni el dashboard ni el vídeo están corriendo**; el hilo usa `compartido.sesion()` en cada trama, así que sobrevive a la reconexión del panel, y se restaura solo si quedó activado en la sesión anterior. |
+| **Estado** | Propiedades del panel en vivo, espacio, `bootFinish`, interruptores de control (brillo, no-dormir, **keepalive**) y acciones de recuperación. El interruptor de keepalive (`_cambiar_keepalive` → `_arrancar_keepalive` / `_parar_hilo_keepalive` → `_bucle_keepalive`) manda telemetría cada `INTERVALO_KEEPALIVE` (25 s, medido: el panel se apaga ~1 min sin tráfico) **solo cuando ni el dashboard ni el vídeo están corriendo**; el hilo usa `compartido.sesion()` en cada trama, así que sobrevive a la reconexión del panel, y se restaura solo si quedó activado en la sesión anterior. Incluye el grupo **Servicios externos**: el interruptor **Clima (internet)** (`_cambiar_clima`) y las filas de latitud, longitud y zona horaria (`_fila_coordenada` → `_aplicar_coordenada`, que valida el rango ±90° y deja el valor anterior si el texto no vale). Al conmutar el clima se llama `_refrescar_clima()`, que tira la fuente memoizada de `widgets` para que el cambio surta efecto sin reabrir la app. |
 | **Patrones** | Galería de patrones de prueba con miniaturas (`pagina_patrones`, `_GaleriaPatrones`). |
 | **Fondos** | Galería de fondos generados por código (`pagina_fondos`): cinco composiciones en bandas horizontales a 1920×462 (`degradado-azul`, `montanas`, `olas`, `estrellas`, `ciudad`), con previsualización y subida a la capa fondo. Sigue las reglas de `docs/PROMPT_FOTOS.md`. |
 | **Editor** | Editor del JSON del tema con validación en vivo, previa EN MEMORIA (`temas.renderizar_datos`) y subida (`pagina_temas`, `_EditorTemas`). |
@@ -280,7 +310,7 @@ asegurar legibilidad).
 | `sondear_canal.py` | Sondeos manuales del canal (la base de la ingeniería inversa). |
 | `medir_fps.py / medir_tamano.py` | Las mediciones publicadas en `RENDIMIENTO.md`. |
 | `validar_inactividad.py` | Verifica el apagado por espera de tráfico. |
-| `generar_prompts.py / generar_prompt_temas.py` | Regeneran los `PROMPT_*.md` desde el código real. |
+| `generar_prompts.py / generar_prompt_temas.py` | Regeneran los `PROMPT_*.md` desde el código real. `generar_prompt_temas.py` arma su tabla de datos con `Sensores().resumen()`, así que **no incluye las claves `clima_*`** (el catálogo de `temas.fuentes_disponibles()` sí las trae). Mientras no se cambie el generador, los prompts de temas no ofrecen datos del clima a la IA. |
 | `windows/sondas/vigilar_boot.js` | Sonda del banco Windows: vigila `bootFinish` sobreviviendo a la desconexión USB. |
 
 ## tests/
@@ -294,6 +324,10 @@ asegurar legibilidad).
 | `test_video.py` | Fuentes (GIF, secuencia, vídeo con capturador falso, pantalla con capturador inyectado), ajustes y `Reproductor`. |
 | `test_rendimiento.py` | Regresiones de tiempo de render. |
 | `test_regresiones.py` | Bugs concretos ya corregidos, incluido el diálogo de ficheros GTK. |
+| `test_fuentes_ext.py` | `fuentes_ext`: caché del clima, gracia de 2 h sin red, invalidación por cambio de coordenadas, catálogo WMO, `Notificaciones` con lector inyectado y fusión de `Combinada`. |
+| `test_dashboard_clima.py` | La sección y la tarjeta `Exterior` del dashboard: `tarjetas_clima`, `columnas_libres` y los bordes de `_clima_de_config`. |
+| `test_gtk_clima.py` | El interruptor del clima y sus coordenadas en la página Estado (GTK). **Vive en su propio fichero a propósito**: importar GTK (Pango) en el proceso rompe el cálculo de anchos de texto de Pillow (`DecompressionBombError`, medido), y `ejecutar.sh` corre cada fichero por separado para que el efecto no se escape. |
 
-Cobertura medida: **110 passed + 4 skipped** (el único test dependiente de `gi` corre en un
-equipo con GTK4 instalado).
+Cobertura medida: **147 pruebas en la corrida completa, con 1 fallo solo en equipos sin GTK**
+(el diálogo de ficheros de `test_regresiones.py` necesita display y los typelibs de GTK4; sin
+`gi` las pruebas de `test_gtk_clima.py` se saltan, no fallan).
